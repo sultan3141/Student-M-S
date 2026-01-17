@@ -108,20 +108,20 @@ export default function MarkEntryTable({ students, subject, assessmentType, seme
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'saved': return 'text-green-600';
-            case 'error': return 'text-red-600';
-            case 'below-50': return 'text-orange-600';
-            case 'editing': return 'text-blue-600';
-            default: return 'text-gray-400';
+            case 'saved': return 'text-[#10B981]';
+            case 'error': return 'text-[#EF4444]';
+            case 'below-50': return 'text-[#F97316]'; // Orange for warning
+            case 'editing': return 'text-[#3B82F6]'; // Blue for editing
+            default: return 'text-[#94A3B8]'; // Muted gray
         }
     };
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case 'saved': return <CheckCircleIcon className="w-5 h-5" />;
-            case 'error': return <ExclamationCircleIcon className="w-5 h-5" />;
-            case 'below-50': return <ExclamationCircleIcon className="w-5 h-5" />;
-            case 'editing': return <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />;
+            case 'saved': return <CheckCircleIcon className="w-5 h-5 text-[#10B981]" />;
+            case 'error': return <ExclamationCircleIcon className="w-5 h-5 text-[#EF4444]" />;
+            case 'below-50': return <ExclamationCircleIcon className="w-5 h-5 text-[#F97316]" />;
+            case 'editing': return <div className="w-2.5 h-2.5 rounded-full bg-[#3B82F6] animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.6)]" />;
             default: return null;
         }
     };
@@ -129,26 +129,26 @@ export default function MarkEntryTable({ students, subject, assessmentType, seme
     return (
         <div className={`space-y-6 ${className}`}>
             {/* Stats Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100">
-                <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase">Class Average</p>
-                    <p className={`text-2xl font-bold ${parseFloat(stats.average) < 50 ? 'text-red-600' : 'text-gray-900'}`}>{stats.average}%</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gradient-to-r from-[#F1F5F9] to-[#FFFFFF] rounded-xl border border-[#E2E8F0] shadow-sm">
+                <div className="pl-2 border-l-4 border-[#3B82F6]">
+                    <p className="text-xs font-bold text-[#475569] uppercase tracking-wider">Class Average</p>
+                    <p className={`text-2xl font-bold ${parseFloat(stats.average) < 50 ? 'text-[#EF4444]' : 'text-[#1E293B]'}`}>{stats.average}%</p>
                 </div>
-                <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase">Pass Rate</p>
-                    <p className={`text-2xl font-bold ${stats.passRate < 50 ? 'text-red-600' : 'text-green-600'}`}>{stats.passRate}%</p>
+                <div className="pl-2 border-l-4 border-[#10B981]">
+                    <p className="text-xs font-bold text-[#475569] uppercase tracking-wider">Pass Rate</p>
+                    <p className={`text-2xl font-bold ${stats.passRate < 50 ? 'text-[#EF4444]' : 'text-[#10B981]'}`}>{stats.passRate}%</p>
                 </div>
-                <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase">Entered</p>
-                    <p className="text-2xl font-bold text-blue-600">
-                        {localMarks.filter(m => m.mark !== '').length}/{students.length}
+                <div className="pl-2 border-l-4 border-[#F59E0B]">
+                    <p className="text-xs font-bold text-[#475569] uppercase tracking-wider">Entered</p>
+                    <p className="text-2xl font-bold text-[#3B82F6]">
+                        {localMarks.filter(m => m.mark !== '').length}<span className="text-[#94A3B8] text-lg font-normal">/{students.length}</span>
                     </p>
                 </div>
                 <div className="flex items-center justify-end">
                     <button
                         onClick={handleSave}
                         disabled={processing}
-                        className="flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50"
+                        className="flex items-center px-6 py-2.5 bg-[#3B82F6] hover:bg-[#1E40AF] text-white font-bold rounded-lg shadow-[0_4px_6px_-1px_rgba(30,64,175,0.2)] transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {processing ? <ArrowPathIcon className="w-5 h-5 animate-spin mr-2" /> : <CheckCircleIcon className="w-5 h-5 mr-2" />}
                         Save All
@@ -157,60 +157,63 @@ export default function MarkEntryTable({ students, subject, assessmentType, seme
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="bg-[#FFFFFF] rounded-xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+                <table className="min-w-full divide-y divide-[#E2E8F0]">
+                    <thead className="bg-gradient-to-r from-[#F1F5F9] to-[#E2E8F0] border-b border-[#3B82F6]">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-[#1E40AF] uppercase tracking-wider border-r border-[#E2E8F0]/50">
                                 Student Name
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-[#1E40AF] uppercase tracking-wider border-r border-[#E2E8F0]/50">
                                 Current Mark
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-[#1E40AF] uppercase tracking-wider border-r border-[#E2E8F0]/50">
                                 Enter Mark (0-100)
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-[#1E40AF] uppercase tracking-wider">
                                 Status
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-[#E2E8F0]">
                         {localMarks.map((student, index) => (
-                            <tr key={student.student_id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap">
+                            <tr key={student.student_id} className="hover:bg-[#F8FAFC] transition-colors group">
+                                <td className="px-6 py-4 whitespace-nowrap border-b border-[#E2E8F0]">
                                     <div className="flex items-center">
-                                        <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-600 mr-3">
+                                        <div className="h-8 w-8 rounded-full bg-[#F1F5F9] flex items-center justify-center text-sm font-bold text-[#475569] mr-3 ring-1 ring-[#E2E8F0]">
                                             {student.name.charAt(0)}
                                         </div>
-                                        <div className="text-sm font-medium text-gray-900">{student.name}</div>
+                                        <div className="text-sm font-medium text-[#1E293B] group-hover:text-[#3B82F6] transition-colors">{student.name}</div>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#475569] border-b border-[#E2E8F0]">
                                     {/* History/Previous marks could go here */}
                                     -
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-6 py-4 whitespace-nowrap border-b border-[#E2E8F0]">
                                     <div className="relative">
                                         <input
                                             type="text"
                                             value={student.mark}
                                             onChange={(e) => handleMarkChange(index, e.target.value)}
-                                            className={`block w-24 rounded-md shadow-sm sm:text-sm focus:ring-blue-500 focus:border-blue-500 ${student.status === 'error' ? 'border-red-300 text-red-900' :
-                                                student.status === 'below-50' ? 'border-orange-300 text-orange-900' :
-                                                    'border-gray-300'
+                                            className={`block w-24 rounded-md shadow-sm sm:text-sm text-[#1E293B] transition-all duration-200
+                                                focus:ring-2 focus:ring-[#F59E0B]/20 focus:border-[#F59E0B] focus:shadow-[0_0_0_4px_rgba(245,158,11,0.1)]
+                                                ${student.status === 'error' ? 'border-[#EF4444] text-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]/20' :
+                                                    student.status === 'below-50' ? 'border-[#F97316] text-[#F97316] focus:border-[#F97316]' :
+                                                        student.status === 'saved' ? 'border-[#10B981] text-[#10B981] bg-[#10B981]/5' :
+                                                            'border-[#E2E8F0]'
                                                 }`}
                                             placeholder="-"
                                         />
                                         {student.error && (
-                                            <div className="absolute left-28 top-2 text-xs text-red-600 whitespace-nowrap">
+                                            <div className="absolute left-28 top-2 text-xs text-[#EF4444] font-medium whitespace-nowrap bg-[#FEF2F2] px-2 py-0.5 rounded border border-[#FECACA]">
                                                 {student.error}
                                             </div>
                                         )}
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className={`flex items-center text-sm ${getStatusColor(student.status)}`}>
+                                <td className="px-6 py-4 whitespace-nowrap border-b border-[#E2E8F0]">
+                                    <div className={`flex items-center text-sm font-medium ${getStatusColor(student.status)}`}>
                                         {getStatusIcon(student.status)}
                                         <span className="ml-2 capitalize">{student.status === 'below-50' ? 'Low Score' : student.status}</span>
                                     </div>
