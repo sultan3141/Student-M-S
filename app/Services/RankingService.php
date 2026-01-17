@@ -10,9 +10,17 @@ use Illuminate\Support\Collection;
 class RankingService
 {
     /**
-     * Calculate and update rankings for a given class and semester
+     * Calculate and update rankings for a given class and semester.
+     * This method processes all marks for a subject, calculates averages,
+     * determines rank positions, and identifies performance trends compared to previous terms.
+     *
+     * @param string $subject
+     * @param string $semester
+     * @param string $academicYear
+     * @return Collection
      */
     public function calculateRankings(string $subject, string $semester, string $academicYear): Collection
+
     {
         // Get all marks for this class and semester
         $marks = Mark::where('subject', $subject)
