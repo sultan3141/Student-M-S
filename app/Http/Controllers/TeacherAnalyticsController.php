@@ -20,7 +20,17 @@ class TeacherAnalyticsController extends Controller
         ]);
     }
 
+    /**
+     * Get detailed analytics for a specific class.
+     * Calculates score distribution (histogram data), key performance metrics
+     * (pass rate, top performers), and historical trend data for charts.
+     *
+     * @param Request $request
+     * @param int $classId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getClassAnalytics(Request $request, $classId)
+
     {
         // Mock data logic simulating a DB query for class performance
         
