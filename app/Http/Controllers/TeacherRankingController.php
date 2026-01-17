@@ -17,8 +17,13 @@ class TeacherRankingController extends Controller
     }
 
     /**
-     * Get live rankings for a specific class/subject context.
-     * Returns JSON for the LiveRankingPreview widget.
+     * Retrieve real-time live rankings for the dashboard widget.
+     * Returns a JSON response containing the top 5 students, performance trends,
+     * and class-wide statistics (average, highest score, pass rate).
+     *
+     * @param Request $request
+     * @param int $classId
+     * @return \Illuminate\Http\JsonResponse
      */
     public function live(Request $request, $classId)
     {
