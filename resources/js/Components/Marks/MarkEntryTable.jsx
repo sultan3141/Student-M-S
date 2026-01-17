@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import { CheckCircleIcon, ExclamationCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
+/**
+ * MarkEntryTable Component
+ * Handles the grid input for student marks with real-time validation and status updates.
+ * Features:
+ * - 0-100 range validation
+ * - Visual status indicators (Saved, Editing, Error)
+ * - Auto-calculation of class stats
+ */
 export default function MarkEntryTable({ students, subject, assessmentType, semester, academicYear, className = '' }) {
     // Local state for immediate UI feedback
     const [localMarks, setLocalMarks] = useState(
@@ -189,8 +197,8 @@ export default function MarkEntryTable({ students, subject, assessmentType, seme
                                             value={student.mark}
                                             onChange={(e) => handleMarkChange(index, e.target.value)}
                                             className={`block w-24 rounded-md shadow-sm sm:text-sm focus:ring-blue-500 focus:border-blue-500 ${student.status === 'error' ? 'border-red-300 text-red-900' :
-                                                    student.status === 'below-50' ? 'border-orange-300 text-orange-900' :
-                                                        'border-gray-300'
+                                                student.status === 'below-50' ? 'border-orange-300 text-orange-900' :
+                                                    'border-gray-300'
                                                 }`}
                                             placeholder="-"
                                         />
