@@ -1,3 +1,8 @@
+/**
+ * StatsCard Component
+ * Displays a single metric with a gradient background, icon, and optional trend indicator.
+ * Supports hover animations and customizable color themes (blue, green, purple, orange).
+ */
 export default function StatsCard({ title, value, icon: Icon, color = 'blue', trend }) {
     const gradients = {
         blue: 'from-blue-500 via-blue-600 to-indigo-600',
