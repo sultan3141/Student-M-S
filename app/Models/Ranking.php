@@ -5,6 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Ranking Model
+ * Represents a student's ranking within a specific class/subject context.
+ * Stores calculated performance metrics like rank position, average score, and trend.
+ */
 class Ranking extends Model
 {
     protected $fillable = [
