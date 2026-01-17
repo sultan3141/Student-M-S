@@ -21,7 +21,12 @@ class TeacherMarkController extends Controller
     }
 
     /**
-     * Display the mark entry interface.
+     * Display the main mark entry dashboard.
+     * Fetches assigned classes and available assessment types for the teacher
+     * to begin the mark entry process.
+     *
+     * @param Request $request
+     * @return \Inertia\Response
      */
     public function index(Request $request)
     {
