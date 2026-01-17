@@ -13,6 +13,14 @@ import {
     Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 
+/**
+ * TeacherLayout Component
+ * Main layout wrapper for the Teacher Dashboard areas.
+ * Features:
+ * - Responsive Sidebar Navigation
+ * - User Profile Dropdown
+ * - Mobile Menu Toggle
+ */
 export default function TeacherLayout({ children }) {
     const { auth } = usePage().props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
