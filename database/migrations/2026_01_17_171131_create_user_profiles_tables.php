@@ -36,6 +36,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('employee_id')->unique()->nullable();
+            $table->string('qualification')->nullable();
             $table->string('specialization')->nullable();
             $table->string('phone')->nullable();
             $table->timestamps();

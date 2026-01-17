@@ -13,4 +13,15 @@ class Section extends Model
     public function grade()
     {
         return $this->belongsTo(Grade::class);
-    }}
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    public function classTeacher()
+    {
+        return $this->belongsTo(Teacher::class, 'class_teacher_id');
+    }
+}

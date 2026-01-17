@@ -27,7 +27,7 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
-            Role::create(['name' => $role]);
+            \Spatie\Permission\Models\Role::firstOrCreate(['name' => $role]);
         }
     }
 }
