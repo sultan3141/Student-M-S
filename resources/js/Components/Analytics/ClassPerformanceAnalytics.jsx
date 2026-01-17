@@ -4,6 +4,14 @@ import { Bar, Line, Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, LineElement, PointElement, ArcElement);
 
+/**
+ * ClassPerformanceAnalytics Component
+ * Renders interactive charts for class performance analysis using Chart.js.
+ * Displays:
+ * - Key Metrics Grid (Average, Pass Rate, Top Performer)
+ * - Score Distribution Bar Chart
+ * - Historical Trend Line Chart
+ */
 export default function ClassPerformanceAnalytics({ classId }) {
     const [data, setData] = useState(null);
 
