@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RoleSeeder::class,
+            AcademicStructureSeeder::class,
+            SubjectSeeder::class,
         ]);
 
         $admin = User::factory()->create([
