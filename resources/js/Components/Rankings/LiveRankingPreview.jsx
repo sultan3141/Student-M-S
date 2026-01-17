@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ArrowUpIcon, ArrowDownIcon, MinusIcon, TrophyIcon } from '@heroicons/react/24/solid';
 
+/**
+ * LiveRankingPreview Component
+ * A widget that fetches and displays the real-time top 5 students for a subject.
+ * Shows rank medals (Gold/Silver/Bronze) and performance trends (Up/Down/Stable).
+ */
 export default function LiveRankingPreview({ classId, subject, initialData = null }) {
     const [rankings, setRankings] = useState(initialData?.rankings || []);
     const [stats, setStats] = useState(initialData?.stats || {});
