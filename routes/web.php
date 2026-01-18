@@ -59,20 +59,45 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->group(function (
     Route::get('/grade-audit', [\App\Http\Controllers\StudentController::class, 'gradeAudit'])->name('student.grade-audit');
 });
 
-Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\TeacherController::class, 'dashboard'])->name('teacher.dashboard');
+// Teacher Routes
+Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [\App\Http\Controllers\TeacherDashboardController::class, 'index'])->name('dashboard');
     
     // Marks Management
-    Route::get('/marks', [\App\Http\Controllers\TeacherController::class, 'marksIndex'])->name('teacher.marks.index');
-    Route::get('/marks/create', [\App\Http\Controllers\TeacherController::class, 'marksCreate'])->name('teacher.marks.create');
-    Route::post('/marks', [\App\Http\Controllers\TeacherController::class, 'marksStore'])->name('teacher.marks.store');
+    Route::get('/marks', [\App\Http\Controllers\TeacherMarkController::class, 'index'])->name('marks.index');
+    Route::get('/marks/enter', [\App\Http\Controllers\TeacherMarkController::class, 'create'])->name('marks.create');
+    Route::post('/marks/store', [\App\Http\Controllers\TeacherMarkController::class, 'store'])->name('marks.store');
+    
+    // Classes
+    Route::get('/classes', [\App\Http\Controllers\TeacherClassController::class, 'index'])->name('classes.index');
+    Route::get('/classes/{id}', [\App\Http\Controllers\TeacherClassController::class, 'show'])->name('classes.show');
+    
+    // Rankings
+    Route::get('/rankings', [\App\Http\Controllers\TeacherRankingController::class, 'index'])->name('rankings.index');
+    Route::get('/rankings/live/{classId}', [\App\Http\Controllers\TeacherRankingController::class, 'live'])->name('rankings.live');
+
+    // Reports & Analytics
+    Route::get('/analytics', [\App\Http\Controllers\TeacherAnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/analytics/class/{classId}', [\App\Http\Controllers\TeacherAnalyticsController::class, 'getClassAnalytics'])->name('analytics.class');
+    Route::get('/analytics/student/{studentId}', [\App\Http\Controllers\TeacherAnalyticsController::class, 'getStudentAnalytics'])->name('analytics.student');
+    
+    Route::get('/reports', [\App\Http\Controllers\TeacherReportController::class, 'index'])->name('reports.index');
+
+    // Student Tracking
+    Route::get('/students', [\App\Http\Controllers\TeacherStudentController::class, 'index'])->name('students.index');
+    Route::get('/students/{id}', [\App\Http\Controllers\TeacherStudentController::class, 'show'])->name('students.show');
 
     // Attendance Management
-    Route::get('/attendance', [\App\Http\Controllers\TeacherAttendanceController::class, 'index'])->name('teacher.attendance.index');
-    Route::get('/attendance/create', [\App\Http\Controllers\TeacherAttendanceController::class, 'create'])->name('teacher.attendance.create');
-    Route::get('/attendance', [\App\Http\Controllers\TeacherAttendanceController::class, 'index'])->name('teacher.attendance.index');
-    Route::get('/attendance/create', [\App\Http\Controllers\TeacherAttendanceController::class, 'create'])->name('teacher.attendance.create');
-    Route::post('/attendance', [\App\Http\Controllers\TeacherAttendanceController::class, 'store'])->name('teacher.attendance.store');
+    Route::get('/attendance', [\App\Http\Controllers\TeacherAttendanceController::class, 'index'])->name('attendance.index');
+    Route::get('/attendance/create', [\App\Http\Controllers\TeacherAttendanceController::class, 'create'])->name('attendance.create');
+    Route::post('/attendance', [\App\Http\Controllers\TeacherAttendanceController::class, 'store'])->name('attendance.store');
+
+    // Profile
+    Route::get('/profile', [\App\Http\Controllers\TeacherProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [\App\Http\Controllers\TeacherProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('/assignments/subjects', [\App\Http\Controllers\TeacherAssignmentController::class, 'getAssignedSubjects']);
 });
 
 // School Director Routes
@@ -92,5 +117,17 @@ Route::middleware(['auth', 'role:school_director'])->prefix('director')->group(f
     Route::get('/academic-years', [\App\Http\Controllers\AcademicYearController::class, 'index'])->name('director.academic-years.index');
     Route::post('/academic-years', [\App\Http\Controllers\AcademicYearController::class, 'store'])->name('director.academic-years.store');
     Route::post('/academic-years/{id}/activate', [\App\Http\Controllers\AcademicYearController::class, 'activate'])->name('director.academic-years.activate');
+});
+
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Admin/Dashboard');
+    })->name('dashboard');
+});
+
+Route::middleware(['auth', 'role:parent'])->prefix('parent')->name('parent.')->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Parent/Dashboard');
+    })->name('dashboard');
 });
 

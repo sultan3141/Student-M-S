@@ -1,109 +1,88 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import PrimaryButton from '@/Components/PrimaryButton';
-import InputLabel from '@/Components/InputLabel';
+import TeacherLayout from '@/Layouts/TeacherLayout';
+import {
+    AcademicCapIcon,
+    ClipboardDocumentCheckIcon,
+    ArrowRightIcon
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
-export default function MarksIndex({ auth, sections }) {
-    const { data, setData, get, processing, errors } = useForm({
-        section_id: '',
-        subject_id: '',
-    });
-
-    // Mock subjects logic: in reality, fetch subjects for chosen section's grade dynamically
-    // For now, we'll just filter if we had all subjects loaded or handle it simplified.
-    // Actually, let's just make the user pick a Section, then we show available subjects for that section's Grade.
-    // Since we passed sections with 'grade', we can derive subjects if loaded, otherwise we might need an API call.
-    // Simplified: Just pick Section first. Then in Next step (Create), we might need Subject.
-    // Let's assume the teacher selects Section AND Subject here.
-    // We need to pass subjects to this view to make it work smoothly.
-    // Wait, the controller only passed `sections`. I should update controller to pass filtered Subjects or load them via React state.
-    // Let's do a client-side filter. We can pass all common subjects since they are standardized per grade.
-    // For this step, let's keep it simple: Select Class/Section -> Then Select Subject from list available to that Grade.
-
-    const [availableSubjects, setAvailableSubjects] = useState([]);
-
-    const handleSectionChange = (e) => {
-        const sectionId = e.target.value;
-        setData('section_id', sectionId);
-
-        // Find selected section to get grade
-        const section = sections.find(s => s.id == sectionId);
-        if (section && section.grade) {
-            // Mocking subjects fetching or we could have passed them from controller. 
-            // Better to fetch or pass them. Let's assume we updating controller next or use a hardcoded list for demo if needed.
-            // Actually, let's relying on a prop `subjects` I'll add to controller in a moment.
-            // setAvailableSubjects(subjects.filter(sub => sub.grade_id === section.grade_id));
-        }
-    };
-
-    const submit = (e) => {
-        e.preventDefault();
-        get(route('teacher.marks.create'));
-    };
+/**
+ * Marks Index Page
+ * Allows teachers to select a class and assessment type to begin entering marks.
+ * Matches data provided by TeacherMarkController::index.
+ */
+export default function Index({ classes, assessmentTypes }) {
+    const [selectedAssessment, setSelectedAssessment] = useState(assessmentTypes[0]?.id || '');
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Marks Entry - Select Class</h2>}
-        >
-            <Head title="Enter Marks" />
+        <TeacherLayout>
+            <Head title="Mark Management" />
 
-            <div className="py-12">
-                <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            <form onSubmit={submit} className="space-y-6">
-                                <div>
-                                    <InputLabel htmlFor="section" value="Select Class & Section" />
-                                    <select
-                                        id="section"
-                                        className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                        value={data.section_id}
-                                        onChange={(e) => setData('section_id', e.target.value)}
-                                        required
-                                    >
-                                        <option value="">-- Choose Class --</option>
-                                        {sections.map(section => (
-                                            <option key={section.id} value={section.id}>
-                                                {section.grade.name} - Section {section.name} ({section.gender})
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+            <div className="mb-8">
+                <h1 className="text-3xl font-black text-gray-900">Mark Management</h1>
+                <p className="text-gray-600 mt-1">Select a class to enter or view marks.</p>
+            </div>
 
-                                <div>
-                                    <InputLabel htmlFor="subject" value="Select Subject" />
-                                    <select
-                                        id="subject"
-                                        className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                        value={data.subject_id}
-                                        onChange={(e) => setData('subject_id', e.target.value)}
-                                        required
-                                    >
-                                        <option value="">-- First Select Class --</option>
-                                        {/* Ideally populated dynamically. For MVP I'll fetch ALL subjects in controller and filter here? 
-                                            Or simpler: Just manual entry of ID? No, bad UX.
-                                            I'll update controller to pass 'subjects' too.
-                                        */}
-                                        <option value="1">Mathematics</option>
-                                        <option value="2">English</option>
-                                        <option value="3">Physics</option>
-                                        {/* Hardcoded IDs for demo speed, will fix in controller */}
-                                    </select>
-                                    <p className="text-xs text-gray-500 mt-1">Subject list is simplified for demo. (IDs 1-3)</p>
-                                </div>
+            {/* Assessment Selection */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 max-w-xl">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Select Assessment Type</label>
+                <select
+                    value={selectedAssessment}
+                    onChange={(e) => setSelectedAssessment(e.target.value)}
+                    className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                >
+                    {assessmentTypes.map(type => (
+                        <option key={type.id} value={type.id}>{type.name} ({type.weight_percentage}%)</option>
+                    ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-2">
+                    Choose the assessment you are currently grading.
+                </p>
+            </div>
 
-                                <div className="flex justify-end">
-                                    <PrimaryButton className="ml-4" disabled={processing}>
-                                        Proceed to Grading
-                                    </PrimaryButton>
+            {/* Class Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {classes.map((cls) => (
+                    <div key={cls.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="p-3 bg-indigo-50 rounded-xl group-hover:bg-indigo-100 transition-colors">
+                                    <AcademicCapIcon className="w-8 h-8 text-indigo-600" />
                                 </div>
-                            </form>
+                                <span className="text-xs font-bold px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                                    {cls.subject}
+                                </span>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-1">{cls.name}</h3>
+                            <p className="text-gray-500 text-sm mb-6">42 Students Enrolled</p>
+
+                            <Link
+                                href={route('teacher.marks.create', {
+                                    class_id: cls.id,
+                                    assessment_type_id: selectedAssessment,
+                                    subject: cls.subject
+                                })}
+                                className="flex items-center justify-center w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors"
+                            >
+                                <ClipboardDocumentCheckIcon className="w-5 h-5 mr-2" />
+                                Enter Marks
+                                <ArrowRightIcon className="w-4 h-4 ml-2 opacity-70" />
+                            </Link>
+                        </div>
+                        <div className="bg-gray-50 px-6 py-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
+                            <span>Last updated: 2 days ago</span>
+                            <span className="font-medium text-green-600">Active</span>
                         </div>
                     </div>
-                </div>
+                ))}
             </div>
-        </AuthenticatedLayout>
+
+            {classes.length === 0 && (
+                <div className="text-center py-12">
+                    <p className="text-gray-500">No classes assigned yet.</p>
+                </div>
+            )}
+        </TeacherLayout>
     );
 }

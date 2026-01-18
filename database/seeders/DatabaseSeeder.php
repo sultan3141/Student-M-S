@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             AcademicStructureSeeder::class,
             SubjectSeeder::class,
+            UserSeeder::class, // Add username-based test users
         ]);
 
         // Create Director User

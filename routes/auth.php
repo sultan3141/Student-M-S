@@ -17,11 +17,14 @@ Route::middleware('guest')->group(function () {
 
     Route::post('register', [RegisteredUserController::class, 'store']);
 
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+    Route::get('login', [UnifiedLoginController::class, 'create'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store'])
-    ->name('login');
+    Route::post('login', [UnifiedLoginController::class, 'store']);
+
+    // API for role detection (visual feedback)
+    Route::post('auth/detect-role', [UnifiedLoginController::class, 'detectRole'])
+        ->name('auth.detect-role');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
