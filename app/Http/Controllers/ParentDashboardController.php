@@ -20,7 +20,9 @@ class ParentDashboardController extends Controller
         }
 
         $students = $user->parentProfile->students()
-            ->with(['grade', 'section'])
+            ->with(['grade', 'section', 'reports' => function($query) {
+                $query->orderBy('reported_at', 'desc')->limit(10);
+            }])
             ->get();
 
         return Inertia::render('Parent/Dashboard', [

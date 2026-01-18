@@ -98,6 +98,64 @@ export default function Dashboard({ students }) {
                         </div>
                     </div>
                 </div>
+
+                {/* Reports Card */}
+                {selectedStudent && (
+                    <div className="bg-white shadow rounded-lg p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Reports</h3>
+
+                        {selectedStudent.reports && selectedStudent.reports.length > 0 ? (
+                            <div className="space-y-3">
+                                {selectedStudent.reports.map((report) => {
+                                    // Determine badge color based on severity and type
+                                    const getBadgeColor = (severity, type) => {
+                                        if (severity === 'high') return 'bg-red-100 text-red-800';
+                                        if (severity === 'medium') return 'bg-yellow-100 text-yellow-800';
+                                        if (type === 'general') return 'bg-green-100 text-green-800';
+                                        return 'bg-blue-100 text-blue-800';
+                                    };
+
+                                    const formatDate = (dateString) => {
+                                        const date = new Date(dateString);
+                                        return date.toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            year: 'numeric'
+                                        });
+                                    };
+
+                                    return (
+                                        <div key={report.id} className="border-l-4 border-indigo-500 bg-gray-50 p-3 rounded-r">
+                                            <div className="flex items-start justify-between mb-2">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getBadgeColor(report.severity, report.report_type)}`}>
+                                                    {report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1)}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    {formatDate(report.reported_at)}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-800 mb-1">
+                                                {report.message}
+                                            </p>
+                                            {report.reported_by && (
+                                                <p className="text-xs text-gray-500">
+                                                    — {report.reported_by}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <p className="mt-2 text-sm text-gray-500">No reports available</p>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </ParentLayout>
     );
