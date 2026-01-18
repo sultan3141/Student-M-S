@@ -92,11 +92,19 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher })
                     <h2 className="text-lg font-bold text-gray-900 mb-6">Quick Actions</h2>
                     <div className="space-y-3">
                         <Link
-                            href={route('teacher.marks.create')}
-                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center space-x-2"
+                            href={route('teacher.marks.wizard.index')}
+                            className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium shadow-md transition-all flex items-center justify-center space-x-2"
                         >
                             <ClipboardDocumentCheckIcon className="w-5 h-5" />
-                            <span>Enter Marks</span>
+                            <span>📊 Enter Marks (Modern)</span>
+                        </Link>
+
+                        <Link
+                            href={route('teacher.marks.create')}
+                            className="w-full py-3 px-4 bg-white border-2 border-blue-200 hover:bg-blue-50 text-blue-700 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center space-x-2"
+                        >
+                            <ClipboardDocumentCheckIcon className="w-5 h-5" />
+                            <span>Enter Marks (Classic)</span>
                         </Link>
 
                         <Link
