@@ -51,6 +51,10 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     Route::get('/marks/enter', [\App\Http\Controllers\TeacherMarkController::class, 'create'])->name('marks.create');
     Route::post('/marks/store', [\App\Http\Controllers\TeacherMarkController::class, 'store'])->name('marks.store');
     
+    // Classes
+    Route::get('/classes', [\App\Http\Controllers\TeacherClassController::class, 'index'])->name('classes.index');
+    Route::get('/classes/{id}', [\App\Http\Controllers\TeacherClassController::class, 'show'])->name('classes.show');
+    
     // Rankings
     Route::get('/rankings', [\App\Http\Controllers\TeacherRankingController::class, 'index'])->name('rankings.index');
     Route::get('/rankings/live/{classId}', [\App\Http\Controllers\TeacherRankingController::class, 'live'])->name('rankings.live');
@@ -62,6 +66,10 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     
     Route::get('/reports', [\App\Http\Controllers\TeacherReportController::class, 'index'])->name('reports.index');
 
+    // Student Tracking
+    Route::get('/students', [\App\Http\Controllers\TeacherStudentController::class, 'index'])->name('students.index');
+    Route::get('/students/{id}', [\App\Http\Controllers\TeacherStudentController::class, 'show'])->name('students.show');
+
 
     // Profile
     Route::get('/profile', [\App\Http\Controllers\TeacherProfileController::class, 'edit'])->name('profile.edit');
@@ -69,3 +77,16 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
 
     Route::get('/assignments/subjects', [\App\Http\Controllers\TeacherAssignmentController::class, 'getAssignedSubjects']);
 });
+
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Admin/Dashboard');
+    })->name('dashboard');
+});
+
+Route::middleware(['auth', 'role:parent'])->prefix('parent')->name('parent.')->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Parent/Dashboard');
+    })->name('dashboard');
+});
+
