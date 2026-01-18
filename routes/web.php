@@ -52,11 +52,28 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     Route::post('/marks/store', [\App\Http\Controllers\TeacherMarkController::class, 'store'])->name('marks.store');
     Route::get('/marks/students', [\App\Http\Controllers\TeacherAssignmentController::class, 'getStudents'])->name('marks.students');
     
-    // Assessment Management (New 2-step workflow)
-    Route::get('/assessments', [\App\Http\Controllers\TeacherAssessmentController::class, 'index'])->name('assessments.index');
-    Route::post('/assessments', [\App\Http\Controllers\TeacherAssessmentController::class, 'store'])->name('assessments.store');
-    Route::put('/assessments/{assessment}', [\App\Http\Controllers\TeacherAssessmentController::class, 'update'])->name('assessments.update');
-    Route::delete('/assessments/{assessment}', [\App\Http\Controllers\TeacherAssessmentController::class, 'destroy'])->name('assessments.destroy');
+    // Modern Mark Management Wizard (NEW)
+    Route::prefix('marks/wizard')->name('marks.wizard.')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('Teacher/Marks/MarkWizard');
+        })->name('index');
+        Route::get('/grades', [\App\Http\Controllers\TeacherClassController::class, 'getTeacherGrades'])->name('grades');
+        Route::get('/sections/{grade}', [\App\Http\Controllers\TeacherClassController::class, 'getSectionsByGrade'])->name('sections');
+        Route::get('/subjects/{section}', [\App\Http\Controllers\TeacherClassController::class, 'getSubjectsBySection'])->name('subjects');
+        Route::get('/assessments/{subject}/{semester}', [\App\Http\Controllers\TeacherClassController::class, 'getAssessmentsBySubject'])->name('assessments');
+    });
+    
+    // Assessment Management (CRUD & Bulk Operations)
+    Route::resource('assessments', \App\Http\Controllers\AssessmentController::class);
+    Route::post('/assessments/{id}/import', [\App\Http\Controllers\AssessmentController::class, 'importMarks'])->name('assessments.import');
+    Route::get('/assessments/{id}/template', [\App\Http\Controllers\AssessmentController::class, 'exportTemplate'])->name('assessments.template');
+    Route::get('/assessments/{id}/stats', [\App\Http\Controllers\AssessmentController::class, 'getStats'])->name('assessments.stats');
+    
+    // Assessment Management (Old 2-step workflow - Keep for backward compatibility)
+    Route::get('/assessments-old', [\App\Http\Controllers\TeacherAssessmentController::class, 'index'])->name('assessments-old.index');
+    Route::post('/assessments-old', [\App\Http\Controllers\TeacherAssessmentController::class, 'store'])->name('assessments-old.store');
+    Route::put('/assessments-old/{assessment}', [\App\Http\Controllers\TeacherAssessmentController::class, 'update'])->name('assessments-old.update');
+    Route::delete('/assessments-old/{assessment}', [\App\Http\Controllers\TeacherAssessmentController::class, 'destroy'])->name('assessments-old.destroy');
     
     // Classes
     Route::get('/classes', [\App\Http\Controllers\TeacherClassController::class, 'index'])->name('classes.index');
