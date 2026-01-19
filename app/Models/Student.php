@@ -21,11 +21,17 @@ class Student extends Model
         'stream_id',
         'phone',
         'address',
+        'national_id',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(ParentProfile::class, 'parent_id');
     }
 
     public function parents()
@@ -56,5 +62,30 @@ class Student extends Model
     public function reports()
     {
         return $this->hasMany(StudentReport::class);
+    }
+
+    public function registrations()
+    {
+        return $this->hasMany(Registration::class);
+    }
+
+    public function currentRegistration()
+    {
+        return $this->hasOne(Registration::class)->latestOfMany();
+    }
+
+    public function finalResults()
+    {
+        return $this->hasMany(FinalResult::class);
+    }
+
+    public function semesterResults()
+    {
+        return $this->hasMany(SemesterResult::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
     }
 }

@@ -3,7 +3,7 @@ import StudentLayout from '@/Layouts/StudentLayout';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useState } from 'react';
 
-export default function AcademicRecords({ auth, marks, student, subjectPerformance, trendData, academicYear }) {
+export default function Results({ auth, marks, student, subjectPerformance, trendData, academicYear }) {
     const [expandedSubject, setExpandedSubject] = useState(null);
 
     return (

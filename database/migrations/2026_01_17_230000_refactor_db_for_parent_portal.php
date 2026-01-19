@@ -13,12 +13,14 @@ return new class extends Migration
         //     $table->string('name')->unique();
         // });
 
-        Schema::create('parent_student', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('parent_id')->constrained('parents')->cascadeOnDelete();
-            $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('parent_student')) {
+            Schema::create('parent_student', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('parent_id')->constrained('parents')->cascadeOnDelete();
+                $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
+                $table->timestamps();
+            });
+        }
 
         // Modify marks table
         Schema::table('marks', function (Blueprint $table) {

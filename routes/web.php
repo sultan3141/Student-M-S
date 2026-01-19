@@ -15,6 +15,28 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
+    $user = Auth::user();
+
+    if ($user->hasRole('student')) {
+        return redirect()->route('student.dashboard');
+    }
+
+    if ($user->hasRole('teacher')) {
+        return redirect()->route('teacher.dashboard');
+    }
+
+    if ($user->hasRole('parent')) {
+        return redirect()->route('parent.dashboard');
+    }
+
+    if ($user->hasRole('registrar')) {
+        return redirect()->route('registrar.dashboard');
+    }
+
+    if ($user->hasRole('admin') || $user->hasRole('school_director')) {
+        return redirect()->route('director.dashboard');
+    }
+
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -36,10 +58,34 @@ Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(functi
         ->names('registrar.payments');
 });
 
-Route::middleware(['auth', 'role:student'])->prefix('student')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\StudentController::class, 'dashboard'])->name('student.dashboard');
-    Route::get('/profile', [\App\Http\Controllers\StudentProfileController::class, 'edit'])->name('student.profile.edit');
-    Route::patch('/profile', [\App\Http\Controllers\StudentProfileController::class, 'update'])->name('student.profile.update');
+Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\StudentController::class, 'dashboard'])->name('dashboard');
+
+    // Annual Registration
+    Route::get('/registration', [\App\Http\Controllers\StudentRegistrationController::class, 'create'])->name('registration.create');
+    Route::post('/registration', [\App\Http\Controllers\StudentRegistrationController::class, 'store'])->name('registration.store');
+    
+    // Redirect legacy/wrong URL
+    Route::get('/applications/create', function() {
+        return redirect()->route('student.registration.create');
+    });
+    
+    // Profile & Settings
+    Route::get('/profile', [\App\Http\Controllers\StudentProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [\App\Http\Controllers\StudentProfileController::class, 'update'])->name('profile.update');
+    Route::get('/password', [\App\Http\Controllers\StudentProfileController::class, 'editPassword'])->name('password.edit');
+    
+
+
+    // Semester Academic Records
+    Route::get('/academic/semesters', [\App\Http\Controllers\SemesterRecordController::class, 'index'])->name('academic.semesters');
+    Route::get('/academic/semesters/{semester}/{academicYear}', [\App\Http\Controllers\SemesterRecordController::class, 'show'])->name('academic.semester.show');
+
+    // Academic Year Records
+    Route::get('/academic/year/current', [\App\Http\Controllers\AcademicYearRecordController::class, 'current'])->name('academic.year.current');
+    Route::get('/academic/year/{academicYear}', [\App\Http\Controllers\AcademicYearRecordController::class, 'show'])->name('academic.year.show');
+
+
 });
 
 Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () {

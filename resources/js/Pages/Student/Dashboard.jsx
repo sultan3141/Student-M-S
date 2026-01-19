@@ -5,155 +5,198 @@ import {
     ChartBarIcon,
     AcademicCapIcon,
     ClockIcon,
-    ArrowTrendingUpIcon
+    ArrowTrendingUpIcon,
+    ExclamationTriangleIcon,
+    CheckCircleIcon,
+    XCircleIcon,
+    UserIcon
 } from '@heroicons/react/24/outline';
 
-export default function StudentDashboard({ auth, student, academicYear, subjects }) {
+const StatusBadge = ({ status, type }) => {
+    const styles = {
+        success: 'bg-green-100 text-green-800',
+        warning: 'bg-yellow-100 text-yellow-800',
+        danger: 'bg-red-100 text-red-800',
+        neutral: 'bg-gray-100 text-gray-800'
+    };
+
+    let style = styles.neutral;
+    if (type === 'fee') {
+        style = status === 'Paid' ? styles.success : status === 'Partially Paid' ? styles.warning : styles.danger;
+    } else if (type === 'registration') {
+        style = status === 'Registered' ? styles.success : styles.warning;
+    } else if (type === 'promotion') {
+        style = status === 'Eligible' ? styles.success : styles.danger;
+    }
+
+    return (
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${style}`}>
+            {status}
+        </span>
+    );
+};
+
+export default function StudentDashboard({ auth, student, academicYear, subjects, promotionStatus, stats, charts }) {
+    const studentName = student?.user?.name || auth.user.name;
+    const studentId = student?.student_id || 'N/A';
+    const gradeName = student?.current_registration?.grade?.name || student?.grade?.name || 'N/A';
+    const sectionName = student?.current_registration?.section?.name || student?.section?.name || 'N/A';
+
+    // Determine Statuses (Mocked or Real)
+    const feeStatus = 'Unpaid';
+    const registrationStatus = student?.current_registration ? 'Registered' : 'Not Registered';
+
     return (
         <StudentLayout>
             <Head title="Student Dashboard" />
 
-            {/* Welcome Banner */}
-            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-3xl shadow-lg p-8 mb-8 text-white relative overflow-hidden">
+            {/* Overview Panel & Welcome Banner */}
+            <div className="bg-gradient-to-r from-emerald-700 to-teal-600 rounded-3xl shadow-xl p-8 mb-8 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
-                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center">
+
+                <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                        <h1 className="text-3xl font-bold mb-2">Welcome back, {auth.user.name.split(' ')[0]}! 👋</h1>
-                        <p className="text-emerald-100 text-lg">
-                            Ready to learn? You have <span className="font-bold text-white">4 classes</span> today.
+                        <h1 className="text-3xl font-bold mb-2">Welcome, {studentName.split(' ')[0]}! 👋</h1>
+                        <p className="text-emerald-100 text-lg mb-6">
+                            Academic Year: <span className="font-bold text-white">{academicYear?.name || '2025-2026'}</span>
                         </p>
+
+                        <div className="flex flex-wrap gap-3">
+                            <div className="bg-white/10 backdrop-blur-md rounded-lg px-4 py-2 border border-white/20">
+                                <p className="text-xs text-emerald-200 uppercase">Student ID</p>
+                                <p className="font-mono font-bold">{studentId}</p>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-md rounded-lg px-4 py-2 border border-white/20">
+                                <p className="text-xs text-emerald-200 uppercase">Grade / Section</p>
+                                <p className="font-bold">{gradeName} - {sectionName}</p>
+                            </div>
+                        </div>
                     </div>
-                    <div className="mt-6 md:mt-0 bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                        <p className="text-xs font-bold uppercase tracking-wider text-emerald-100 mb-1">Current Term</p>
-                        <p className="text-xl font-bold">{academicYear?.name || '2025-2026 Term 1'}</p>
+
+                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10">
+                        <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-200 mb-4 border-b border-white/10 pb-2">Current Status</h3>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-white/90">Registration</span>
+                                <div className="flex items-center gap-2">
+                                    <StatusBadge status={registrationStatus} type="registration" />
+                                    {registrationStatus === 'Not Registered' && (
+                                        <Link href={route('student.registration.create')} className="text-xs bg-white text-emerald-800 px-2 py-1 rounded-full font-bold hover:bg-emerald-50 transition-colors shadow-sm">
+                                            Register
+                                        </Link>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-white/90">Fee Status</span>
+                                <StatusBadge status={feeStatus} type="fee" />
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-white/90">Promotion Eligibility</span>
+                                <StatusBadge status={promotionStatus} type="promotion" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center hover:shadow-md transition-shadow">
-                    <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mr-5">
-                        <BookOpenIcon className="w-7 h-7" />
-                    </div>
+            {/* Alerts & Notifications */}
+            {feeStatus === 'Unpaid' && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8 rounded-r-lg shadow-sm flex items-start">
+                    <ExclamationTriangleIcon className="h-6 w-6 text-red-500 mr-3 mt-0.5" />
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Enrolled Courses</p>
-                        <p className="text-2xl font-bold text-gray-900">{subjects?.length || 8}</p>
+                        <h4 className="text-red-800 font-bold">Outstanding Fee Alert</h4>
+                        <p className="text-red-700 text-sm">You have pending tuition fees suitable for the current term. Please visit the finance office.</p>
                     </div>
                 </div>
+            )}
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center hover:shadow-md transition-shadow">
-                    <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 mr-5">
-                        <ArrowTrendingUpIcon className="w-7 h-7" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">Average GPA</p>
-                        <p className="text-2xl font-bold text-gray-900">3.8</p>
-                    </div>
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <BookOpenIcon className="w-8 h-8 text-blue-500 mb-2" />
+                    <p className="text-3xl font-bold text-gray-900">{subjects.length}</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase">Enrolled Courses</p>
                 </div>
-
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center hover:shadow-md transition-shadow">
-                    <div className="w-14 h-14 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 mr-5">
-                        <ClockIcon className="w-7 h-7" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">Attendance</p>
-                        <p className="text-2xl font-bold text-gray-900">98%</p>
-                    </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <ArrowTrendingUpIcon className="w-8 h-8 text-emerald-500 mb-2" />
+                    <p className="text-3xl font-bold text-gray-900">{stats?.gpa || 'N/A'}</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase">Average GPA</p>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <ClockIcon className="w-8 h-8 text-purple-500 mb-2" />
+                    <p className="text-3xl font-bold text-gray-900">{stats?.attendance || 0}%</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase">Attendance Rate</p>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <UserIcon className="w-8 h-8 text-orange-500 mb-2" />
+                    <p className="text-3xl font-bold text-gray-900">#{stats?.rank || 'N/A'}</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase">Class Rank</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Course List (Left 2/3) */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-bold text-gray-900">My Courses</h3>
-                        <Link href="#" className="text-sm font-medium text-emerald-600 hover:text-emerald-700">View All</Link>
-                    </div>
-
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        {subjects && subjects.length > 0 ? (
-                            <div className="divide-y divide-gray-100">
-                                {subjects.map((subject) => (
-                                    <div key={subject.id} className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 font-bold">
-                                                {subject.code?.substring(0, 2) || 'MA'}
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-gray-900">{subject.name}</h4>
-                                                <p className="text-sm text-gray-500">{subject.teacher_name || 'Mr. Teacher'}</p>
-                                            </div>
+                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-gray-900">My Scored Subjects</h3>
+                            <Link href={route('student.academic.semesters')} className="text-sm text-emerald-600 font-medium hover:underline">View All</Link>
+                        </div>
+
+                        <div className="divide-y divide-gray-100">
+                            {subjects.length > 0 ? subjects.map((subject) => (
+                                <div key={subject.id} className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                                    <div className="flex items-center space-x-4">
+                                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 font-bold">
+                                            {subject.code?.substring(0, 2) || 'SUB'}
                                         </div>
-                                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">In Progress</span>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            // Fallback mockup data if no subjects
-                            <div className="divide-y divide-gray-100">
-                                {['Advanced Mathematics', 'Physics 101', 'World History', 'English Literature'].map((course, idx) => (
-                                    <div key={idx} className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
-                                        <div className="flex items-center space-x-4">
-                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold shadow-md
-                                                ${idx === 0 ? 'bg-blue-500' : idx === 1 ? 'bg-indigo-500' : idx === 2 ? 'bg-orange-500' : 'bg-pink-500'}`}>
-                                                {course.substring(0, 2).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">{course}</h4>
-                                                <p className="text-sm text-gray-500">Room 10{idx + 1} • {10 + idx}:00 AM</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <span className="block text-lg font-bold text-gray-900">9{5 - idx}%</span>
-                                            <span className="text-xs text-gray-400">Current Grade</span>
+                                        <div>
+                                            <h4 className="font-bold text-gray-900">{subject.name}</h4>
+                                            <p className="text-sm text-gray-500">{subject.credit_hours} Credits</p>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">Active</span>
+                                </div>
+                            )) : (
+                                <div className="p-8 text-center text-gray-500">
+                                    No subjects enrolled for this term yet.
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                {/* Right Sidebar (Schedule/Assignments) */}
+                {/* Right Sidebar (Charts & Analytics) */}
                 <div className="space-y-6">
-                    {/* Next Class */}
+                    {/* School Gender Distribution */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">Up Next</h3>
-                        <div className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border border-indigo-100">
-                            <div className="flex justify-between items-start mb-2">
-                                <span className="px-2 py-1 bg-white text-indigo-600 text-[10px] font-bold uppercase rounded shadow-sm">11:00 AM</span>
-                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <h3 className="text-sm font-bold text-gray-500 uppercase mb-4">Student Demographics</h3>
+                        <div className="relative h-48">
+                            {/* Placeholder for Chart - In a real app use Recharts/ChartJS */}
+                            <div className="flex h-full items-end space-x-4 justify-center">
+                                <div className="w-16 bg-blue-500 rounded-t-lg relative group" style={{ height: '55%' }}>
+                                    <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-600">{charts?.gender?.Male || 0}</span>
+                                    <div className="absolute bottom-2 left-0 right-0 text-center text-white text-xs font-bold">Male</div>
+                                </div>
+                                <div className="w-16 bg-pink-500 rounded-t-lg relative group" style={{ height: '45%' }}>
+                                    <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-600">{charts?.gender?.Female || 0}</span>
+                                    <div className="absolute bottom-2 left-0 right-0 text-center text-white text-xs font-bold">Female</div>
+                                </div>
                             </div>
-                            <h4 className="font-bold text-indigo-900">Physics Lab</h4>
-                            <p className="text-sm text-indigo-600 mb-3">Room 302 • Mr. Anderson</p>
-                            <button className="w-full py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-colors">
-                                View Materials
-                            </button>
                         </div>
+                        <p className="text-center text-xs text-gray-400 mt-2">Gender Distribution (School Wide)</p>
                     </div>
 
-                    {/* Pending Assignments */}
+                    {/* School Pass Rate */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-gray-900">Assignments</h3>
-                            <span className="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs font-bold">2</span>
+                        <h3 className="text-sm font-bold text-gray-500 uppercase mb-4">School Performance</h3>
+                        <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Overall Pass Rate</span>
+                            <span className="text-2xl font-bold text-emerald-600">{stats?.pass_percentage || 0}%</span>
                         </div>
-                        <div className="space-y-4">
-                            <div className="flex items-start pb-4 border-b border-gray-50">
-                                <div className="mt-1 min-w-[4px] h-10 bg-red-500 rounded-full mr-3"></div>
-                                <div>
-                                    <h5 className="font-bold text-gray-900 text-sm">Calculus Problem Set</h5>
-                                    <p className="text-xs text-red-500 font-semibold mt-1">Due Today, 5:00 PM</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start">
-                                <div className="mt-1 min-w-[4px] h-10 bg-orange-400 rounded-full mr-3"></div>
-                                <div>
-                                    <h5 className="font-bold text-gray-900 text-sm">History Essay Draft</h5>
-                                    <p className="text-xs text-gray-500 mt-1">Due Tomorrow</p>
-                                </div>
-                            </div>
+                        <div className="w-full bg-gray-100 rounded-full h-2.5 mt-2">
+                            <div className="bg-emerald-500 h-2.5 rounded-full" style={{ width: `${stats?.pass_percentage || 0}%` }}></div>
                         </div>
                     </div>
                 </div>

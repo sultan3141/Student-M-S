@@ -1,21 +1,16 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import StudentLayout from '@/Layouts/StudentLayout';
 
 export default function ProfileEdit({ auth, student }) {
-    const [activeTab, setActiveTab] = useState('personal');
     const [photoPreview, setPhotoPreview] = useState(null);
 
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, hasErrors } = useForm({
+        _method: 'PATCH',
         phone: student?.phone || '',
         address: student?.address || '',
+        national_id: student?.national_id || '',
         profile_photo: null,
-    });
-
-    const { data: passwordData, setData: setPasswordData, put: updatePassword, processing: passwordProcessing, errors: passwordErrors, reset: resetPassword } = useForm({
-        current_password: '',
-        password: '',
-        password_confirmation: '',
     });
 
     const handlePhotoChange = (e) => {
@@ -32,301 +27,175 @@ export default function ProfileEdit({ auth, student }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route('student.profile.update'));
-    };
-
-    const handlePasswordSubmit = (e) => {
-        e.preventDefault();
-        updatePassword(route('student.password.update'), {
-            onSuccess: () => {
-                resetPassword();
-                alert('Password changed successfully!');
-            }
+        post(route('student.profile.update'), {
+            forceFormData: true,
         });
     };
 
-    const tabs = [
-        { id: 'personal', name: 'Personal', icon: '👤' },
-        { id: 'educational', name: 'Educational', icon: '🎓' },
-        { id: 'school', name: 'School', icon: '🏫' },
-        { id: 'family', name: 'Family', icon: '👨‍👩‍👧' },
-        { id: 'emergency', name: 'Emergency', icon: '🚨' },
-        { id: 'cost-sharing', name: 'Cost-Sharing', icon: '💰' },
-        { id: 'documents', name: 'Documents', icon: '📄' },
-        { id: 'agreement', name: 'Agreement', icon: '📝' },
-        { id: 'help', name: 'HELP', icon: '❓' },
-    ];
-
     return (
-        <StudentLayout auth={auth} title="Edit Profile" student={student}>
-            <Head title="Edit Profile" />
+        <StudentLayout auth={auth} title="Profile Settings" student={student}>
+            <Head title="Profile Settings" />
 
-            {/* Student Name Banner */}
-            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-6 text-center mb-6 shadow-lg">
-                <h1 className="text-3xl font-bold">{auth.user.name}</h1>
-            </div>
+            <div className="max-w-4xl mx-auto space-y-6">
 
-            {/* Tabs */}
-            <div className="bg-white rounded-t-lg shadow-lg overflow-hidden">
-                <div className="flex overflow-x-auto border-b">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center space-x-2 px-6 py-3 text-sm font-medium whitespace-nowrap transition ${activeTab === tab.id
-                                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                                    : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
-                                }`}
-                        >
-                            <span>{tab.icon}</span>
-                            <span>{tab.name}</span>
-                        </button>
-                    ))}
+                {/* Header */}
+                <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+                        <p className="text-gray-500 mt-1">Manage your personal information and view official academic details.</p>
+                    </div>
                 </div>
 
-                {/* Tab Content */}
-                <div className="p-8">
-                    {activeTab === 'personal' && (
-                        <div>
-                            <h3 className="text-xl font-bold text-blue-600 mb-6 border-b pb-2">BASIC INFORMATION</h3>
-                            <form onSubmit={handleSubmit}>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {/* Read-only fields */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Name</label>
-                                        <input
-                                            type="text"
-                                            value={auth.user.name.split(' ')[0] || ''}
-                                            readOnly
-                                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded focus:outline-none"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Father Name</label>
-                                        <input
-                                            type="text"
-                                            value={auth.user.name.split(' ')[1] || ''}
-                                            readOnly
-                                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded focus:outline-none"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">G/Father Name</label>
-                                        <input
-                                            type="text"
-                                            value={auth.user.name.split(' ')[2] || ''}
-                                            readOnly
-                                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded focus:outline-none"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">DOB-GC*</label>
-                                        <input
-                                            type="text"
-                                            value={student?.dob || 'N/A'}
-                                            readOnly
-                                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded focus:outline-none"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
-                                        <select
-                                            value={student?.gender || 'M'}
-                                            disabled
-                                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded focus:outline-none"
-                                        >
-                                            <option value="M">M</option>
-                                            <option value="F">F</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Place of Birth</label>
-                                        <input
-                                            type="text"
-                                            value={student?.address || 'N/A'}
-                                            readOnly
-                                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded focus:outline-none"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">National ID (FAN)</label>
-                                        <input
-                                            type="text"
-                                            value={student?.student_id || 'N/A'}
-                                            readOnly
-                                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded focus:outline-none"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Health Status</label>
-                                        <select
-                                            disabled
-                                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded focus:outline-none"
-                                        >
-                                            <option>Normal</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Marital Status</label>
-                                        <select
-                                            disabled
-                                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded focus:outline-none"
-                                        >
-                                            <option>Single</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Editable fields */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                                        <input
-                                            type="tel"
-                                            value={data.phone}
-                                            onChange={(e) => setData('phone', e.target.value)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Enter phone"
-                                        />
-                                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-                                    </div>
-
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
-                                        <input
-                                            type="text"
-                                            value={data.address}
-                                            onChange={(e) => setData('address', e.target.value)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Enter address"
-                                        />
-                                        {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Column: Official Info (Non-Editable) */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
+                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Official Academic Record</h3>
+                            </div>
+                            <div className="p-6 space-y-6">
+                                {/* Photo Display */}
+                                <div className="flex justify-center">
+                                    <div className="relative">
+                                        {photoPreview ? (
+                                            <img className="h-32 w-32 object-cover rounded-full border-4 border-white shadow-lg" src={photoPreview} alt="Profile" />
+                                        ) : auth.user.profile_photo_path ? (
+                                            <img className="h-32 w-32 object-cover rounded-full border-4 border-white shadow-lg" src={`/storage/${auth.user.profile_photo_path}`} alt="Profile" />
+                                        ) : (
+                                            <div className="h-32 w-32 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-4xl font-bold border-4 border-white shadow-lg">
+                                                {auth.user.name.charAt(0)}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
-                                <div className="mt-6 flex space-x-4">
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
-                                    >
-                                        {processing ? 'Saving...' : 'Save Changes'}
-                                    </button>
-                                    <Link
-                                        href={route('student.dashboard')}
-                                        className="px-6 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition"
-                                    >
-                                        Cancel
-                                    </Link>
-                                </div>
-                            </form>
-                        </div>
-                    )}
+                                <div className="space-y-4">
+                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                        <label className="text-xs font-semibold text-gray-500 uppercase">Student ID</label>
+                                        <div className="text-lg font-mono font-bold text-gray-900 mt-1">{student?.student_id || 'N/A'}</div>
+                                    </div>
 
-                    {activeTab === 'educational' && (
-                        <div>
-                            <h3 className="text-xl font-bold text-blue-600 mb-6 border-b pb-2">EDUCATIONAL INFORMATION</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Current Grade</label>
-                                    <input
-                                        type="text"
-                                        value={student?.grade?.name || 'N/A'}
-                                        readOnly
-                                        className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded"
-                                    />
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase">Full Name</label>
+                                        <div className="text-gray-900 font-medium bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">{auth.user.name}</div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase">Grade & Section</label>
+                                        <div className="text-gray-900 font-medium bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                                            {student?.grade?.name || 'N/A'} — {student?.section?.name || 'N/A'}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase">Gender</label>
+                                        <div className="text-gray-900 font-medium bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">{student?.gender || 'N/A'}</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Section</label>
-                                    <input
-                                        type="text"
-                                        value={student?.section?.name || 'N/A'}
-                                        readOnly
-                                        className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Student ID</label>
-                                    <input
-                                        type="text"
-                                        value={student?.student_id || 'N/A'}
-                                        readOnly
-                                        className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded"
-                                    />
+
+                                <div className="text-xs text-center text-gray-400">
+                                    These fields are managed by the administration and cannot be edited.
                                 </div>
                             </div>
                         </div>
-                    )}
-
-                    {/* Placeholder for other tabs */}
-                    {activeTab !== 'personal' && activeTab !== 'educational' && (
-                        <div className="text-center py-12 text-gray-500">
-                            <div className="text-5xl mb-4">🚧</div>
-                            <p className="text-lg">This section is under development</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Password Change Section */}
-            <div className="bg-white rounded-lg shadow-lg mt-6 overflow-hidden">
-                <div className="bg-red-500 text-white px-6 py-4">
-                    <h3 className="font-bold text-lg">Change Password</h3>
-                </div>
-                <form onSubmit={handlePasswordSubmit} className="p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
-                            <input
-                                type="password"
-                                value={passwordData.current_password}
-                                onChange={(e) => setPasswordData('current_password', e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
-                                required
-                            />
-                            {passwordErrors.current_password && <p className="text-red-500 text-xs mt-1">{passwordErrors.current_password}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
-                            <input
-                                type="password"
-                                value={passwordData.password}
-                                onChange={(e) => setPasswordData('password', e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
-                                required
-                            />
-                            {passwordErrors.password && <p className="text-red-500 text-xs mt-1">{passwordErrors.password}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
-                            <input
-                                type="password"
-                                value={passwordData.password_confirmation}
-                                onChange={(e) => setPasswordData('password_confirmation', e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
-                                required
-                            />
-                        </div>
                     </div>
 
-                    <div className="mt-6">
-                        <button
-                            type="submit"
-                            disabled={passwordProcessing}
-                            className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50"
-                        >
-                            {passwordProcessing ? 'Updating...' : 'Update Password'}
-                        </button>
+                    {/* Right Column: Editable Info */}
+                    <div className="lg:col-span-2">
+                        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="bg-blue-600 px-8 py-6">
+                                <h3 className="text-lg font-bold text-white">Edit Personal Information</h3>
+                                <p className="text-blue-100 text-sm mt-1">Update your contact details and profile photo</p>
+                            </div>
+
+                            <div className="p-8 space-y-6">
+                                {/* Profile Photo Upload */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Profile Photo Details</label>
+                                    <div className="flex items-center space-x-4">
+                                        <div className="grow">
+                                            <input
+                                                type="file"
+                                                id="photo-upload"
+                                                onChange={handlePhotoChange}
+                                                accept="image/jpeg,image/png,image/gif"
+                                                className="block w-full text-sm text-gray-500
+                                                    file:mr-4 file:py-2.5 file:px-4
+                                                    file:rounded-full file:border-0
+                                                    file:text-sm file:font-semibold
+                                                    file:bg-blue-50 file:text-blue-700
+                                                    hover:file:bg-blue-100
+                                                    cursor-pointer"
+                                            />
+                                            <p className="mt-2 text-xs text-gray-500 flex items-center">
+                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                Max size 1MB. Formats: JPG, PNG, GIF
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {errors.profile_photo && <p className="text-red-500 text-sm mt-2 font-medium">{errors.profile_photo}</p>}
+                                </div>
+
+                                <div className="border-t border-gray-100 my-6"></div>
+
+                                {/* Form Fields */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label htmlFor="national_id" className="block text-sm font-semibold text-gray-700">FAN National ID</label>
+                                        <input
+                                            type="text"
+                                            id="national_id"
+                                            value={data.national_id}
+                                            onChange={(e) => setData('national_id', e.target.value)}
+                                            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder-gray-400"
+                                            placeholder="e.g. 1234567890"
+                                        />
+                                        {errors.national_id && <p className="text-red-500 text-sm mt-1">{errors.national_id}</p>}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label htmlFor="phone" className="block text-sm font-semibold text-gray-700">Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            id="phone"
+                                            value={data.phone}
+                                            onChange={(e) => setData('phone', e.target.value)}
+                                            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder-gray-400"
+                                            placeholder="e.g. +1 234 567 8900"
+                                        />
+                                        {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                                    </div>
+
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label htmlFor="address" className="block text-sm font-semibold text-gray-700">Residential Address</label>
+                                        <input
+                                            type="text"
+                                            id="address"
+                                            value={data.address}
+                                            onChange={(e) => setData('address', e.target.value)}
+                                            className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder-gray-400"
+                                            placeholder="Street, City, Postal Code"
+                                        />
+                                        {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-gray-50 px-8 py-5 border-t border-gray-100 flex items-center justify-between">
+                                <p className="text-sm text-gray-500">
+                                    Last updated: <span className="font-medium text-gray-900">{new Date().toLocaleDateString()}</span>
+                                </p>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="px-8 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/30"
+                                >
+                                    {processing ? 'Saving Changes...' : 'Save Profile'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
             </div>
         </StudentLayout>
     );
