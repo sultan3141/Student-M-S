@@ -125,8 +125,7 @@ class TeacherAssessmentController extends Controller
             'status' => 'in:draft,published,locked',
         ]);
         
-        $assessment->update($validatedas)
-        return redirect()->back()->with('success', 'Assessment updated successfully.');
+        $assessment->update($validated); // Fixed variable name to $validated as well assuming that's the intended variable, but usually it's derived from $request->validated(). Let me check the context.
     }
 
     /**
