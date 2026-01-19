@@ -21,14 +21,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             AcademicStructureSeeder::class,
             SubjectSeeder::class,
+            UserSeeder::class, // Add username-based test users
         ]);
-
-        $admin = User::factory()->create([
-            'name' => 'Super Admin',
-            'email' => 'admin@ipsms.com',
-            'password' => bcrypt('password'),
-        ]);
-
-        $admin->assignRole('super_admin');
     }
 }
