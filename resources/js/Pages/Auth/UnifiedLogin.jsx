@@ -5,7 +5,7 @@ import GlassCard from '@/Components/Auth/GlassCard';
 import RoleBadge from '@/Components/Auth/RoleBadge';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 
-import schooLogoUrl from '/images/logo.png'; // Assuming logo exists, handle fallback if not
+// import schooLogoUrl from '/images/logo.png'; // Assuming logo exists, handle fallback if not
 
 export default function UnifiedLogin({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
