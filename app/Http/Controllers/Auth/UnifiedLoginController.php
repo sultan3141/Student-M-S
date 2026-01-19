@@ -37,7 +37,7 @@ class UnifiedLoginController extends Controller
         $user = Auth::user();
 
         if ($user->hasRole('admin')) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('director.dashboard');
         } elseif ($user->hasRole('registrar')) {
             return redirect()->route('registrar.dashboard');
         } elseif ($user->hasRole('teacher')) {
