@@ -11,7 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Already handled in create_users_table
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('username')->unique()->after('name');
+            $table->string('email')->nullable()->change();
+        });
     }
 
     /**
@@ -19,6 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Nothing to reverse
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('username');
+            $table->string('email')->nullable(false)->change();
+        });
     }
 };

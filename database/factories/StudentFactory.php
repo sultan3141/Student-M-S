@@ -17,7 +17,13 @@ class StudentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'user_id' => \App\Models\User::factory(),
+            'student_id' => fake()->unique()->numerify('STU####'),
+            'dob' => fake()->date(),
+            'gender' => fake()->randomElement(['Male', 'Female']),
+            // 'grade_id' => \App\Models\Grade::factory(), // Can allow null or factories if needed
+            // 'section_id' => \App\Models\Section::factory(),
+            // 'stream_id' => \App\Models\Stream::factory(),
         ];
     }
 }

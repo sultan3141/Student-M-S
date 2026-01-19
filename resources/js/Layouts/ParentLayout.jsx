@@ -1,147 +1,187 @@
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
-    HomeIcon,
-    UsersIcon,
+    UserGroupIcon,
+    CurrencyDollarIcon,
     AcademicCapIcon,
-    ChartBarIcon,
-    CalendarDaysIcon,
-    UserCircleIcon,
+    PhoneIcon,
+    LockClosedIcon,
     ArrowRightOnRectangleIcon,
     Bars3Icon,
-    XMarkIcon,
-    BellIcon,
-    ChatBubbleLeftRightIcon,
-    CreditCardIcon,
-    ClockIcon,
-    MagnifyingGlassIcon
+    XMarkIcon
 } from '@heroicons/react/24/outline';
+import ChangePasswordModal from '@/Components/ChangePasswordModal';
 
 export default function ParentLayout({ children }) {
-    const { auth } = usePage().props;
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { auth, students } = usePage().props;
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+    // Default to first student if available
+    const [selectedStudent, setSelectedStudent] = useState(students ? students[0] : null);
 
     const navigation = [
-        { name: 'Family Overview', href: route('parent.dashboard'), icon: HomeIcon, current: route().current('parent.dashboard') },
-        { name: 'My Children', href: '#', icon: UsersIcon, current: false },
-        { name: 'Academic Progress', href: '#', icon: ChartBarIcon, current: false },
-        { name: 'Attendance', href: '#', icon: ClockIcon, current: false },
-        { name: 'Fee Payments', href: '#', icon: CreditCardIcon, current: false },
-        { name: 'Messages', href: '#', icon: ChatBubbleLeftRightIcon, current: false },
+        { name: 'My Children', href: route('parent.dashboard'), icon: UserGroupIcon },
+        { name: 'Payment Info', href: route('parent.student.payments', selectedStudent?.id || students?.[0]?.id || 1), icon: CurrencyDollarIcon },
+        { name: 'Academic Info', href: route('parent.student.marks', selectedStudent?.id || students?.[0]?.id || 1), icon: AcademicCapIcon },
+        { name: 'School Contact', href: route('parent.school-contact'), icon: PhoneIcon },
     ];
-
-    const bottomNavigation = [
-        { name: 'My Profile', href: '#', icon: UserCircleIcon, current: false },
-    ];
-
-    function classNames(...classes) {
-        return classes.filter(Boolean).join(' ');
-    }
 
     return (
-        <div className="min-h-screen bg-[#F3F4F6] flex">
-            {/* Mobile Sidebar Overlay */}
-            {sidebarOpen && (
-                <div className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm md:hidden" onClick={() => setSidebarOpen(false)}></div>
-            )}
-
-            {/* Main Sidebar - Dark Purple Theme */}
-            <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#4C1D95] text-white transform transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                {/* Logo Section */}
-                <div className="h-16 flex items-center px-6 border-b border-purple-800/50">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center shadow-lg shadow-purple-900/50">
-                            <UsersIcon className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-lg font-bold tracking-wide text-purple-50">ParentPortal</span>
+        <div className="min-h-screen bg-gray-50 font-sans text-neutral-gray">
+            {/* Desktop Sidebar */}
+            <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
+                <div className="flex flex-col flex-grow border-r border-gray-200 pt-5 pb-4 overflow-y-auto" style={{ backgroundColor: '#3730a3' }}>
+                    <div className="flex flex-col flex-shrink-0 px-4 mb-8">
+                        <span className="text-xl font-bold text-white">School Portal</span>
+                        <span className="text-sm text-indigo-200 mt-1">{auth.user.name}</span>
                     </div>
-                    <button className="md:hidden ml-auto text-purple-200" onClick={() => setSidebarOpen(false)}>
-                        <XMarkIcon className="w-6 h-6" />
-                    </button>
-                </div>
 
-                <div className="flex flex-col h-[calc(100vh-4rem)] justify-between">
-                    {/* Top Navigation */}
-                    <nav className="flex-1 px-4 py-6 space-y-1">
-                        {navigation.map((item) => (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className={classNames(
-                                    item.current ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40' : 'text-purple-100 hover:bg-purple-700/50 hover:text-white',
-                                    'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200'
-                                )}
-                            >
-                                <item.icon className={classNames(item.current ? 'text-white' : 'text-purple-300 group-hover:text-white', 'mr-3 flex-shrink-0 h-5 w-5')} />
-                                {item.name}
-                            </Link>
-                        ))}
-                    </nav>
+                    <div className="flex-grow flex flex-col">
+                        <nav className="flex-1 px-2 space-y-1">
+                            {navigation.map((item) => (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className="group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
+                                >
+                                    <item.icon
+                                        className="mr-3 flex-shrink-0 h-5 w-5"
+                                        aria-hidden="true"
+                                    />
+                                    {item.name}
+                                </Link>
+                            ))}
+                        </nav>
+                    </div>
 
-                    {/* Bottom Navigation */}
-                    <div className="px-4 py-6 space-y-1 border-t border-purple-800/50">
-                        {bottomNavigation.map((item) => (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className={classNames(
-                                    item.current ? 'bg-purple-600 text-white' : 'text-purple-100 hover:bg-purple-700/50 hover:text-white',
-                                    'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200'
-                                )}
-                            >
-                                <item.icon className="mr-3 flex-shrink-0 h-5 w-5 text-purple-300 group-hover:text-white" />
-                                {item.name}
-                            </Link>
-                        ))}
-
+                    <div className="flex-shrink-0 px-2 space-y-1 border-t border-indigo-700 pt-4">
+                        <button
+                            onClick={() => setShowPasswordModal(true)}
+                            className="w-full group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
+                        >
+                            <LockClosedIcon className="mr-3 flex-shrink-0 h-5 w-5" aria-hidden="true" />
+                            Change Password
+                        </button>
                         <Link
                             href={route('logout')}
                             method="post"
                             as="button"
-                            className="w-full group flex items-center px-4 py-3 text-sm font-medium text-purple-200 rounded-xl hover:bg-purple-700/50 hover:text-white transition-all duration-200"
+                            className="w-full group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
                         >
-                            <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-5 w-5 text-purple-300 group-hover:text-white" />
-                            Log Out
+                            <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-5 w-5" aria-hidden="true" />
+                            Logout
                         </Link>
                     </div>
                 </div>
             </div>
 
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                {/* Top Header */}
-                <header className="bg-white border-b border-gray-200 shadow-sm h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center">
-                        <button onClick={() => setSidebarOpen(true)} className="md:hidden text-gray-500 hover:text-gray-700 mr-4">
-                            <Bars3Icon className="w-6 h-6" />
-                        </button>
-                        <h2 className="text-xl font-semibold text-gray-800 hidden sm:block">Family Dashboard</h2>
-                    </div>
+            {/* Mobile Sidebar Overlay */}
+            {showingNavigationDropdown && (
+                <>
+                    {/* Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 md:hidden"
+                        onClick={() => setShowingNavigationDropdown(false)}
+                    ></div>
 
-                    <div className="flex items-center space-x-4">
-                        <button className="relative p-2 text-gray-400 hover:text-purple-600 transition-colors">
-                            <BellIcon className="w-6 h-6" />
-                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
-                        </button>
+                    {/* Mobile Sidebar */}
+                    <div className="fixed inset-y-0 left-0 flex flex-col w-64 z-50 md:hidden">
+                        <div className="flex flex-col flex-grow border-r border-gray-200 pt-5 pb-4 overflow-y-auto" style={{ backgroundColor: '#3730a3' }}>
+                            {/* Header with Close Button */}
+                            <div className="flex items-center justify-between px-4 mb-8">
+                                <div className="flex flex-col">
+                                    <span className="text-xl font-bold text-white">School Portal</span>
+                                    <span className="text-sm text-indigo-200 mt-1">{auth.user.name}</span>
+                                </div>
+                                <button
+                                    onClick={() => setShowingNavigationDropdown(false)}
+                                    className="text-white hover:text-indigo-200"
+                                >
+                                    <XMarkIcon className="h-6 w-6" />
+                                </button>
+                            </div>
 
-                        <div className="h-8 w-px bg-gray-200 mx-2"></div>
+                            {/* Navigation Items */}
+                            <div className="flex-grow flex flex-col">
+                                <nav className="flex-1 px-2 space-y-1">
+                                    {navigation.map((item) => (
+                                        <Link
+                                            key={item.name}
+                                            href={item.href}
+                                            className="group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
+                                            onClick={() => setShowingNavigationDropdown(false)}
+                                        >
+                                            <item.icon
+                                                className="mr-3 flex-shrink-0 h-5 w-5"
+                                                aria-hidden="true"
+                                            />
+                                            {item.name}
+                                        </Link>
+                                    ))}
+                                </nav>
+                            </div>
 
-                        <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-700 mr-2 hidden sm:block">{auth.user.name}</span>
-                            <img
-                                className="w-8 h-8 rounded-full object-cover ring-2 ring-purple-500 shadow-sm"
-                                src={auth.user.profile_photo_url || `https://ui-avatars.com/api/?name=${auth.user.name}&background=8B5CF6&color=fff`}
-                                alt={auth.user.name}
-                            />
+                            {/* Bottom Actions */}
+                            <div className="flex-shrink-0 px-2 space-y-1 border-t border-indigo-700 pt-4">
+                                <button
+                                    onClick={() => {
+                                        setShowPasswordModal(true);
+                                        setShowingNavigationDropdown(false);
+                                    }}
+                                    className="w-full group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
+                                >
+                                    <LockClosedIcon className="mr-3 flex-shrink-0 h-5 w-5" aria-hidden="true" />
+                                    Change Password
+                                </button>
+                                <Link
+                                    href={route('logout')}
+                                    method="post"
+                                    as="button"
+                                    className="w-full group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
+                                >
+                                    <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-5 w-5" aria-hidden="true" />
+                                    Logout
+                                </Link>
+                            </div>
                         </div>
                     </div>
-                </header>
+                </>
+            )}
 
-                {/* Main Scrollable Content */}
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50">
-                    {children}
+            {/* Mobile Header & Content Wrapper */}
+            <div className="flex flex-col md:pl-64 flex-1">
+                <div className="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow md:hidden">
+                    <button
+                        type="button"
+                        className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-trust-blue md:hidden"
+                        onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}
+                    >
+                        <span className="sr-only">Open sidebar</span>
+                        <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+                    </button>
+                    <div className="flex-1 px-4 flex justify-between items-center text-trust-blue font-bold text-lg">
+                        Parent Portal
+                    </div>
+                </div>
+
+                <main className="flex-1">
+                    <div className="py-6">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                            {children}
+                        </div>
+                    </div>
                 </main>
             </div>
+
+            {/* Mobile Bottom Navigation (Optional fallback if Toggle is not sufficient) */}
+
+            {/* Change Password Modal */}
+            <ChangePasswordModal
+                show={showPasswordModal}
+                onClose={() => setShowPasswordModal(false)}
+                isFirstLogin={auth.user?.first_login || false}
+            />
         </div>
     );
 }

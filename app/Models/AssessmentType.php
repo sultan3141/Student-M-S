@@ -19,6 +19,8 @@ class AssessmentType extends Model
         'description',
     ];
 
+    public $timestamps = false;
+
     public function marks(): HasMany
     {
         return $this->hasMany(Mark::class);

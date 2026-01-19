@@ -42,6 +42,19 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->group(function (
     Route::patch('/profile', [\App\Http\Controllers\StudentProfileController::class, 'update'])->name('student.profile.update');
 });
 
+Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\ParentDashboardController::class, 'index'])->name('parent.dashboard');
+    Route::get('/student/{studentId}', [\App\Http\Controllers\ParentDashboardController::class, 'profile'])->name('parent.student.profile');
+    Route::get('/student/{studentId}/marks', [\App\Http\Controllers\ParentDashboardController::class, 'marks'])->name('parent.student.marks');
+    Route::get('/student/{studentId}/progress', [\App\Http\Controllers\ParentDashboardController::class, 'progress'])->name('parent.student.progress');
+    Route::get('/student/{studentId}/payments', [\App\Http\Controllers\ParentDashboardController::class, 'paymentHistory'])->name('parent.student.payments');
+    Route::get('/notifications', [\App\Http\Controllers\ParentDashboardController::class, 'notifications'])->name('parent.notifications');
+    Route::get('/school-contact', [\App\Http\Controllers\ParentDashboardController::class, 'schoolContact'])->name('parent.school-contact');
+    
+    Route::get('/settings/password', [\App\Http\Controllers\ParentSettingsController::class, 'edit'])->name('parent.settings.password');
+    Route::post('/settings/password', [\App\Http\Controllers\ParentSettingsController::class, 'updatePassword'])->name('parent.settings.password.update');
+});
+
 Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [\App\Http\Controllers\TeacherDashboardController::class, 'index'])->name('dashboard');
@@ -146,13 +159,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         return redirect()->route('director.dashboard');
     })->name('dashboard');
 });
-
-Route::middleware(['auth', 'role:parent'])->prefix('parent')->name('parent.')->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Parent/Dashboard');
-    })->name('dashboard');
-});
-
 
 // Emergency Quick Fix Route - VISIT THIS ONCE: http://localhost:8000/fix-user
 // Emergency Quick Fix Route - VISIT THIS ONCE: http://localhost:8000/fix-user

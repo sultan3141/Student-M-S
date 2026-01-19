@@ -18,6 +18,16 @@ class User extends Authenticatable
         return $this->hasOne(Student::class);
     }
 
+    public function parentProfile()
+    {
+        return $this->hasOne(ParentProfile::class, 'user_id');
+    }
+
+    public function isParent()
+    {
+        return $this->hasRole('parent'); // Assuming Spatie Permissions
+    }
+
     /**
      * The attributes that are mass assignable.
      *
