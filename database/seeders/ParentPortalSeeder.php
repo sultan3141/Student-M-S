@@ -19,10 +19,19 @@ class ParentPortalSeeder extends Seeder
     public function run(): void
     {
         // 1. Create Assessment Types
-        $types = ['Midterm', 'Test 1', 'Test 2', 'Assignment', 'Final'];
+        $types = [
+            'Midterm' => 20,
+            'Test 1' => 10,
+            'Test 2' => 10,
+            'Assignment' => 10,
+            'Final' => 50
+        ];
         $typeModels = [];
-        foreach ($types as $type) {
-            $typeModels[$type] = AssessmentType::firstOrCreate(['name' => $type]);
+        foreach ($types as $type => $weight) {
+            $typeModels[$type] = AssessmentType::firstOrCreate(
+                ['name' => $type],
+                ['weight_percentage' => $weight]
+            );
         }
 
         // 2. Create Academic Structure
