@@ -39,7 +39,7 @@ class UnifiedLoginController extends Controller
         if ($user->hasRole('super_admin')) {
             return redirect()->route('super_admin.dashboard');
         } elseif ($user->hasRole('admin')) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('director.dashboard');
         } elseif ($user->hasRole('registrar')) {
             return redirect()->route('registrar.dashboard');
         } elseif ($user->hasRole('teacher')) {
@@ -52,6 +52,7 @@ class UnifiedLoginController extends Controller
 
         // Default fallback
         return redirect()->intended(route('dashboard'));
+
     }
 
     /**

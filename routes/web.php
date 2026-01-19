@@ -115,9 +115,48 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     Route::get('/assignments/subjects', [\App\Http\Controllers\TeacherAssignmentController::class, 'getAssignedSubjects']);
 });
 
+// Director/Admin Routes
+Route::middleware(['auth', 'role:admin'])->prefix('director')->name('director.')->group(function () {
+    // Dashboard & Metrics
+    Route::get('/dashboard', [\App\Http\Controllers\DirectorDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/metrics/academic', [\App\Http\Controllers\DirectorDashboardController::class, 'getAcademicHealth'])->name('metrics.academic');
+    Route::get('/metrics/operational', [\App\Http\Controllers\DirectorDashboardController::class, 'getOperationalMetrics'])->name('metrics.operational');
+    Route::get('/metrics/financial', [\App\Http\Controllers\DirectorDashboardController::class, 'getFinancialOverview'])->name('metrics.financial');
+    
+    // Profile
+    Route::get('/profile', [\App\Http\Controllers\DirectorProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile/update', [\App\Http\Controllers\DirectorProfileController::class, 'update'])->name('profile.update');
+    Route::put('/password/update', [\App\Http\Controllers\DirectorProfileController::class, 'updatePassword'])->name('password.update');
+    
+    // Teacher Management
+    Route::resource('teachers', \App\Http\Controllers\DirectorTeacherController::class);
+    Route::get('/teachers/{id}/performance', [\App\Http\Controllers\DirectorTeacherController::class, 'getPerformanceMetrics'])->name('teachers.performance');
+    
+    // Academic Analytics  
+    Route::get('/academic/overview', [\App\Http\Controllers\DirectorAcademicController::class, 'getPerformanceOverview'])->name('academic.overview');
+    Route::get('/academic/grade/{grade}', [\App\Http\Controllers\DirectorAcademicController::class, 'getGradeAnalytics'])->name('academic.grade');
+    Route::get('/academic/heatmap', [\App\Http\Controllers\DirectorAcademicController::class, 'getSubjectHeatMap'])->name('academic.heatmap');
+    Route::post('/academic/export', [\App\Http\Controllers\DirectorAcademicController::class, 'exportAnalytics'])->name('academic.export');
+    
+    // Registration Control
+    Route::get('/registration/status', [\App\Http\Controllers\DirectorRegistrationController::class, 'getStatus'])->name('registration.status');
+    Route::post('/registration/toggle', [\App\Http\Controllers\DirectorRegistrationController::class, 'toggle'])->name('registration.toggle');
+    Route::get('/registration/stats', [\App\Http\Controllers\DirectorRegistrationController::class, 'getEnrollmentStats'])->name('registration.stats');
+    Route::post('/registration/process', [\App\Http\Controllers\DirectorRegistrationController::class, 'processApplications'])->name('registration.process');
+    
+    // Student Statistics
+    Route::get('/statistics/students', [\App\Http\Controllers\DirectorStudentStatisticsController::class, 'index'])->name('statistics.students');
+    Route::get('/statistics/students/data', [\App\Http\Controllers\DirectorStudentStatisticsController::class, 'getStatisticsJson'])->name('statistics.students.data');
+    
+    // Communication Center
+    Route::resource('announcements', \App\Http\Controllers\DirectorCommunicationController::class);
+    Route::get('/announcements/{id}/analytics', [\App\Http\Controllers\DirectorCommunicationController::class, 'getAnalytics'])->name('announcements.analytics');
+});
+
+// Legacy Admin Route (for backward compatibility)
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', function () {
-        return Inertia::render('Admin/Dashboard');
+        return redirect()->route('director.dashboard');
     })->name('dashboard');
 });
 
@@ -175,8 +214,11 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super_admin')->name('su
 
 
 // Emergency Quick Fix Route - VISIT THIS ONCE: http://localhost:8000/fix-user
+// Emergency Quick Fix Route - VISIT THIS ONCE: http://localhost:8000/fix-user
 Route::get('/fix-user', function () {
     try {
+        DB::beginTransaction();
+
         // 1. Force FRESH Migration (Clean Slate)
         \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
             '--force' => true,
@@ -197,21 +239,125 @@ Route::get('/fix-user', function () {
 
         $teacherUser = \App\Models\User::create(['name' => 'John Teacher', 'username' => 'teacher_john', 'password' => bcrypt('password')]);
         $teacherUser->assignRole('teacher');
-        \App\Models\Teacher::create(['user_id' => $teacherUser->id, 'employee_id' => 'T001', 'qualification' => 'M.Ed', 'specialization' => 'Math']);
+        $teacher = \App\Models\Teacher::create([
+            'user_id' => $teacherUser->id,
+            'employee_id' => 'T001',
+            'qualification' => 'M.Ed',
+            'specialization' => 'Math'
+        ]);
 
-        $studentUser = \App\Models\User::create(['name' => 'Alice Student', 'username' => 'student_alice', 'password' => bcrypt('password')]);
-        $studentUser->assignRole('student');
-        // create student record if needed
 
-        $parent = \App\Models\User::create(['name' => 'Mary Parent', 'username' => 'parent_mary', 'password' => bcrypt('password')]);
-        $parent->assignRole('parent');
+        // 4. Create Academic Structure
+        $year = \App\Models\AcademicYear::create([
+            'name' => '2025-2026',
+            'start_date' => '2025-09-01',
+            'end_date' => '2026-06-30',
+            'is_current' => true
+        ]);
 
-        $registrar = \App\Models\User::create(['name' => 'Jane Registrar', 'username' => 'registrar_jane', 'password' => bcrypt('password')]);
-        $registrar->assignRole('registrar');
+        $grades = [];
+        foreach (range(9, 12) as $level) {
+            $grades[$level] = \App\Models\Grade::create([
+                'name' => "Grade $level",
+                'level' => $level,
+                'stream' => 'General'
+            ]);
+        }
 
-        return "<h1>✅ SUCCESS!</h1><p>All users AND profiles created successfully.</p><a href='/login'>Go to Login</a>";
+        // 5. Create Sections
+        $sectionA = \App\Models\Section::create([
+            'name' => 'Section A',
+            'grade_id' => $grades[9]->id,
+            'capacity' => 40
+        ]);
+
+        $sectionB = \App\Models\Section::create([
+            'name' => 'Section B',
+            'grade_id' => $grades[9]->id,
+            'capacity' => 40
+        ]);
+
+        // 6. Create Subjects
+        $mathSubject = \App\Models\Subject::create([
+            'name' => 'Mathematics',
+            'code' => 'MATH9',
+            'credit_hours' => 4,
+            'description' => 'General Mathematics'
+        ]);
+        
+        $engSubject = \App\Models\Subject::create([
+            'name' => 'English',
+            'code' => 'ENG9',
+            'credit_hours' => 3,
+            'description' => 'English Language'
+        ]);
+
+        // 7. Assign Teacher to Classes (Crucial for Wizard)
+        \App\Models\TeacherAssignment::create([
+            'teacher_id' => $teacher->id,
+            'subject_id' => $mathSubject->id,
+            'grade_id' => $grades[9]->id,
+            'section_id' => $sectionA->id,
+            'academic_year_id' => $year->id
+        ]);
+
+        \App\Models\TeacherAssignment::create([
+            'teacher_id' => $teacher->id,
+            'subject_id' => $engSubject->id,
+            'grade_id' => $grades[9]->id,
+            'section_id' => $sectionB->id,
+            'academic_year_id' => $year->id
+        ]);
+
+        // 8. Create Assessment Types
+        $types = ['Midterm', 'Final', 'Test', 'Assignment'];
+        foreach ($types as $type) {
+            \App\Models\AssessmentType::create(['name' => $type, 'weight' => 25]);
+        }
+
+        // 9. Create Students
+        $students = [
+            ['Alice Smith', '9A01'],
+            ['Bob Jones', '9A02'],
+            ['Charlie Brown', '9A03'],
+            ['Diana Prince', '9A04'],
+            ['Evan Wright', '9A05'],
+        ];
+
+        foreach ($students as $data) {
+            $u = \App\Models\User::create([
+                'name' => $data[0],
+                'username' => strtolower(str_replace(' ', '_', $data[0])),
+                'password' => bcrypt('password')
+            ]);
+            $u->assignRole('student');
+            
+            \App\Models\Student::create([
+                'user_id' => $u->id,
+                'student_id' => $data[1],
+                'grade_id' => $grades[9]->id,
+                'section_id' => $sectionA->id,
+                'dob' => '2010-01-01',
+                'gender' => 'Other',
+                'address' => '123 School Lane'
+            ]);
+        }
+        
+        DB::commit();
+
+        return "<h1>✅ SUPER FIX SUCCESS!</h1>
+        <p>Created:</p>
+        <ul>
+            <li>Teacher: John Teacher (teacher_john / password)</li>
+            <li>Grade: 9 (with Section A & B)</li>
+            <li>Subject: Math & English</li>
+            <li>Assignment: Teacher John -> Grade 9 -> Section A -> Math</li>
+            <li>Students: 5 students in Section A</li>
+        </ul>
+        <a href='/login'>Go to Login</a>";
         
     } catch (\Throwable $e) {
+        DB::rollBack();
         return "<h1>❌ ERROR!</h1><pre>" . $e->getMessage() . "</pre><br><pre>" . $e->getTraceAsString() . "</pre>";
     }
 });
