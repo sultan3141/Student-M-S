@@ -1,0 +1,300 @@
+/* Director Dashboard Executive Theme */
+
+:root {
+    /* Executive Color Palette */
+    --director-navy-900: #0F172A;
+    --director-navy-800: #1E293B;
+    --director-navy-700: #334155;
+
+    --director-gold-600: #D4AF37;
+    --director-gold-500: #E5C158;
+    --director-gold-400: #F0D488;
+
+    --director-blue-900: #1E3A8A;
+    --director-blue-700: #1E40AF;
+    --director-blue-500: #3B82F6;
+
+    --director-emerald: #059669;
+    --director-amber: #F59E0B;
+    --director-crimson: #DC2626;
+
+    /* Neutral Sophistication */
+    --director-bg: #F8FAFC;
+    --director-card-bg: #FFFFFF;
+    --director-border: rgba(30, 64, 175, 0.1);
+    --director-text-primary: #0F172A;
+    --director-text-secondary: #475569;
+    --director-text-accent: #1E40AF;
+}
+
+/* Utility Classes for Director Theme */
+.bg-navy-900 {
+    background-color: var(--director-navy-900);
+}
+
+.bg-navy-800 {
+    background-color: var(--director-navy-800);
+}
+
+.bg-navy-700 {
+    background-color: var(--director-navy-700);
+}
+
+.text-navy-900 {
+    color: var(--director-navy-900);
+}
+
+.text-gold-400 {
+    color: var(--director-gold-400);
+}
+
+.text-gold-500 {
+    color: var(--director-gold-500);
+}
+
+.text-gold-600 {
+    color: var(--director-gold-600);
+}
+
+.bg-gold-400 {
+    background-color: var(--director-gold-400);
+}
+
+.bg-gold-500 {
+    background-color: var(--director-gold-500);
+}
+
+.bg-gold-600 {
+    background-color: var(--director-gold-600);
+}
+
+.border-gold-500\/20 {
+    border-color: rgba(229, 193, 88, 0.2);
+}
+
+.border-gold-500\/30 {
+    border-color: rgba(229, 193, 88, 0.3);
+}
+
+.from-navy-900 {
+    --tw-gradient-from: var(--director-navy-900);
+}
+
+.to-navy-800 {
+    --tw-gradient-to: var(--director-navy-800);
+}
+
+.from-gold-400 {
+    --tw-gradient-from: var(--director-gold-400);
+}
+
+.to-gold-600 {
+    --tw-gradient-to: var(--director-gold-600);
+}
+
+.ring-gold-500 {
+    --tw-ring-color: var(--director-gold-500);
+}
+
+.ring-navy-900 {
+    --tw-ring-color: var(--director-navy-900);
+}
+
+/* Frosted Glass Effect */
+.glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+}
+
+.glass-dark {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+/* Executive Card Styles */
+.executive-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid var(--director-border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.executive-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    border-color: var(--director-gold-500);
+}
+
+/* Metric Card with Gradient */
+.metric-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+    border-radius: 16px;
+    padding: 24px;
+    color: white;
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+/* Gold Accent Border */
+.gold-border {
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+        linear-gradient(135deg, var(--director-gold-400), var(--director-gold-600)) border-box;
+}
+
+/* Premium Button */
+.btn-executive {
+    background: linear-gradient(135deg, var(--director-navy-900), var(--director-navy-800));
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    border: 1px solid var(--director-gold-500);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.3);
+}
+
+.btn-executive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.4);
+    border-color: var(--director-gold-400);
+}
+
+/* Status Badges */
+.badge-success {
+    background: linear-gradient(135deg, #059669, #10B981);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-warning {
+    background: linear-gradient(135deg, #F59E0B, #FBBF24);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-danger {
+    background: linear-gradient(135deg, #DC2626, #EF4444);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Smooth Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* ============================================
+   LEFT SIDEBAR NAVIGATION
+   ============================================ */
+
+.director-sidebar {
+    background: linear-gradient(180deg, #1e3a8a 0%, #0F172A 100%);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.sidebar-nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #D4AF37;
+    transform: translateX(4px);
+}
+
+.sidebar-nav-item.active {
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%);
+    color: #D4AF37;
+    border-left: 3px solid #D4AF37;
+    padding-left: 13px;
+}
+
+.sidebar-nav-item svg {
+    flex-shrink: 0;
+}
+
+/* Sidebar scrollbar */
+.director-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.director-sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.director-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.3);
+    border-radius: 3px;
+}
+
+.director-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.5);
+}
+
+.shimmer {
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(212, 175, 55, 0.2) 50%,
+            transparent 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+}

@@ -11,7 +11,10 @@ class TeacherDashboardController extends Controller
 {
     public function index()
     {
-        $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
+        $teacher = Teacher::firstOrCreate(
+            ['user_id' => Auth::id()],
+            ['employee_id' => 'EMP'.Auth::id(), 'qualification' => 'PhD', 'specialization' => 'General']
+        );
         
         // Mock data for demonstration
         $totalStudents = 150;

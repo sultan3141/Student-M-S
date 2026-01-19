@@ -1,141 +1,153 @@
-import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    HomeIcon,
+    AcademicCapIcon,
+    BookOpenIcon,
+    ChartBarIcon,
+    CalendarDaysIcon,
+    UserCircleIcon,
+    ArrowRightOnRectangleIcon,
+    Bars3Icon,
+    XMarkIcon,
+    BellIcon,
+    MagnifyingGlassIcon
+} from '@heroicons/react/24/outline';
 
-export default function StudentLayout({ children, auth, title, student }) {
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+export default function StudentLayout({ children }) {
+    const { auth } = usePage().props;
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    const navigation = [
+        { name: 'My Dashboard', href: route('student.dashboard'), icon: HomeIcon, current: route().current('student.dashboard') },
+        { name: 'My Courses', href: '#', icon: BookOpenIcon, current: false },
+        { name: 'Grades & Reports', href: '#', icon: ChartBarIcon, current: false },
+        { name: 'Class Schedule', href: '#', icon: CalendarDaysIcon, current: false },
+        { name: 'Assignments', href: '#', icon: AcademicCapIcon, current: false },
+    ];
+
+    const bottomNavigation = [
+        { name: 'My Profile', href: route('student.profile.edit'), icon: UserCircleIcon, current: route().current('student.profile.*') },
+    ];
+
+    function classNames(...classes) {
+        return classes.filter(Boolean).join(' ');
+    }
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            {/* Top Green Header */}
-            <div className="bg-green-600 text-white px-6 py-3 flex items-center justify-between shadow-md">
-                <div className="flex items-center space-x-4">
-                    <button
-                        onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                        className="text-white hover:bg-green-700 p-2 rounded"
-                    >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
-                    <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                            <span className="text-green-600 font-bold text-sm">IP</span>
+        <div className="min-h-screen bg-[#F3F4F6] flex">
+            {/* Mobile Sidebar Overlay */}
+            {sidebarOpen && (
+                <div className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm md:hidden" onClick={() => setSidebarOpen(false)}></div>
+            )}
+
+            {/* Main Sidebar - Dark Green Theme */}
+            <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#064E3B] text-white transform transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                {/* Logo Section */}
+                <div className="h-16 flex items-center px-6 border-b border-emerald-800/50">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg">
+                            <AcademicCapIcon className="w-5 h-5 text-white" />
                         </div>
-                        <span className="font-bold text-lg">IPSMS</span>
+                        <span className="text-lg font-bold tracking-wide text-emerald-50">StudentPanel</span>
                     </div>
-                    <div className="ml-8 flex items-center space-x-6">
-                        <Link href={route('student.dashboard')} className="hover:text-green-200 transition">Home</Link>
-                        <Link href="#" className="hover:text-green-200 transition">Contact</Link>
-                    </div>
+                    <button className="md:hidden ml-auto text-emerald-200" onClick={() => setSidebarOpen(false)}>
+                        <XMarkIcon className="w-6 h-6" />
+                    </button>
                 </div>
-                <div className="flex items-center space-x-4">
-                    <button className="relative hover:bg-green-700 p-2 rounded">
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-                        </svg>
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
-                    <button className="hover:bg-green-700 p-2 rounded">
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
-                        </svg>
-                    </button>
-                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border-2 border-green-400">
-                        <span className="text-green-600 font-bold">{auth?.user?.name?.charAt(0) || 'S'}</span>
+
+                <div className="flex flex-col h-[calc(100vh-4rem)] justify-between">
+                    {/* Top Navigation */}
+                    <nav className="flex-1 px-4 py-6 space-y-1">
+                        {navigation.map((item) => (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className={classNames(
+                                    item.current ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50' : 'text-emerald-100 hover:bg-emerald-700/50 hover:text-white',
+                                    'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200'
+                                )}
+                            >
+                                <item.icon className={classNames(item.current ? 'text-white' : 'text-emerald-300 group-hover:text-white', 'mr-3 flex-shrink-0 h-5 w-5')} />
+                                {item.name}
+                            </Link>
+                        ))}
+                    </nav>
+
+                    {/* Bottom Navigation */}
+                    <div className="px-4 py-6 space-y-1 border-t border-emerald-800/50">
+                        {bottomNavigation.map((item) => (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className={classNames(
+                                    item.current ? 'bg-emerald-600 text-white' : 'text-emerald-100 hover:bg-emerald-700/50 hover:text-white',
+                                    'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200'
+                                )}
+                            >
+                                <item.icon className="mr-3 flex-shrink-0 h-5 w-5 text-emerald-300 group-hover:text-white" />
+                                {item.name}
+                            </Link>
+                        ))}
+
+                        <Link
+                            href={route('logout')}
+                            method="post"
+                            as="button"
+                            className="w-full group flex items-center px-4 py-3 text-sm font-medium text-emerald-200 rounded-xl hover:bg-emerald-700/50 hover:text-white transition-all duration-200"
+                        >
+                            <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-5 w-5 text-emerald-300 group-hover:text-white" />
+                            Log Out
+                        </Link>
                     </div>
                 </div>
             </div>
 
-            <div className="flex">
-                {/* Green Sidebar */}
-                <div className={`bg-green-600 text-white transition-all duration-300 ${sidebarCollapsed ? 'w-0' : 'w-64'} overflow-hidden`}>
-                    <div className="p-4">
-                        {/* Manage Student Header */}
-                        <div className="bg-green-700 rounded px-4 py-3 mb-2 flex items-center space-x-2">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
-                            </svg>
-                            <span className="font-semibold">Manage Student</span>
-                            <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                {/* Top Header */}
+                <header className="bg-white border-b border-gray-200 shadow-sm h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center">
+                        <button onClick={() => setSidebarOpen(true)} className="md:hidden text-gray-500 hover:text-gray-700 mr-4">
+                            <Bars3Icon className="w-6 h-6" />
+                        </button>
+                        <h2 className="text-xl font-semibold text-gray-800 hidden sm:block">Student Portal</h2>
+                    </div>
+
+                    <div className="flex items-center space-x-4">
+                        <div className="hidden md:block relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                                type="text"
+                                className="block w-64 pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors"
+                                placeholder="Search courses..."
+                            />
                         </div>
 
-                        {/* Navigation Links - FR-01 to FR-12 */}
-                        <nav className="space-y-1">
-                            <Link
-                                href={route('student.dashboard')}
-                                className={`flex items-center space-x-3 px-4 py-2 rounded hover:bg-green-700 transition ${title === 'Student Dashboard' ? 'bg-green-700' : ''}`}
-                            >
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-                                </svg>
-                                <span>Dashboard</span>
-                            </Link>
+                        <button className="relative p-2 text-gray-400 hover:text-emerald-600 transition-colors">
+                            <BellIcon className="w-6 h-6" />
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+                        </button>
 
-                            <Link
-                                href={route('student.admission.form')}
-                                className={`flex items-center space-x-3 px-4 py-2 rounded hover:bg-green-700 transition ${title === 'Admission Application' ? 'bg-green-700' : ''}`}
-                            >
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                                    <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
-                                </svg>
-                                <span>Application</span>
-                            </Link>
+                        <div className="h-8 w-px bg-gray-200 mx-2"></div>
 
-                            <Link
-                                href={route('student.registration.form')}
-                                className={`flex items-center space-x-3 px-4 py-2 rounded hover:bg-green-700 transition ${title === 'Annual Registration' ? 'bg-green-700' : ''}`}
-                            >
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                                </svg>
-                                <span>Registration</span>
-                            </Link>
-
-                            <Link
-                                href={route('student.grade-audit')}
-                                className={`flex items-center space-x-3 px-4 py-2 rounded hover:bg-green-700 transition ${title === 'Grade Audit' ? 'bg-green-700' : ''}`}
-                            >
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-                                </svg>
-                                <span>Course Audit</span>
-                            </Link>
-
-                            <Link
-                                href={route('student.profile.edit')}
-                                className={`flex items-center space-x-3 px-4 py-2 rounded hover:bg-green-700 transition ${title === 'Edit Profile' ? 'bg-green-700' : ''}`}
-                            >
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                                </svg>
-                                <span>Profile</span>
-                            </Link>
-                        </nav>
-                    </div>
-                </div>
-
-                {/* Main Content */}
-                <div className="flex-1">
-                    {/* Breadcrumb */}
-                    <div className="bg-white px-6 py-3 border-b flex items-center justify-between">
-                        <div className="flex items-center space-x-2 text-sm text-gray-600">
-                            <Link href={route('student.dashboard')} className="text-blue-600 hover:underline">Home</Link>
-                            <span>/</span>
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                <path fillRule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                            </svg>
+                        <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-700 mr-2 hidden sm:block">{auth.user.name}</span>
+                            <img
+                                className="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-500 shadow-sm"
+                                src={auth.user.profile_photo_url || `https://ui-avatars.com/api/?name=${auth.user.name}&background=10B981&color=fff`}
+                                alt={auth.user.name}
+                            />
                         </div>
                     </div>
+                </header>
 
-                    {/* Page Content */}
-                    <div className="p-6">
-                        {children}
-                    </div>
-                </div>
+                {/* Main Scrollable Content */}
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50">
+                    {children}
+                </main>
             </div>
         </div>
     );

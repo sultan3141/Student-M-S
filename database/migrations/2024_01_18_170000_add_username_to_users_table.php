@@ -12,14 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Add username column (unique and required)
-            $table->string('username')->unique()->after('id');
-            
-            // Make email nullable (or drop it completely if not needed)
+            $table->string('username')->unique()->after('name');
             $table->string('email')->nullable()->change();
-            
-            // Drop unique constraint on email if it exists
-            $table->dropUnique(['email']);
         });
     }
 
@@ -31,7 +25,6 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('username');
             $table->string('email')->nullable(false)->change();
-            $table->unique('email');
         });
     }
 };
