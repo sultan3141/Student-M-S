@@ -34,6 +34,24 @@ Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(functi
     Route::resource('payments', \App\Http\Controllers\RegistrarPaymentController::class)
         ->only(['index', 'create', 'store'])
         ->names('registrar.payments');
+
+    // Guardian Management
+    Route::get('/guardians', [\App\Http\Controllers\RegistrarGuardianController::class, 'index'])->name('registrar.guardians.index');
+    Route::post('/guardians/link', [\App\Http\Controllers\RegistrarGuardianController::class, 'link'])->name('registrar.guardians.link');
+
+    // Application Monitor
+    Route::get('/completion', [\App\Http\Controllers\RegistrarCompletionController::class, 'index'])->name('registrar.completion.index');
+
+    // Academic Year Manager
+    Route::get('/academic', [\App\Http\Controllers\RegistrarAcademicYearController::class, 'index'])->name('registrar.academic.index');
+    Route::post('/academic/promote', [\App\Http\Controllers\RegistrarAcademicYearController::class, 'promote'])->name('registrar.academic.promote');
+
+    // Reporting Center
+    Route::get('/reports', [\App\Http\Controllers\RegistrarReportController::class, 'index'])->name('registrar.reports.index');
+    Route::post('/reports/generate', [\App\Http\Controllers\RegistrarReportController::class, 'generate'])->name('registrar.reports.generate');
+
+    // Audit Log
+    Route::get('/audit', [\App\Http\Controllers\RegistrarAuditController::class, 'index'])->name('registrar.audit.index');
 });
 
 Route::middleware(['auth', 'role:student'])->prefix('student')->group(function () {
