@@ -1,50 +1,175 @@
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import TeacherLayout from '@/Layouts/TeacherLayout';
-import MarkEntryTable from '@/Components/Marks/MarkEntryTable';
-import { ChevronRightIcon } from '@heroicons/react/24/outline';
+import ModernMarkTable from '@/Components/Marks/ModernMarkTable';
+import BulkOperationsPanel from '@/Components/Marks/BulkOperationsPanel';
+import PerformancePreview from '@/Components/Marks/PerformancePreview';
+import {
+    ChevronRightIcon,
+    ArrowUpTrayIcon,
+    ClipboardDocumentIcon,
+    Cog6ToothIcon,
+    ChartBarIcon,
+    BookmarkIcon
+} from '@heroicons/react/24/outline';
 
-export default function Entry({ classId, subject, assessmentType, students, semester, academicYear }) {
+export default function Entry({ assessment, students, subject, semester }) {
+    const [showBulkOps, setShowBulkOps] = useState(false);
+    const [showPerformance, setShowPerformance] = useState(true);
+
+    const { data, setData, post, processing } = useForm({
+        assessment_id: assessment.id,
+        marks: [],
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        post(route('teacher.marks.store'));
+    };
+
+    // Calculate stats for bottom bar
+    const enteredCount = data.marks?.filter(m => m.marks_obtained !== null && m.marks_obtained !== '').length || 0;
+    const totalCount = students.length;
+    const completionPercentage = totalCount > 0 ? Math.round((enteredCount / totalCount) * 100) : 0;
+
+    const marks = data.marks?.map(m => m.marks_obtained) || [];
+    const validMarks = marks.filter(m => m !== null && m !== '' && m !== undefined);
+    const average = validMarks.length > 0
+        ? (validMarks.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / validMarks.length).toFixed(1)
+        : 0;
+
     return (
         <TeacherLayout>
-            <Head title={`Enter Marks - ${subject}`} />
+            <Head title={`Enter Marks - ${assessment.name}`} />
 
             {/* Header Area with Gradient */}
             <div className="bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] shadow-md mb-8 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8">
                 {/* Breadcrumb */}
                 <div className="flex items-center text-sm text-blue-100/80 mb-4">
-                    <span className="hover:text-white transition-colors cursor-pointer">Marks</span>
+                    <span className="hover:text-white transition-colors cursor-pointer">Grade {assessment.grade?.name || 'N/A'}</span>
+                    <ChevronRightIcon className="w-4 h-4 mx-2 text-white/50" />
+                    <span className="hover:text-white transition-colors cursor-pointer">Section {assessment.section?.name || 'N/A'}</span>
                     <ChevronRightIcon className="w-4 h-4 mx-2 text-white/50" />
                     <span className="hover:text-white transition-colors cursor-pointer">{subject}</span>
                     <ChevronRightIcon className="w-4 h-4 mx-2 text-white/50" />
-                    <span className="font-semibold text-white">{assessmentType.name}</span>
+                    <span className="font-semibold text-white">{assessment.name}</span>
                 </div>
 
                 {/* Header Content */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight">Enter Marks</h1>
+                        <h1 className="text-3xl font-bold text-white tracking-tight">📊 Enter Marks</h1>
                         <p className="text-blue-100 mt-1">
-                            {subject} • Semester {semester} • {academicYear}
+                            {subject} • Semester {semester} • {students.length} Students
                         </p>
                     </div>
                     <div className="flex items-center space-x-3 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20 shadow-lg">
-                        <span className="text-white font-medium">{assessmentType.name}</span>
+                        <span className="text-white font-medium">{assessment.name}</span>
                         <span className="px-2 py-0.5 bg-white text-[#1E40AF] text-xs font-bold rounded-full">
-                            {assessmentType.weight_percentage}% Weight
+                            {assessment.weight}% Weight
                         </span>
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-6">
-                <MarkEntryTable
-                    students={students}
-                    subject={subject}
-                    assessmentType={assessmentType}
-                    semester={semester}
-                    academicYear={academicYear}
-                />
+            {/* Quick Actions Toolbar */}
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+                <button
+                    onClick={() => setShowBulkOps(!showBulkOps)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition-colors ${showBulkOps ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border-2 border-blue-200 hover:bg-blue-50'
+                        }`}
+                >
+                    <ArrowUpTrayIcon className="w-5 h-5" />
+                    <span>Import CSV</span>
+                </button>
+
+                <button
+                    onClick={() => setShowBulkOps(!showBulkOps)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-white text-green-600 border-2 border-green-200 rounded-lg font-semibold hover:bg-green-50 transition-colors"
+                >
+                    <ClipboardDocumentIcon className="w-5 h-5" />
+                    <span>Paste Data</span>
+                </button>
+
+                <button
+                    onClick={() => setShowPerformance(!showPerformance)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition-colors ${showPerformance ? 'bg-purple-600 text-white' : 'bg-white text-purple-600 border-2 border-purple-200 hover:bg-purple-50'
+                        }`}
+                >
+                    <ChartBarIcon className="w-5 h-5" />
+                    <span>Stats</span>
+                </button>
+
+                <button className="flex items-center space-x-2 px-4 py-2 bg-white text-gray-600 border-2 border-gray-200 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                    <BookmarkIcon className="w-5 h-5" />
+                    <span>Save Draft</span>
+                </button>
+
+                <button className="flex items-center space-x-2 px-4 py-2 bg-white text-gray-600 border-2 border-gray-200 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                    <Cog6ToothIcon className="w-5 h-5" />
+                    <span>Settings</span>
+                </button>
             </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Bulk Operations Panel */}
+                {showBulkOps && (
+                    <BulkOperationsPanel
+                        assessmentId={assessment.id}
+                        onImportComplete={() => window.location.reload()}
+                    />
+                )}
+
+                {/* Performance Preview */}
+                {showPerformance && (
+                    <PerformancePreview marks={marks} />
+                )}
+
+                {/* Modern Mark Table */}
+                <ModernMarkTable
+                    students={students}
+                    data={data}
+                    setData={setData}
+                    maxScore={assessment.max_score || 100}
+                />
+
+                {/* Bottom Stats Bar */}
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center space-x-6">
+                            <div>
+                                <p className="text-blue-100 text-sm">Entered</p>
+                                <p className="text-2xl font-bold">{enteredCount}/{totalCount}</p>
+                            </div>
+                            <div>
+                                <p className="text-blue-100 text-sm">Average</p>
+                                <p className="text-2xl font-bold">{average}%</p>
+                            </div>
+                            <div>
+                                <p className="text-blue-100 text-sm">Progress</p>
+                                <p className="text-2xl font-bold">{completionPercentage}%</p>
+                            </div>
+                        </div>
+
+                        <div className="flex space-x-3">
+                            <button
+                                type="button"
+                                onClick={() => window.history.back()}
+                                className="px-6 py-3 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 transition-colors"
+                            >
+                                ← Back
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg"
+                            >
+                                {processing ? 'Saving...' : 'Submit All Marks →'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </TeacherLayout>
     );
 }

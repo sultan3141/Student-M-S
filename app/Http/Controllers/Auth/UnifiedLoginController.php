@@ -37,15 +37,15 @@ class UnifiedLoginController extends Controller
         $user = Auth::user();
 
         if ($user->hasRole('admin')) {
-            return redirect()->intended(Route::has('admin.dashboard') ? route('admin.dashboard') : '/dashboard');
+            return redirect()->route('admin.dashboard');
         } elseif ($user->hasRole('registrar')) {
-            return redirect()->intended(route('registrar.dashboard'));
+            return redirect()->route('registrar.dashboard');
         } elseif ($user->hasRole('teacher')) {
-            return redirect()->intended(route('teacher.dashboard'));
+            return redirect()->route('teacher.dashboard');
         } elseif ($user->hasRole('student') || $user->student) {
-            return redirect()->intended(route('student.dashboard'));
+            return redirect()->route('student.dashboard');
         } elseif ($user->hasRole('parent')) {
-            return redirect()->intended(route('parent.dashboard'));
+            return redirect()->route('parent.dashboard');
         }
 
         // Default fallback
