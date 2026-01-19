@@ -125,7 +125,7 @@ class TeacherAssessmentController extends Controller
             'status' => 'in:draft,published,locked',
         ]);
         
-        $assessment->update($validatedas)
+        $assessment->update($validated);
         return redirect()->back()->with('success', 'Assessment updated successfully.');
     }
 

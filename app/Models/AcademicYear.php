@@ -9,4 +9,6 @@ class AcademicYear extends Model
 {
     /** @use HasFactory<\Database\Factories\AcademicYearFactory> */
     use HasFactory;
+
+    protected $fillable = ['name', 'start_date', 'end_date', 'is_current'];
 }
