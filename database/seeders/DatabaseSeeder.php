@@ -21,7 +21,12 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             AcademicStructureSeeder::class,
             SubjectSeeder::class,
-            UserSeeder::class, // Add username-based test users
+            UserSeeder::class,
+            FixStudentAliceSeeder::class,
+            TeacherSeeder::class,
+            ParentPortalSeeder::class,
+            StudentMarksSeeder::class,
+            StudentReportSeeder::class,
         ]);
 
         // Create Director User

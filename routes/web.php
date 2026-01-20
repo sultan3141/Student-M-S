@@ -17,6 +17,10 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     $user = Auth::user();
 
+    if ($user->hasRole('super_admin')) {
+        return redirect()->route('super_admin.dashboard');
+    }
+
     if ($user->hasRole('student')) {
         return redirect()->route('student.dashboard');
     }
@@ -183,7 +187,7 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
 });
 
 // Director/Admin Routes
-Route::middleware(['auth', 'role:admin'])->prefix('director')->name('director.')->group(function () {
+Route::middleware(['auth', 'role:school_director|admin'])->prefix('director')->name('director.')->group(function () {
     // Dashboard & Metrics
     Route::get('/dashboard', [\App\Http\Controllers\DirectorDashboardController::class, 'index'])->name('dashboard');
     Route::get('/metrics/academic', [\App\Http\Controllers\DirectorDashboardController::class, 'getAcademicHealth'])->name('metrics.academic');
@@ -221,7 +225,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('director')->name('director.')
 });
 
 // Legacy Admin Route (for backward compatibility)
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', function () {
         return redirect()->route('director.dashboard');
     })->name('dashboard');

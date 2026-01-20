@@ -73,7 +73,7 @@ class StudentController extends Controller
         
         $average = $student->marks()
             ->where('academic_year_id', $academicYear->id)
-            ->avg('score_obtained');
+            ->avg('score');
         
         return $average ? round($average / 25, 2) : 0; // Convert to 4.0 scale
     }
@@ -124,7 +124,7 @@ class StudentController extends Controller
         if ($assessmentIds->isEmpty()) return 0;
 
         // Count how many have NO mark for this student
-        $submittedCount = \App\Models\StudentMark::where('student_id', $student->id)
+        $submittedCount = \App\Models\Mark::where('student_id', $student->id)
             ->whereIn('assessment_id', $assessmentIds)
             ->count();
             
