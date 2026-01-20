@@ -92,6 +92,7 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/profile', [\App\Http\Controllers\StudentProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [\App\Http\Controllers\StudentProfileController::class, 'update'])->name('profile.update');
     Route::get('/password', [\App\Http\Controllers\StudentProfileController::class, 'editPassword'])->name('password.edit');
+    Route::patch('/password', [\App\Http\Controllers\StudentProfileController::class, 'updatePassword'])->name('password.update');
     
 
 

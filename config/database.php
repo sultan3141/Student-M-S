@@ -96,6 +96,11 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'options' => [
+                \PDO::ATTR_PERSISTENT => true, // Enable persistent connections
+                \PDO::ATTR_TIMEOUT => 5, // 5 second timeout
+                \PDO::ATTR_EMULATE_PREPARES => true,
+            ],
         ],
 
         'sqlsrv' => [

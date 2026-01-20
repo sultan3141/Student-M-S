@@ -17,6 +17,7 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->enum('status', ['active', 'inactive', 'planned'])->default('planned');
+            $table->boolean('is_current')->default(false);
             $table->timestamps();
         });
 

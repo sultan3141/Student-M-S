@@ -37,11 +37,22 @@ class StudentProfileController extends Controller
         }
 
         // Update Student Record
-        $student->update([
-            'address' => $validated['address'] ?? $student->address,
-            'phone' => $validated['phone'] ?? $student->phone,
-            'national_id' => $validated['national_id'] ?? $student->national_id,
-        ]);
+        // Update or Create Student Record
+        if (!$student) {
+            $student = $user->student()->create([
+                'user_id' => $user->id,
+                'address' => $validated['address'],
+                'phone' => $validated['phone'],
+                'national_id' => $validated['national_id'],
+                'gender' => 'female', // Defaulting to female for now as the form lacks this field and user is Alice
+            ]);
+        } else {
+            $student->update([
+                'address' => $validated['address'] ?? $student->address,
+                'phone' => $validated['phone'] ?? $student->phone,
+                'national_id' => $validated['national_id'] ?? $student->national_id,
+            ]);
+        }
 
         return back()->with('success', 'Profile updated successfully.');
     }
@@ -49,5 +60,25 @@ class StudentProfileController extends Controller
     public function editPassword()
     {
         return Inertia::render('Student/Profile/Password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = auth()->user();
+
+        if (!\Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        }
+
+        $user->update([
+            'password' => \Hash::make($validated['password']),
+        ]);
+
+        return back()->with('success', 'Password changed successfully.');
     }
 }

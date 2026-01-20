@@ -51,6 +51,17 @@ class UserSeeder extends Seeder
             ]
         );
         $teacher1->assignRole('teacher');
+        
+        // Create teacher record for John
+        \App\Models\Teacher::updateOrCreate(
+            ['user_id' => $teacher1->id],
+            [
+                'employee_id' => 'TCH-2024-001',
+                'specialization' => 'Mathematics',
+                'phone' => '0911111111',
+                'department' => 'Science',
+            ]
+        );
 
         $teacher2 = User::firstOrCreate(
             ['username' => 't_sarah'],
@@ -61,6 +72,17 @@ class UserSeeder extends Seeder
             ]
         );
         $teacher2->assignRole('teacher');
+        
+        // Create teacher record for Sarah
+        \App\Models\Teacher::updateOrCreate(
+            ['user_id' => $teacher2->id],
+            [
+                'employee_id' => 'TCH-2024-002',
+                'specialization' => 'English',
+                'phone' => '0922222222',
+                'department' => 'Languages',
+            ]
+        );
 
         // Student Users
         $student1 = User::firstOrCreate(
@@ -72,6 +94,24 @@ class UserSeeder extends Seeder
             ]
         );
         $student1->assignRole('student');
+        
+        // Create student record for Alice
+        $grade1 = \App\Models\Grade::where('level', 9)->first();
+        $section1 = $grade1 ? \App\Models\Section::where('grade_id', $grade1->id)->first() : null;
+        if ($grade1 && $section1) {
+            \App\Models\Student::updateOrCreate(
+                ['user_id' => $student1->id],
+                [
+                    'student_id' => 'STU-2024-001',
+                    'dob' => '2009-05-15',
+                    'gender' => 'Female',
+                    'grade_id' => $grade1->id,
+                    'section_id' => $section1->id,
+                    'phone' => '0912345678',
+                    'address' => '123 Main Street, Addis Ababa',
+                ]
+            );
+        }
 
         $student2 = User::firstOrCreate(
             ['username' => 's_12345'],
@@ -82,6 +122,24 @@ class UserSeeder extends Seeder
             ]
         );
         $student2->assignRole('student');
+        
+        // Create student record for Bob
+        $grade2 = \App\Models\Grade::where('level', 10)->first();
+        $section2 = $grade2 ? \App\Models\Section::where('grade_id', $grade2->id)->first() : null;
+        if ($grade2 && $section2) {
+            \App\Models\Student::updateOrCreate(
+                ['user_id' => $student2->id],
+                [
+                    'student_id' => 'STU-2024-002',
+                    'dob' => '2008-08-20',
+                    'gender' => 'Male',
+                    'grade_id' => $grade2->id,
+                    'section_id' => $section2->id,
+                    'phone' => '0923456789',
+                    'address' => '456 Second Avenue, Addis Ababa',
+                ]
+            );
+        }
 
         // Parent Users
         $parent1 = User::firstOrCreate(

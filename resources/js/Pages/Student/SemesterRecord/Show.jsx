@@ -1,192 +1,187 @@
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
 import StudentLayout from '@/Layouts/StudentLayout';
+import { ArrowLeftIcon, TrophyIcon, ChartBarIcon, BeakerIcon, DocumentTextIcon, XMarkIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { Dialog, Transition } from '@headlessui/react';
+import { Fragment, useState } from 'react';
 
-export default function Show({
-    auth,
-    student,
-    semester,
-    academic_year,
-    subject_records,
-    semester_average,
-    rank,
-    total_students
-}) {
-    const [expandedSubject, setExpandedSubject] = useState(null);
+export default function SemesterRecordShow({ student, semester, academic_year, subject_records, semester_average, rank, total_students }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedRecord, setSelectedRecord] = useState(null);
+
+    const openModal = (record) => {
+        setSelectedRecord(record);
+        setIsOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsOpen(false);
+        setSelectedRecord(null);
+    };
+
+    const getGradeColor = (average) => {
+        if (average >= 90) return 'text-green-700 bg-green-50 border-green-200';
+        if (average >= 80) return 'text-blue-700 bg-blue-50 border-blue-200';
+        if (average >= 70) return 'text-yellow-700 bg-yellow-50 border-yellow-200';
+        if (average >= 60) return 'text-orange-700 bg-orange-50 border-orange-200';
+        return 'text-red-700 bg-red-50 border-red-200';
+    };
+
+    const getLetterGrade = (average) => {
+        if (average >= 90) return 'A';
+        if (average >= 80) return 'B';
+        if (average >= 70) return 'C';
+        if (average >= 60) return 'D';
+        return 'F';
+    };
 
     return (
-        <StudentLayout auth={auth}>
-            <Head title={`Semester ${semester} Record`} />
+        <StudentLayout>
+            <Head title={`Semester ${semester} - ${academic_year?.name}`} />
 
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="mb-6">
+            <div className="max-w-7xl mx-auto space-y-8 pb-12">
+                {/* Navigation and Header */}
+                <div>
                     <Link
                         href={route('student.academic.semesters')}
-                        className="inline-flex items-center text-green-600 hover:text-green-700 mb-4"
+                        className="inline-flex items-center text-gray-500 hover:text-blue-600 transition-colors mb-4 group"
                     >
-                        <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Back to Semesters
+                        <ArrowLeftIcon className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+                        <span className="font-medium">Back to All Semesters</span>
                     </Link>
-                    <h1 className="text-3xl font-bold text-gray-900">
-                        Semester {semester} - {academic_year?.name}
-                    </h1>
-                    <p className="mt-2 text-gray-600">Detailed academic record for this semester</p>
+
+                    <div className="flex flex-col md:flex-row md:items-end justify-between bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div>
+                            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                                Semester {semester} Report
+                            </h1>
+                            <p className="mt-2 text-gray-500 font-medium">{academic_year?.name} Academic Year</p>
+                        </div>
+                        <div className="flex space-x-2 mt-4 md:mt-0">
+                            <span className="px-4 py-2 bg-blue-50 text-blue-800 rounded-lg text-sm font-bold tracking-wide uppercase border border-blue-100">
+                                Grade {student.grade.name}
+                            </span>
+                            <span className="px-4 py-2 bg-gray-50 text-gray-800 rounded-lg text-sm font-bold tracking-wide uppercase border border-gray-100">
+                                Section {student.section.name}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    {/* Semester Average */}
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg shadow-md p-6 border-l-4 border-green-600">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-semibold text-gray-600 uppercase">Semester Average</p>
-                                <p className="text-5xl font-bold text-green-600 mt-2">{semester_average}</p>
-                                <p className="text-sm text-gray-500 mt-1">out of 100</p>
-                            </div>
-                            <div className="text-green-600 opacity-50">
-                                <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                                </svg>
-                            </div>
+                {/* KPI Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Overall Average */}
+                    <div className="executive-card bg-gradient-to-br from-blue-900 to-indigo-900 border-blue-800 !p-6 text-white transform hover:scale-[1.02] shadow-xl shadow-blue-900/10 h-full relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <ChartBarIcon className="w-24 h-24" />
+                        </div>
+                        <p className="text-blue-200 text-xs font-bold uppercase tracking-widest mb-2 relative z-10">Semester Average</p>
+                        <div className="flex items-baseline space-x-2 relative z-10">
+                            <h2 className="text-5xl font-black">{semester_average}<span className="text-2xl opacity-80">%</span></h2>
+                        </div>
+                        <div className="mt-4 relative z-10">
+                            <span className="bg-white/20 px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter mr-2">
+                                GRADE {getLetterGrade(semester_average)}
+                            </span>
+                            <span className="text-blue-200 text-[10px] font-bold uppercase tracking-widest">all subjects Mastery</span>
                         </div>
                     </div>
 
                     {/* Class Rank */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md p-6 border-l-4 border-blue-600">
-                        <div className="flex items-center justify-between">
+                    <div className="executive-card !p-6 transform hover:scale-[1.02] shadow-blue-200/20 h-full">
+                        <div className="flex justify-between items-start h-full">
                             <div>
-                                <p className="text-sm font-semibold text-gray-600 uppercase">Class Rank</p>
-                                <p className="text-5xl font-bold text-blue-600 mt-2">
-                                    {rank} <span className="text-2xl text-gray-500">/ {total_students}</span>
-                                </p>
-                                <p className="text-sm text-gray-500 mt-1">within your section</p>
+                                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Class Rank</p>
+                                <h2 className="text-4xl font-black text-gray-900">
+                                    <span className="text-amber-500 mr-1 opacity-50">#</span>{rank}
+                                </h2>
+                                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2">out of {total_students} students</p>
                             </div>
-                            <div className="text-blue-600 opacity-50">
-                                <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
+                            <div className="bg-amber-50 p-3 rounded-2xl border border-amber-100 shadow-inner">
+                                <TrophyIcon className="w-8 h-8 text-amber-500" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Total Credits */}
+                    <div className="executive-card !p-6 transform hover:scale-[1.02] shadow-indigo-200/20 h-full">
+                        <div className="flex justify-between items-start h-full">
+                            <div>
+                                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Credits</p>
+                                <h2 className="text-4xl font-black text-gray-900">
+                                    {subject_records?.reduce((acc, curr) => acc + (curr.subject.credit_hours || 3), 0)}
+                                </h2>
+                                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2">Credits Earned</p>
+                            </div>
+                            <div className="bg-indigo-50 p-3 rounded-2xl border border-indigo-100 shadow-inner">
+                                <DocumentTextIcon className="w-8 h-8 text-indigo-500" />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Subjects Table */}
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <div className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-4">
-                        <h3 className="font-bold text-lg">Subject Performance</h3>
-                        <p className="text-green-100 text-sm mt-1">Marks and teachers for each subject</p>
+                {/* Subject Performance Table */}
+                <div className="executive-card overflow-hidden !p-0">
+                    <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                            <div className="p-2 bg-white rounded-lg border border-gray-100 shadow-sm">
+                                <ChartBarIcon className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Subject Mastery</h3>
+                                <p className="text-gray-500 text-[10px] font-medium uppercase tracking-widest">Performance in each subject</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Semester Verified</span>
+                        </div>
                     </div>
+
                     <div className="overflow-x-auto">
-                        <table className="w-full">
+                        <table className="min-w-full divide-y divide-gray-100">
                             <thead>
-                                <tr className="bg-gray-100 text-gray-700 text-sm">
-                                    <th className="border-b-2 border-gray-300 px-4 py-3 text-left">Subject</th>
-                                    <th className="border-b-2 border-gray-300 px-4 py-3 text-center">Mark</th>
-                                    <th className="border-b-2 border-gray-300 px-4 py-3 text-center">Teacher</th>
-                                    <th className="border-b-2 border-gray-300 px-4 py-3 text-center">Actions</th>
+                                <tr className="bg-gray-50/30">
+                                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Subject</th>
+                                    <th scope="col" className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Mark out of 100</th>
+                                    <th scope="col" className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Teacher Name</th>
+                                    <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="bg-white divide-y divide-gray-100">
                                 {subject_records && subject_records.length > 0 ? (
                                     subject_records.map((record, index) => (
-                                        <>
-                                            <tr key={index} className={`hover:bg-gray-50 transition ${expandedSubject === index ? 'bg-blue-50' : ''}`}>
-                                                <td className="border-b border-gray-200 px-4 py-3">
-                                                    <div className="font-semibold text-gray-800">{record.subject.name}</div>
-                                                    <div className="text-xs text-gray-500">{record.subject.code}</div>
-                                                </td>
-                                                <td className="border-b border-gray-200 px-4 py-3 text-center">
-                                                    <span className={"font-bold text-lg text-blue-600"}>{record.average}</span>
-                                                </td>
-                                                <td className="border-b border-gray-200 px-4 py-3 text-center text-gray-600">
-                                                    {record.teacher}
-                                                </td>
-                                                <td className="border-b border-gray-200 px-4 py-3 text-center">
-                                                    <button
-                                                        onClick={() => setExpandedSubject(expandedSubject === index ? null : index)}
-                                                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${expandedSubject === index
-                                                                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                                : 'bg-blue-600 text-white hover:bg-blue-700'
-                                                            }`}
-                                                    >
-                                                        {expandedSubject === index ? (
-                                                            <span className="flex items-center">
-                                                                Hide <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
-                                                            </span>
-                                                        ) : (
-                                                            <span className="flex items-center">
-                                                                Details <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                                            </span>
-                                                        )}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            {expandedSubject === index && (
-                                                <tr>
-                                                    <td colSpan="4" className="bg-gray-50 px-8 py-6 border-b border-gray-200 shadow-inner">
-                                                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                                                            <div className="bg-gray-100 border-b border-gray-200 px-4 py-2 flex justify-between items-center">
-                                                                <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Assessment Breakdown</h4>
-                                                                <span className="text-xs font-medium text-gray-500">{record.subject.name}</span>
-                                                            </div>
-                                                            <div className="p-0">
-                                                                <table className="w-full">
-                                                                    <thead className="bg-gray-50">
-                                                                        <tr className="text-xs text-gray-500 border-b border-gray-100">
-                                                                            <th className="px-4 py-2 text-left">Assessment</th>
-                                                                            <th className="px-4 py-2 text-center">Weight</th>
-                                                                            <th className="px-4 py-2 text-center">Score</th>
-                                                                            <th className="px-4 py-2 text-center">Status</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {record.marks.map((mark, mIdx) => (
-                                                                            <tr key={mIdx} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-                                                                                <td className="px-4 py-3 text-sm font-medium text-gray-700">
-                                                                                    {mark.assessment?.name || mark.assessment_type || 'Assessment'}
-                                                                                </td>
-                                                                                <td className="px-4 py-3 text-sm text-center text-gray-500">
-                                                                                    {mark.assessment?.weight_percentage || 25}%
-                                                                                </td>
-                                                                                <td className="px-4 py-3 text-center">
-                                                                                    <span className="text-base font-bold text-blue-600">
-                                                                                        {mark.marks_obtained}
-                                                                                    </span>
-                                                                                    <span className="text-xs text-gray-400 ml-1">
-                                                                                        / {mark.assessment?.max_score || 100}
-                                                                                    </span>
-                                                                                </td>
-                                                                                <td className="px-4 py-3 text-center">
-                                                                                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${mark.is_submitted
-                                                                                            ? 'bg-green-100 text-green-700'
-                                                                                            : 'bg-yellow-100 text-yellow-700'
-                                                                                        }`}>
-                                                                                        {mark.is_submitted ? 'Submitted' : 'Pending'}
-                                                                                    </span>
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                            <div className="bg-blue-50 px-4 py-3 border-t border-gray-100 flex justify-between items-center">
-                                                                <span className="text-sm font-semibold text-blue-800">Subject Average</span>
-                                                                <span className="text-lg font-bold text-blue-700">{record.average} / 100</span>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </>
+                                        <tr key={index} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-gray-900">{record.subject.name}</span>
+                                                    <span className="text-xs text-gray-500 font-mono">{record.subject.code}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                <span className="text-lg font-bold text-blue-600">{record.average}</span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                <span className="text-sm text-gray-600 font-medium">
+                                                    {record.subject.teacher_name}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <button
+                                                    onClick={() => openModal(record)}
+                                                    className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                                >
+                                                    View Details
+                                                </button>
+                                            </td>
+                                        </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="4" className="border-b border-gray-200 px-4 py-12 text-center text-gray-500">
-                                            <div className="text-5xl mb-4">📄</div>
-                                            <p className="text-lg">No subjects found for this semester</p>
+                                        <td colSpan="4" className="px-6 py-12 text-center">
+                                            <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                                                <BeakerIcon className="w-6 h-6 text-gray-400" />
+                                            </div>
+                                            <p className="text-gray-500 text-sm">No academic records found for this semester.</p>
                                         </td>
                                     </tr>
                                 )}
@@ -194,23 +189,118 @@ export default function Show({
                         </table>
                     </div>
                 </div>
+            </div>
 
-                {/* Read-only Notice */}
-                <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                    <div className="flex">
-                        <div className="flex-shrink-0">
-                            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm text-yellow-700">
-                                <strong>Read-only:</strong> These records are locked and cannot be modified by students.
-                            </p>
+            {/* Assessment Details Modal */}
+            <Transition appear show={isOpen} as={Fragment}>
+                <Dialog as="div" className="relative z-[60]" onClose={closeModal}>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-black/25 backdrop-blur-sm" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                                    <Dialog.Title
+                                        as="div"
+                                        className="flex items-center justify-between mb-6"
+                                    >
+                                        <div>
+                                            <h3 className="text-xl font-bold text-gray-900">
+                                                {selectedRecord?.subject.name}
+                                            </h3>
+                                            <div className="flex items-center mt-1 space-x-2">
+                                                <span className="text-sm text-gray-500 font-mono bg-gray-100 px-2 py-0.5 rounded">{selectedRecord?.subject.code}</span>
+                                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                                <span className="text-sm font-bold text-blue-600">{selectedRecord?.average}% Average</span>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={closeModal}
+                                            className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                                        >
+                                            <XMarkIcon className="w-6 h-6" />
+                                        </button>
+                                    </Dialog.Title>
+
+                                    <div className="mt-2">
+                                        <div className="overflow-hidden rounded-xl border border-gray-100">
+                                            <table className="min-w-full divide-y divide-gray-100">
+                                                <thead>
+                                                    <tr className="bg-gray-50">
+                                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Assessment</th>
+                                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Type</th>
+                                                        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Weight</th>
+                                                        <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Score</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100 bg-white">
+                                                    {selectedRecord?.marks.length > 0 ? (
+                                                        selectedRecord.marks.map((mark, mIndex) => (
+                                                            <tr key={mIndex} className="hover:bg-gray-50/50">
+                                                                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                                                    {mark.assessment_name}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-gray-500">
+                                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                                                                        {mark.type}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-gray-500 text-center">
+                                                                    {Number(mark.weight) > 0 ? `${mark.weight}%` : '-'}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-right">
+                                                                    <div className="inline-flex items-baseline space-x-1 justify-end">
+                                                                        <span className={`font-bold ${mark.score >= mark.max_score * 0.9 ? 'text-green-600' : 'text-gray-900'}`}>{mark.score}</span>
+                                                                        <span className="text-xs text-gray-400 font-medium">/ {mark.max_score}</span>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    ) : (
+                                                        <tr>
+                                                            <td colSpan="4" className="px-4 py-8 text-center text-gray-500 text-sm italic">
+                                                                No assessments recorded yet.
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-6 flex justify-end">
+                                        <button
+                                            type="button"
+                                            className="inline-flex justify-center rounded-lg border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors"
+                                            onClick={closeModal}
+                                        >
+                                            Done
+                                        </button>
+                                    </div>
+                                </Dialog.Panel>
+                            </Transition.Child>
                         </div>
                     </div>
-                </div>
-            </div>
+                </Dialog>
+            </Transition>
         </StudentLayout>
     );
 }

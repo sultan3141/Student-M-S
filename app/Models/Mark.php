@@ -17,12 +17,17 @@ class Mark extends Model
         'section_id',
         'academic_year_id',
         'semester',
-        'assessment_id', // New: Links to specific assessment
-        'assessment_type_id', // For backward compatibility
-        'marks_obtained', // Changed from 'score' for clarity
+        'assessment_id',
+        'assessment_type_id',
+        'score',
+        'score_obtained',
+        'max_score',
+        'marks_obtained',
         'is_submitted',
         'submitted_at',
         'is_locked',
+        'comment',
+        'weight_percentage',
     ];
 
     protected $casts = [
