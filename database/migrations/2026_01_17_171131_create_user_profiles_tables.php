@@ -48,6 +48,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_profiles_tables');
+        Schema::dropIfExists('teachers');
+        Schema::dropIfExists('students');
+        Schema::dropIfExists('parents');
     }
 };

@@ -40,7 +40,7 @@ class SemesterRecordController extends Controller
                     ->where('academic_year_id', $yearId)
                     ->get();
                 
-                $average = $semesterMarks->avg('score');
+                $average = $semesterMarks->avg('marks_obtained');
                 
                 // Calculate class rank
                 $rank = $this->calculateSemesterRank($student, $semester, $yearId);
@@ -81,13 +81,13 @@ class SemesterRecordController extends Controller
         $marks = Mark::where('student_id', $student->id)
             ->where('semester', $semester)
             ->where('academic_year_id', $academicYearId)
-            ->with(['subject'])
+            ->with(['subject', 'assessment.assessmentType'])
             ->get();
 
         // Group marks by subject and calculate subject averages
         $subjectRecords = $marks->groupBy('subject_id')->map(function ($subjectMarks) {
             $subject = $subjectMarks->first()->subject;
-            $average = $subjectMarks->avg('score');
+            $average = $subjectMarks->avg('marks_obtained');
             
             return [
                 'subject' => $subject,
@@ -98,7 +98,7 @@ class SemesterRecordController extends Controller
         })->values();
 
         // Calculate semester average
-        $semesterAverage = $marks->avg('score');
+        $semesterAverage = $marks->avg('marks_obtained');
         
         // Calculate class rank
         $rankInfo = $this->calculateSemesterRank($student, $semester, $academicYearId);
@@ -127,7 +127,7 @@ class SemesterRecordController extends Controller
         $rankings = Mark::whereIn('student_id', $sectionStudents)
             ->where('semester', $semester)
             ->where('academic_year_id', $academicYearId)
-            ->select('student_id', DB::raw('AVG(score) as avg_score'))
+            ->select('student_id', DB::raw('AVG(marks_obtained) as avg_score'))
             ->groupBy('student_id')
             ->orderByDesc('avg_score')
             ->get();

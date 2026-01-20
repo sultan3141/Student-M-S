@@ -36,7 +36,9 @@ class UnifiedLoginController extends Controller
         // Intelligent Role-Based Redirection
         $user = Auth::user();
 
-        if ($user->hasRole('admin')) {
+        if ($user->hasRole('super_admin')) {
+            return redirect()->route('super_admin.dashboard');
+        } elseif ($user->hasRole('admin')) {
             return redirect()->route('director.dashboard');
         } elseif ($user->hasRole('registrar')) {
             return redirect()->route('registrar.dashboard');
@@ -50,6 +52,7 @@ class UnifiedLoginController extends Controller
 
         // Default fallback
         return redirect()->intended(route('dashboard'));
+
     }
 
     /**
@@ -60,7 +63,9 @@ class UnifiedLoginController extends Controller
         $username = strtolower($request->input('username', ''));
         
         // Logic solely for UI visual feedback based on username patterns
-        if (str_starts_with($username, 'admin') || $username === 'admin') {
+        if (str_starts_with($username, 'super') || $username === 'super_admin') {
+            return response()->json(['role' => 'super_admin', 'theme' => 'purple']);
+        } elseif (str_starts_with($username, 'admin') || $username === 'admin') {
             return response()->json(['role' => 'admin', 'theme' => 'gold']);
         } elseif (str_starts_with($username, 'teacher') || str_starts_with($username, 't_')) {
             return response()->json(['role' => 'teacher', 'theme' => 'blue']);

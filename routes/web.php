@@ -56,6 +56,24 @@ Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(functi
     Route::resource('payments', \App\Http\Controllers\RegistrarPaymentController::class)
         ->only(['index', 'create', 'store'])
         ->names('registrar.payments');
+
+    // Guardian Management
+    Route::get('/guardians', [\App\Http\Controllers\RegistrarGuardianController::class, 'index'])->name('registrar.guardians.index');
+    Route::post('/guardians/link', [\App\Http\Controllers\RegistrarGuardianController::class, 'link'])->name('registrar.guardians.link');
+
+    // Application Monitor
+    Route::get('/completion', [\App\Http\Controllers\RegistrarCompletionController::class, 'index'])->name('registrar.completion.index');
+
+    // Academic Year Manager
+    Route::get('/academic', [\App\Http\Controllers\RegistrarAcademicYearController::class, 'index'])->name('registrar.academic.index');
+    Route::post('/academic/promote', [\App\Http\Controllers\RegistrarAcademicYearController::class, 'promote'])->name('registrar.academic.promote');
+
+    // Reporting Center
+    Route::get('/reports', [\App\Http\Controllers\RegistrarReportController::class, 'index'])->name('registrar.reports.index');
+    Route::post('/reports/generate', [\App\Http\Controllers\RegistrarReportController::class, 'generate'])->name('registrar.reports.generate');
+
+    // Audit Log
+    Route::get('/audit', [\App\Http\Controllers\RegistrarAuditController::class, 'index'])->name('registrar.audit.index');
 });
 
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
@@ -206,6 +224,59 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     })->name('dashboard');
 });
 
+Route::middleware(['auth', 'role:super_admin'])->prefix('super_admin')->name('super_admin.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [\App\Http\Controllers\SuperAdminController::class, 'dashboard'])->name('dashboard');
+    
+    // 1. User Management
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\SuperAdminUserController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\SuperAdminUserController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\SuperAdminUserController::class, 'store'])->name('store');
+        Route::get('/{user}/edit', [\App\Http\Controllers\SuperAdminUserController::class, 'edit'])->name('edit');
+        Route::put('/{user}', [\App\Http\Controllers\SuperAdminUserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [\App\Http\Controllers\SuperAdminUserController::class, 'destroy'])->name('destroy');
+        Route::post('/{user}/activate', [\App\Http\Controllers\SuperAdminUserController::class, 'activate'])->name('activate');
+        Route::post('/{user}/deactivate', [\App\Http\Controllers\SuperAdminUserController::class, 'deactivate'])->name('deactivate');
+        Route::post('/{user}/reset-password', [\App\Http\Controllers\SuperAdminUserController::class, 'resetPassword'])->name('reset-password');
+    });
+    
+    // 2. System Configuration
+    Route::prefix('config')->name('config.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\SuperAdminSystemConfigController::class, 'index'])->name('index');
+        Route::post('/grading', [\App\Http\Controllers\SuperAdminSystemConfigController::class, 'updateGrading'])->name('grading');
+        Route::post('/fees', [\App\Http\Controllers\SuperAdminSystemConfigController::class, 'updateFees'])->name('fees');
+        Route::post('/academic', [\App\Http\Controllers\SuperAdminSystemConfigController::class, 'updateAcademic'])->name('academic');
+        Route::post('/workflows', [\App\Http\Controllers\SuperAdminSystemConfigController::class, 'updateWorkflows'])->name('workflows');
+    });
+    
+    // 3. Security and Audit
+    Route::prefix('security')->name('security.')->group(function () {
+        Route::get('/audit-logs', [\App\Http\Controllers\SuperAdminSecurityController::class, 'auditLogs'])->name('audit-logs');
+        Route::get('/events', [\App\Http\Controllers\SuperAdminSecurityController::class, 'securityEvents'])->name('events');
+        Route::get('/settings', [\App\Http\Controllers\SuperAdminSecurityController::class, 'settings'])->name('settings');
+        Route::post('/settings', [\App\Http\Controllers\SuperAdminSecurityController::class, 'updateSettings'])->name('settings.update');
+    });
+    
+    // 4. Data Oversight and Backup
+    Route::prefix('data')->name('data.')->group(function () {
+        Route::get('/backups', [\App\Http\Controllers\SuperAdminDataController::class, 'backups'])->name('backups');
+        Route::post('/backup/create', [\App\Http\Controllers\SuperAdminDataController::class, 'createBackup'])->name('backup.create');
+        Route::post('/backup/restore', [\App\Http\Controllers\SuperAdminDataController::class, 'restoreBackup'])->name('backup.restore');
+        Route::get('/export', [\App\Http\Controllers\SuperAdminDataController::class, 'export'])->name('export');
+        Route::get('/reports', [\App\Http\Controllers\SuperAdminDataController::class, 'reports'])->name('reports');
+    });
+    
+    // 5. Access Control
+    Route::prefix('access')->name('access.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\SuperAdminAccessController::class, 'index'])->name('index');
+        Route::get('/permissions', [\App\Http\Controllers\SuperAdminAccessController::class, 'permissions'])->name('permissions');
+        Route::post('/permissions', [\App\Http\Controllers\SuperAdminAccessController::class, 'updatePermissions'])->name('permissions.update');
+        Route::get('/logs', [\App\Http\Controllers\SuperAdminAccessController::class, 'accessLogs'])->name('logs');
+    });
+});
+
+
 // Emergency Quick Fix Route - VISIT THIS ONCE: http://localhost:8000/fix-user
 // Emergency Quick Fix Route - VISIT THIS ONCE: http://localhost:8000/fix-user
 Route::get('/fix-user', function () {
@@ -218,12 +289,15 @@ Route::get('/fix-user', function () {
         ]);
 
         // 2. Ensure Roles Exist
-        $roles = ['admin', 'teacher', 'student', 'parent', 'registrar'];
+        $roles = ['admin', 'teacher', 'student', 'parent', 'registrar', 'super_admin'];
         foreach ($roles as $role) {
             \Spatie\Permission\Models\Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
 
-        // 3. Create Users
+        // 3. Create Users & Profiles
+        $superAdmin = \App\Models\User::create(['name' => 'Super Admin', 'username' => 'super_admin', 'password' => bcrypt('password')]);
+        $superAdmin->assignRole('super_admin');
+
         $admin = \App\Models\User::create(['name' => 'Admin User', 'username' => 'admin', 'password' => bcrypt('password')]);
         $admin->assignRole('admin');
 
@@ -235,6 +309,7 @@ Route::get('/fix-user', function () {
             'qualification' => 'M.Ed',
             'specialization' => 'Math'
         ]);
+
 
         // 4. Create Academic Structure
         $year = \App\Models\AcademicYear::create([

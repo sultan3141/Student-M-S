@@ -13,12 +13,14 @@ class Teacher extends Model
 
     protected $fillable = [
         'user_id',
+        'employee_id',
+        'qualification',
+        'specialization',
         'photo',
         'phone',
         'address',
         'bio',
         'department',
-        // Add other existing fields if any
     ];
 
     public function user()

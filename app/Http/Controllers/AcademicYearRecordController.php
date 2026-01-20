@@ -59,8 +59,8 @@ class AcademicYearRecordController extends Controller
             ->get();
 
         // Calculate semester averages
-        $semester1Average = $semester1Marks->count() > 0 ? $semester1Marks->avg('score') : null;
-        $semester2Average = $semester2Marks->count() > 0 ? $semester2Marks->avg('score') : null;
+        $semester1Average = $semester1Marks->count() > 0 ? $semester1Marks->avg('marks_obtained') : null;
+        $semester2Average = $semester2Marks->count() > 0 ? $semester2Marks->avg('marks_obtained') : null;
         
         // Calculate final year average
         $finalAverage = null;
@@ -124,12 +124,12 @@ class AcademicYearRecordController extends Controller
             $sem1Avg = Mark::where('student_id', $studentId)
                 ->where('semester', '1')
                 ->where('academic_year_id', $academicYearId)
-                ->avg('score');
+                ->avg('marks_obtained');
                 
             $sem2Avg = Mark::where('student_id', $studentId)
                 ->where('semester', '2')
                 ->where('academic_year_id', $academicYearId)
-                ->avg('score');
+                ->avg('marks_obtained');
             
             // Only include students who completed both semesters
             if ($sem1Avg !== null && $sem2Avg !== null) {

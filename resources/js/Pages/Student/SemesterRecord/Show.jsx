@@ -92,26 +92,95 @@ export default function Show({
                             <tbody>
                                 {subject_records && subject_records.length > 0 ? (
                                     subject_records.map((record, index) => (
-                                        <tr key={index} className="hover:bg-gray-50 transition">
-                                            <td className="border-b border-gray-200 px-4 py-3">
-                                                <div className="font-semibold text-gray-800">{record.subject.name}</div>
-                                                <div className="text-xs text-gray-500">{record.subject.code}</div>
-                                            </td>
-                                            <td className="border-b border-gray-200 px-4 py-3 text-center">
-                                                <span className={"font-bold text-lg text-blue-600"}>{record.average}</span>
-                                            </td>
-                                            <td className="border-b border-gray-200 px-4 py-3 text-center text-gray-600">
-                                                {record.teacher}
-                                            </td>
-                                            <td className="border-b border-gray-200 px-4 py-3 text-center">
-                                                <button
-                                                    onClick={() => setExpandedSubject(expandedSubject === index ? null : index)}
-                                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition"
-                                                >
-                                                    {expandedSubject === index ? 'Hide Details' : 'View Details'}
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        <>
+                                            <tr key={index} className={`hover:bg-gray-50 transition ${expandedSubject === index ? 'bg-blue-50' : ''}`}>
+                                                <td className="border-b border-gray-200 px-4 py-3">
+                                                    <div className="font-semibold text-gray-800">{record.subject.name}</div>
+                                                    <div className="text-xs text-gray-500">{record.subject.code}</div>
+                                                </td>
+                                                <td className="border-b border-gray-200 px-4 py-3 text-center">
+                                                    <span className={"font-bold text-lg text-blue-600"}>{record.average}</span>
+                                                </td>
+                                                <td className="border-b border-gray-200 px-4 py-3 text-center text-gray-600">
+                                                    {record.teacher}
+                                                </td>
+                                                <td className="border-b border-gray-200 px-4 py-3 text-center">
+                                                    <button
+                                                        onClick={() => setExpandedSubject(expandedSubject === index ? null : index)}
+                                                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${expandedSubject === index
+                                                                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                            }`}
+                                                    >
+                                                        {expandedSubject === index ? (
+                                                            <span className="flex items-center">
+                                                                Hide <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                                                            </span>
+                                                        ) : (
+                                                            <span className="flex items-center">
+                                                                Details <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {expandedSubject === index && (
+                                                <tr>
+                                                    <td colSpan="4" className="bg-gray-50 px-8 py-6 border-b border-gray-200 shadow-inner">
+                                                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                                            <div className="bg-gray-100 border-b border-gray-200 px-4 py-2 flex justify-between items-center">
+                                                                <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Assessment Breakdown</h4>
+                                                                <span className="text-xs font-medium text-gray-500">{record.subject.name}</span>
+                                                            </div>
+                                                            <div className="p-0">
+                                                                <table className="w-full">
+                                                                    <thead className="bg-gray-50">
+                                                                        <tr className="text-xs text-gray-500 border-b border-gray-100">
+                                                                            <th className="px-4 py-2 text-left">Assessment</th>
+                                                                            <th className="px-4 py-2 text-center">Weight</th>
+                                                                            <th className="px-4 py-2 text-center">Score</th>
+                                                                            <th className="px-4 py-2 text-center">Status</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {record.marks.map((mark, mIdx) => (
+                                                                            <tr key={mIdx} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
+                                                                                <td className="px-4 py-3 text-sm font-medium text-gray-700">
+                                                                                    {mark.assessment?.name || mark.assessment_type || 'Assessment'}
+                                                                                </td>
+                                                                                <td className="px-4 py-3 text-sm text-center text-gray-500">
+                                                                                    {mark.assessment?.weight_percentage || 25}%
+                                                                                </td>
+                                                                                <td className="px-4 py-3 text-center">
+                                                                                    <span className="text-base font-bold text-blue-600">
+                                                                                        {mark.marks_obtained}
+                                                                                    </span>
+                                                                                    <span className="text-xs text-gray-400 ml-1">
+                                                                                        / {mark.assessment?.max_score || 100}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="px-4 py-3 text-center">
+                                                                                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${mark.is_submitted
+                                                                                            ? 'bg-green-100 text-green-700'
+                                                                                            : 'bg-yellow-100 text-yellow-700'
+                                                                                        }`}>
+                                                                                        {mark.is_submitted ? 'Submitted' : 'Pending'}
+                                                                                    </span>
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            <div className="bg-blue-50 px-4 py-3 border-t border-gray-100 flex justify-between items-center">
+                                                                <span className="text-sm font-semibold text-blue-800">Subject Average</span>
+                                                                <span className="text-lg font-bold text-blue-700">{record.average} / 100</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </>
                                     ))
                                 ) : (
                                     <tr>
