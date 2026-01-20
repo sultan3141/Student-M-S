@@ -3,6 +3,16 @@ import { Link, usePage } from '@inertiajs/react';
 
 export default function RegistrarLayout({ user, children }) {
     const { url } = usePage();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+    const navigation = [
+        { name: 'Dashboard', href: route('registrar.dashboard'), icon: '📊', active: url.startsWith('/registrar/dashboard') },
+        { name: 'Enroll Student', href: route('registrar.students.create'), icon: '🎓', active: url.startsWith('/registrar/students') },
+        { name: 'Payments', href: route('registrar.payments.index'), icon: '💰', active: url.startsWith('/registrar/payments') },
+        { name: 'Guardians', href: route('registrar.guardians.index'), icon: '👪', active: url.startsWith('/registrar/guardians') },
+        { name: 'Reports', href: route('registrar.reports.index'), icon: '📈', active: url.startsWith('/registrar/reports') },
+    ];
+
     // Mobile responsiveness: Auto-close sidebar on mobile, open on desktop
     React.useEffect(() => {
         const handleResize = () => {
@@ -23,7 +33,7 @@ export default function RegistrarLayout({ user, children }) {
     return (
         <div className="min-h-screen bg-[#F5F5DC] font-sans text-[#1F2937]">
             {/* Top Navigation Bar */}
-            <nav className="bg-[#228B22] border-b border-[#D4AF37] shadow-md fixed z-30 w-full h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+            <nav className="bg-[#1E40AF] border-b border-[#D4AF37] shadow-md fixed z-30 w-full h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center">
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -50,7 +60,7 @@ export default function RegistrarLayout({ user, children }) {
 
                     <div className="relative">
                         <button className="flex items-center text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-[#D4AF37] transition duration-150 ease-in-out">
-                            <div className="h-8 w-8 rounded-full bg-[#D4AF37] flex items-center justify-center text-[#228B22] font-bold">
+                            <div className="h-8 w-8 rounded-full bg-[#D4AF37] flex items-center justify-center text-[#1E40AF] font-bold">
                                 {user?.name?.charAt(0) || 'R'}
                             </div>
                         </button>
