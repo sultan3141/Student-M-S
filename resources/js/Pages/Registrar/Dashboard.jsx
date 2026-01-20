@@ -1,6 +1,19 @@
 import React from 'react';
 import RegistrarLayout from '@/Layouts/RegistrarLayout';
 import { Head, Link } from '@inertiajs/react';
+import {
+    ClipboardDocumentCheckIcon,
+    CalendarIcon,
+    UserPlusIcon,
+    BanknotesIcon,
+    PrinterIcon,
+    AcademicCapIcon,
+    UserGroupIcon,
+    Cog6ToothIcon,
+    ClockIcon,
+    InboxIcon,
+    PencilSquareIcon
+} from '@heroicons/react/24/outline';
 
 export default function Dashboard({ auth, stats, recentStudents, grades }) {
     return (
@@ -12,10 +25,10 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                 <div className="bg-white rounded-lg shadow-sm border border-[#E5E7EB] overflow-hidden">
                     <div className="bg-[#1E40AF] px-6 py-4 border-b border-[#D4AF37] flex justify-between items-center">
                         <h2 className="text-xl font-bold text-white flex items-center">
-                            <span className="mr-2">📋</span> ENROLLMENT COMMAND DASHBOARD
+                            <ClipboardDocumentCheckIcon className="w-6 h-6 mr-2" /> ENROLLMENT COMMAND DASHBOARD
                         </h2>
-                        <div className="text-[#F5F5DC] text-sm font-mono">
-                            📅 {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        <div className="text-[#F5F5DC] text-sm font-mono flex items-center">
+                            <CalendarIcon className="w-4 h-4 mr-1 inline" /> {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                         </div>
                     </div>
 
@@ -44,10 +57,10 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                         {/* Actions Panel */}
                         <div className="p-6 flex flex-col justify-center space-y-3 bg-gray-50">
                             <Link href={route('registrar.students.create')} className="flex items-center justify-center w-full bg-[#1E40AF] text-white px-4 py-2 rounded shadow hover:bg-blue-700 text-sm font-bold transition-all transform hover:scale-105">
-                                <span className="mr-2">✨</span> New Registration
+                                <UserPlusIcon className="w-4 h-4 mr-2" /> New Registration
                             </Link>
                             <Link href={route('registrar.payments.index')} className="flex items-center justify-center w-full bg-white border border-[#D4AF37] text-[#D97706] px-4 py-2 rounded shadow-sm hover:bg-yellow-50 text-sm font-bold transition-colors">
-                                <span className="mr-2">💰</span> Collect Fees
+                                <BanknotesIcon className="w-4 h-4 mr-2" /> Collect Fees
                             </Link>
                         </div>
                     </div>
@@ -79,20 +92,20 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                         <div className="bg-white rounded-lg shadow-sm border border-[#E5E7EB] p-5">
                             <h3 className="font-bold text-[#1F2937] mb-4 uppercase text-xs tracking-wider border-b pb-2">Shortcuts</h3>
                             <div className="grid grid-cols-2 gap-3">
-                                <button className="p-3 text-left border rounded hover:border-blue-500 hover:bg-blue-50 transition group">
-                                    <span className="block text-xl mb-1 group-hover:scale-110 transition-transform">📄</span>
+                                <button className="p-3 text-center border rounded hover:border-blue-500 hover:bg-blue-50 transition group flex flex-col items-center">
+                                    <PrinterIcon className="w-8 h-8 mb-2 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                     <span className="text-xs font-bold text-gray-700 group-hover:text-blue-700">Print Forms</span>
                                 </button>
-                                <button className="p-3 text-left border rounded hover:border-blue-500 hover:bg-blue-50 transition group">
-                                    <span className="block text-xl mb-1 group-hover:scale-110 transition-transform">🎓</span>
+                                <button className="p-3 text-center border rounded hover:border-blue-500 hover:bg-blue-50 transition group flex flex-col items-center">
+                                    <AcademicCapIcon className="w-8 h-8 mb-2 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                     <span className="text-xs font-bold text-gray-700 group-hover:text-blue-700">Class Lists</span>
                                 </button>
-                                <button className="p-3 text-left border rounded hover:border-blue-500 hover:bg-blue-50 transition group">
-                                    <span className="block text-xl mb-1 group-hover:scale-110 transition-transform">👪</span>
+                                <button className="p-3 text-center border rounded hover:border-blue-500 hover:bg-blue-50 transition group flex flex-col items-center">
+                                    <UserGroupIcon className="w-8 h-8 mb-2 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                     <span className="text-xs font-bold text-gray-700 group-hover:text-blue-700">Guardians</span>
                                 </button>
-                                <button className="p-3 text-left border rounded hover:border-blue-500 hover:bg-blue-50 transition group">
-                                    <span className="block text-xl mb-1 group-hover:scale-110 transition-transform">⚙️</span>
+                                <button className="p-3 text-center border rounded hover:border-blue-500 hover:bg-blue-50 transition group flex flex-col items-center">
+                                    <Cog6ToothIcon className="w-8 h-8 mb-2 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                     <span className="text-xs font-bold text-gray-700 group-hover:text-blue-700">Settings</span>
                                 </button>
                             </div>
@@ -103,7 +116,7 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                     <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-[#E5E7EB] flex flex-col">
                         <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                             <h3 className="font-bold text-[#1F2937] flex items-center">
-                                <span className="mr-2">🆕</span> RECENT REGISTRATIONS
+                                <ClockIcon className="w-5 h-5 mr-2" /> RECENT REGISTRATIONS
                             </h3>
                             <Link href={route('registrar.students.create')} className="text-xs text-[#1E40AF] font-bold hover:underline">View All History →</Link>
                         </div>
@@ -122,7 +135,7 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                                     {recentStudents.length === 0 ? (
                                         <tr>
                                             <td colSpan="5" className="px-6 py-12 text-center text-gray-500 italic">
-                                                <div className="mb-2 text-2xl">📭</div>
+                                                <InboxIcon className="w-12 h-12 mb-3 mx-auto text-gray-300" />
                                                 No registrations recorded today.
                                             </td>
                                         </tr>
@@ -145,7 +158,9 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <button className="text-gray-400 hover:text-[#1E40AF] transition-colors">⚙️</button>
+                                                    <button className="text-gray-400 hover:text-[#1E40AF] transition-colors">
+                                                        <PencilSquareIcon className="w-5 h-5" />
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))

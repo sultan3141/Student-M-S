@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import {
+    HomeIcon,
+    AcademicCapIcon,
+    BanknotesIcon,
+    UserGroupIcon,
+    ChartBarIcon,
+    BuildingLibraryIcon,
+    ArrowRightOnRectangleIcon
+} from '@heroicons/react/24/outline';
 
 export default function RegistrarLayout({ user, children }) {
     const { url } = usePage();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     const navigation = [
-        { name: 'Dashboard', href: route('registrar.dashboard'), icon: '📊', active: url.startsWith('/registrar/dashboard') },
-        { name: 'Enroll Student', href: route('registrar.students.create'), icon: '🎓', active: url.startsWith('/registrar/students') },
-        { name: 'Payments', href: route('registrar.payments.index'), icon: '💰', active: url.startsWith('/registrar/payments') },
-        { name: 'Guardians', href: route('registrar.guardians.index'), icon: '👪', active: url.startsWith('/registrar/guardians') },
-        { name: 'Reports', href: route('registrar.reports.index'), icon: '📈', active: url.startsWith('/registrar/reports') },
+        { name: 'Dashboard', href: route('registrar.dashboard'), icon: HomeIcon, active: url.startsWith('/registrar/dashboard') },
+        { name: 'Enroll Student', href: route('registrar.students.create'), icon: AcademicCapIcon, active: url.startsWith('/registrar/students') },
+        { name: 'Payments', href: route('registrar.payments.index'), icon: BanknotesIcon, active: url.startsWith('/registrar/payments') },
+        { name: 'Guardians', href: route('registrar.guardians.index'), icon: UserGroupIcon, active: url.startsWith('/registrar/guardians') },
+        { name: 'Reports', href: route('registrar.reports.index'), icon: ChartBarIcon, active: url.startsWith('/registrar/reports') },
     ];
 
     // Mobile responsiveness: Auto-close sidebar on mobile, open on desktop
@@ -45,7 +54,7 @@ export default function RegistrarLayout({ user, children }) {
                         </svg>
                     </button>
                     <div className="ml-4 flex items-center">
-                        <span className="text-2xl mr-2">🕌</span>
+                        <BuildingLibraryIcon className="h-8 w-8 text-[#D4AF37] mr-2" />
                         <span className="font-bold text-xl text-white tracking-wide uppercase hidden sm:block">
                             Registrar <span className="text-[#D4AF37]">Command Center</span>
                         </span>
@@ -84,7 +93,7 @@ export default function RegistrarLayout({ user, children }) {
                                     : 'text-white hover:bg-[#3B82F6] hover:text-white'
                                 }`}
                         >
-                            <span className="mr-3 text-xl">{item.icon}</span>
+                            <item.icon className="mr-3 h-6 w-6" aria-hidden="true" />
                             {item.name}
                         </Link>
                     ))}
@@ -113,7 +122,7 @@ export default function RegistrarLayout({ user, children }) {
                         as="button"
                         className="w-full flex items-center px-4 py-3 text-base font-medium text-red-300 rounded-lg hover:bg-red-900/50 hover:text-red-100 transition-colors duration-200"
                     >
-                        <span className="mr-3 text-xl">🚪</span>
+                        <ArrowRightOnRectangleIcon className="mr-3 h-6 w-6" />
                         Sign Out
                     </Link>
                 </div>
