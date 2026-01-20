@@ -105,6 +105,18 @@ export default function RegistrarLayout({ user, children }) {
                         </div>
                     </div>
                 </div>
+
+                <div className="pt-4 mt-6 px-4 pb-6">
+                    <Link
+                        href={route('logout')}
+                        method="post"
+                        as="button"
+                        className="w-full flex items-center px-4 py-3 text-base font-medium text-red-300 rounded-lg hover:bg-red-900/50 hover:text-red-100 transition-colors duration-200"
+                    >
+                        <span className="mr-3 text-xl">🚪</span>
+                        Sign Out
+                    </Link>
+                </div>
             </aside>
 
             {/* Main Content */}
