@@ -1,8 +1,27 @@
 import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import {
+    HomeIcon,
+    AcademicCapIcon,
+    BanknotesIcon,
+    UserGroupIcon,
+    ChartBarIcon,
+    BuildingLibraryIcon,
+    ArrowRightOnRectangleIcon
+} from '@heroicons/react/24/outline';
 
 export default function RegistrarLayout({ user, children }) {
     const { url } = usePage();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+    const navigation = [
+        { name: 'Dashboard', href: route('registrar.dashboard'), icon: HomeIcon, active: url.startsWith('/registrar/dashboard') },
+        { name: 'Enroll Student', href: route('registrar.students.create'), icon: AcademicCapIcon, active: url.startsWith('/registrar/students') },
+        { name: 'Payments', href: route('registrar.payments.index'), icon: BanknotesIcon, active: url.startsWith('/registrar/payments') },
+        { name: 'Guardians', href: route('registrar.guardians.index'), icon: UserGroupIcon, active: url.startsWith('/registrar/guardians') },
+        { name: 'Reports', href: route('registrar.reports.index'), icon: ChartBarIcon, active: url.startsWith('/registrar/reports') },
+    ];
+
     // Mobile responsiveness: Auto-close sidebar on mobile, open on desktop
     React.useEffect(() => {
         const handleResize = () => {
@@ -23,7 +42,7 @@ export default function RegistrarLayout({ user, children }) {
     return (
         <div className="min-h-screen bg-[#F5F5DC] font-sans text-[#1F2937]">
             {/* Top Navigation Bar */}
-            <nav className="bg-[#228B22] border-b border-[#D4AF37] shadow-md fixed z-30 w-full h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+            <nav className="bg-[#1E40AF] border-b border-[#D4AF37] shadow-md fixed z-30 w-full h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center">
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -35,7 +54,7 @@ export default function RegistrarLayout({ user, children }) {
                         </svg>
                     </button>
                     <div className="ml-4 flex items-center">
-                        <span className="text-2xl mr-2">🕌</span>
+                        <BuildingLibraryIcon className="h-8 w-8 text-[#D4AF37] mr-2" />
                         <span className="font-bold text-xl text-white tracking-wide uppercase hidden sm:block">
                             Registrar <span className="text-[#D4AF37]">Command Center</span>
                         </span>
@@ -50,7 +69,7 @@ export default function RegistrarLayout({ user, children }) {
 
                     <div className="relative">
                         <button className="flex items-center text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-[#D4AF37] transition duration-150 ease-in-out">
-                            <div className="h-8 w-8 rounded-full bg-[#D4AF37] flex items-center justify-center text-[#228B22] font-bold">
+                            <div className="h-8 w-8 rounded-full bg-[#D4AF37] flex items-center justify-center text-[#1E40AF] font-bold">
                                 {user?.name?.charAt(0) || 'R'}
                             </div>
                         </button>
@@ -60,10 +79,10 @@ export default function RegistrarLayout({ user, children }) {
 
             {/* Sidebar */}
             <aside
-                className={`fixed inset-y-0 left-0 z-20 w-64 bg-[#1E40AF] shadow-xl transform transition-transform duration-300 ease-in-out mt-16
+                className={`fixed inset-y-0 left-0 z-20 w-64 bg-[#1E40AF] shadow-xl transform transition-transform duration-300 ease-in-out mt-16 flex flex-col
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
-                <div className="py-6 px-4 space-y-2 overflow-y-auto h-[calc(100vh-4rem)]">
+                <div className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
                     {navigation.map((item) => (
                         <Link
                             key={item.name}
@@ -74,7 +93,7 @@ export default function RegistrarLayout({ user, children }) {
                                     : 'text-white hover:bg-[#3B82F6] hover:text-white'
                                 }`}
                         >
-                            <span className="mr-3 text-xl">{item.icon}</span>
+                            <item.icon className="mr-3 h-6 w-6" aria-hidden="true" />
                             {item.name}
                         </Link>
                     ))}
@@ -94,6 +113,18 @@ export default function RegistrarLayout({ user, children }) {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div className="p-4 border-t border-blue-800 bg-[#1E40AF]">
+                    <Link
+                        href={route('logout')}
+                        method="post"
+                        as="button"
+                        className="w-full flex items-center px-4 py-3 text-base font-medium text-red-300 rounded-lg hover:bg-red-900/50 hover:text-red-100 transition-colors duration-200"
+                    >
+                        <ArrowRightOnRectangleIcon className="mr-3 h-6 w-6" />
+                        Sign Out
+                    </Link>
                 </div>
             </aside>
 

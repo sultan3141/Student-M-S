@@ -82,7 +82,7 @@ class StudentMarksSeeder extends Seeder
                     'subject_id' => $subject->id,
                     'academic_year_id' => $academicYear->id,
                     'semester' => '1',
-                    'assessment_type' => $typeName,
+                    'assessment_type_id' => $type->id,
                     'score' => $scoreValue,
                 ]);
             }

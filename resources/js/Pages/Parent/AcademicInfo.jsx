@@ -1,32 +1,15 @@
 import ParentLayout from '@/Layouts/ParentLayout';
 import { Head } from '@inertiajs/react';
-import { useState } from 'react';
-import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 export default function AcademicInfo({ student, marks = [], academicYears, filters }) {
-    const [expandedYearId, setExpandedYearId] = useState(null);
-    const [activeSemester, setActiveSemester] = useState(null);
-
-    // Group marks by academic year, then by semester, then by subject
-    const groupedByYear = marks.reduce((acc, mark) => {
-        const yearId = mark.academic_year_id || 'unknown';
-        const yearName = mark.academic_year?.name || 'Unknown Year';
+    // Group marks by semester and subject
+    const groupedBySemester = marks.reduce((acc, mark) => {
         const semester = mark.semester || 1;
-
-        if (!acc[yearId]) {
-            acc[yearId] = {
-                name: yearName,
-                semesters: {}
-            };
-        }
-
-        if (!acc[yearId].semesters[semester]) {
-            acc[yearId].semesters[semester] = {};
-        }
+        if (!acc[semester]) acc[semester] = {};
 
         const subjectName = mark.subject?.name || 'Unknown';
-        if (!acc[yearId].semesters[semester][subjectName]) {
-            acc[yearId].semesters[semester][subjectName] = {
+        if (!acc[semester][subjectName]) {
+            acc[semester][subjectName] = {
                 midterm: 0,
                 test: 0,
                 assignment: 0,
@@ -37,13 +20,13 @@ export default function AcademicInfo({ student, marks = [], academicYears, filte
         // Map assessment types to columns
         const assessmentType = mark.assessment_type?.name?.toLowerCase() || '';
         if (assessmentType.includes('midterm')) {
-            acc[yearId].semesters[semester][subjectName].midterm = mark.score;
+            acc[semester][subjectName].midterm = mark.score;
         } else if (assessmentType.includes('test')) {
-            acc[yearId].semesters[semester][subjectName].test = mark.score;
+            acc[semester][subjectName].test = mark.score;
         } else if (assessmentType.includes('assignment')) {
-            acc[yearId].semesters[semester][subjectName].assignment = mark.score;
+            acc[semester][subjectName].assignment = mark.score;
         } else if (assessmentType.includes('final')) {
-            acc[yearId].semesters[semester][subjectName].final = mark.score;
+            acc[semester][subjectName].final = mark.score;
         }
 
         return acc;
@@ -65,9 +48,9 @@ export default function AcademicInfo({ student, marks = [], academicYears, filte
         return (totalAvg / subjects.length).toFixed(1);
     };
 
-    const calculateYearAverage = (yearData) => {
-        const semester1Avg = parseFloat(calculateSemesterAverage(yearData.semesters[1] || {}));
-        const semester2Avg = parseFloat(calculateSemesterAverage(yearData.semesters[2] || {}));
+    const calculateAnnualAverage = () => {
+        const semester1Avg = parseFloat(calculateSemesterAverage(groupedBySemester[1] || {}));
+        const semester2Avg = parseFloat(calculateSemesterAverage(groupedBySemester[2] || {}));
 
         if (semester1Avg && semester2Avg) {
             return ((semester1Avg + semester2Avg) / 2).toFixed(2);
@@ -77,24 +60,6 @@ export default function AcademicInfo({ student, marks = [], academicYears, filte
             return semester2Avg.toFixed(2);
         }
         return '0.00';
-    };
-
-    const toggleYear = (yearId) => {
-        if (expandedYearId === yearId) {
-            setExpandedYearId(null);
-            setActiveSemester(null);
-        } else {
-            setExpandedYearId(yearId);
-            setActiveSemester(null);
-        }
-    };
-
-    const toggleSemester = (semester) => {
-        if (activeSemester === semester) {
-            setActiveSemester(null);
-        } else {
-            setActiveSemester(semester);
-        }
     };
 
     const getOverallGrade = (average) => {
@@ -127,174 +92,123 @@ export default function AcademicInfo({ student, marks = [], academicYears, filte
                     </h2>
 
                     {/* Student Info Bar */}
-                    <div className="grid grid-cols-2 gap-8 mb-6 text-sm">
+                    <div className="grid grid-cols-3 gap-4 mb-6 text-sm">
                         <div>
-                            <span className="text-gray-500">Current Grade:</span>
+                            <span className="text-gray-500">Academic Year:</span>
+                            <span className="ml-2 font-semibold text-gray-900">2024/2025</span>
+                        </div>
+                        <div>
+                            <span className="text-gray-500">Grade & Section:</span>
                             <span className="ml-2 font-semibold text-gray-900">
                                 {student?.grade?.name || 'N/A'}-{student?.section?.name || 'N/A'}
                             </span>
                         </div>
                         <div>
-                            <span className="text-gray-500">Student ID:</span>
-                            <span className="ml-2 font-semibold text-gray-900">{student?.student_id || 'N/A'}</span>
+                            <span className="text-gray-500">Attendance:</span>
+                            <span className="ml-2 font-semibold text-green-600">95% (Excellent)</span>
                         </div>
                     </div>
 
-                    {/* Academic Years Accordion */}
-                    {Object.keys(groupedByYear).length > 0 ? (
-                        <div className="space-y-4">
-                            {Object.entries(groupedByYear).map(([yearId, yearData]) => {
-                                const isYearExpanded = expandedYearId === yearId;
-                                const yearAverage = calculateYearAverage(yearData);
+                    {/* Semester Tables */}
+                    {[1, 2].map((semester) => {
+                        const semesterData = groupedBySemester[semester] || {};
+                        const subjects = Object.keys(semesterData);
 
-                                return (
-                                    <div key={yearId} className="border border-gray-200 rounded-lg overflow-hidden">
-                                        {/* Year Header */}
-                                        <button
-                                            onClick={() => toggleYear(yearId)}
-                                            className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
-                                        >
-                                            <div className="flex items-center space-x-3">
-                                                {isYearExpanded ? (
-                                                    <ChevronDownIcon className="h-5 w-5 text-gray-600" />
-                                                ) : (
-                                                    <ChevronRightIcon className="h-5 w-5 text-gray-600" />
-                                                )}
-                                                <span className="font-semibold text-gray-900">
-                                                    Academic Year: {yearData.name}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center space-x-4 text-sm">
-                                                <span className="text-gray-600">
-                                                    Average: <span className="font-semibold text-blue-600">{yearAverage}%</span>
-                                                </span>
-                                            </div>
-                                        </button>
+                        if (subjects.length === 0) return null;
 
-                                        {/* Year Content - Semesters */}
-                                        {isYearExpanded && (
-                                            <div className="border-t border-gray-200">
-                                                {/* Semester Selection Tabs */}
-                                                <div className="flex border-b border-gray-200 bg-white">
-                                                    {Object.keys(yearData.semesters).map((semester) => {
-                                                        const semAvg = calculateSemesterAverage(yearData.semesters[semester]);
-                                                        const isActive = activeSemester === semester;
+                        return (
+                            <div key={semester} className="mb-8">
+                                <h3 className="text-md font-semibold text-gray-800 mb-4">
+                                    Semester {semester} - Academic Results
+                                </h3>
 
-                                                        return (
-                                                            <button
-                                                                key={semester}
-                                                                onClick={() => toggleSemester(semester)}
-                                                                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${isActive
-                                                                    ? 'bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600'
-                                                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                                                    }`}
-                                                            >
-                                                                <div className="flex flex-col items-center">
-                                                                    <span>Semester {semester}</span>
-                                                                    <span className="text-xs mt-1">Avg: {semAvg}%</span>
-                                                                </div>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Subject
+                                                </th>
+                                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Midterm
+                                                </th>
+                                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Test
+                                                </th>
+                                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Assignment
+                                                </th>
+                                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Final
+                                                </th>
+                                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Total
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {subjects.map((subject) => {
+                                                const scores = semesterData[subject];
+                                                const total = calculateTotal(scores);
 
-                                                {/* Semester Marks Table */}
-                                                {activeSemester && yearData.semesters[activeSemester] && (
-                                                    <div className="p-4 bg-white">
-                                                        <h4 className="text-sm font-semibold text-gray-800 mb-3">
-                                                            Semester {activeSemester} - Academic Results
-                                                        </h4>
+                                                return (
+                                                    <tr key={subject} className="hover:bg-gray-50">
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                            {subject}
+                                                        </td>
+                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900">
+                                                            {scores.midterm || '-'}
+                                                        </td>
+                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900">
+                                                            {scores.test || '-'}
+                                                        </td>
+                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900">
+                                                            {scores.assignment || '-'}
+                                                        </td>
+                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900">
+                                                            {scores.final || '-'}
+                                                        </td>
+                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-center font-semibold text-gray-900">
+                                                            {(total / 4).toFixed(1)}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
 
-                                                        <div className="overflow-x-auto">
-                                                            <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
-                                                                <thead className="bg-gray-50">
-                                                                    <tr>
-                                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                            Subject
-                                                                        </th>
-                                                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                            Midterm
-                                                                        </th>
-                                                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                            Test
-                                                                        </th>
-                                                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                            Assignment
-                                                                        </th>
-                                                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                            Final
-                                                                        </th>
-                                                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                            Total
-                                                                        </th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody className="bg-white divide-y divide-gray-200">
-                                                                    {Object.entries(yearData.semesters[activeSemester]).map(([subject, scores]) => {
-                                                                        const total = calculateTotal(scores);
+                                            {/* Semester Average Row */}
+                                            <tr className="bg-gray-50 font-semibold">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" colSpan="5">
+                                                    Semester {semester} Average
+                                                </td>
+                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900">
+                                                    {calculateSemesterAverage(semesterData)}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        );
+                    })}
 
-                                                                        return (
-                                                                            <tr key={subject} className="hover:bg-gray-50">
-                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                                                    {subject}
-                                                                                </td>
-                                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900">
-                                                                                    {scores.midterm || '-'}
-                                                                                </td>
-                                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900">
-                                                                                    {scores.test || '-'}
-                                                                                </td>
-                                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900">
-                                                                                    {scores.assignment || '-'}
-                                                                                </td>
-                                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900">
-                                                                                    {scores.final || '-'}
-                                                                                </td>
-                                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-center font-semibold text-gray-900">
-                                                                                    {(total / 4).toFixed(1)}
-                                                                                </td>
-                                                                            </tr>
-                                                                        );
-                                                                    })}
-
-                                                                    {/* Semester Average Row */}
-                                                                    <tr className="bg-gray-50 font-semibold">
-                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" colSpan="5">
-                                                                            Semester {activeSemester} Average
-                                                                        </td>
-                                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900">
-                                                                            {calculateSemesterAverage(yearData.semesters[activeSemester])}
-                                                                        </td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* Annual Summary for this year */}
-                                                {isYearExpanded && (
-                                                    <div className="m-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                                        <h4 className="text-sm font-semibold text-gray-900 mb-3">Annual Summary</h4>
-                                                        <div className="grid grid-cols-2 gap-8">
-                                                            <div>
-                                                                <p className="text-xs text-gray-600 mb-1">Annual Average</p>
-                                                                <p className="text-xl font-bold text-blue-600">{yearAverage}%</p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-xs text-gray-600 mb-1">Class Rank</p>
-                                                                <p className="text-xl font-bold text-gray-900">3rd/45</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                    {/* Annual Summary Section */}
+                    {Object.keys(groupedBySemester).length > 0 && (
+                        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Annual Summary</h3>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <p className="text-sm text-gray-600 mb-1">Annual Average</p>
+                                    <p className="text-2xl font-bold text-blue-600">{calculateAnnualAverage()}%</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600 mb-1">Class Rank</p>
+                                    <p className="text-2xl font-bold text-gray-900">3rd/45</p>
+                                </div>
+                            </div>
                         </div>
-                    ) : (
+                    )}
+
+                    {Object.keys(groupedBySemester).length === 0 && (
                         <div className="text-center py-12">
                             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

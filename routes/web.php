@@ -17,6 +17,10 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     $user = Auth::user();
 
+    if ($user->hasRole('super_admin')) {
+        return redirect()->route('super_admin.dashboard');
+    }
+
     if ($user->hasRole('student')) {
         return redirect()->route('student.dashboard');
     }
@@ -46,12 +50,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php'; 
+require __DIR__ . '/auth.php';
 
 Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\RegistrarController::class, 'dashboard'])->name('registrar.dashboard');
-    Route::get('/students/create', [\App\Http\Controllers\RegistrarController::class, 'create'])->name('registrar.students.create');
-    Route::post('/students', [\App\Http\Controllers\RegistrarController::class, 'store'])->name('registrar.students.store');
+
+    // Student Management (New Controller)
+    Route::get('/students/create', [\App\Http\Controllers\RegistrarStudentController::class, 'create'])->name('registrar.students.create');
+    Route::post('/students', [\App\Http\Controllers\RegistrarStudentController::class, 'store'])->name('registrar.students.store');
+    Route::get('/parents/search', [\App\Http\Controllers\RegistrarStudentController::class, 'searchParents'])->name('registrar.parents.search');
 
     Route::resource('payments', \App\Http\Controllers\RegistrarPaymentController::class)
         ->only(['index', 'create', 'store'])
@@ -82,18 +89,17 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     // Annual Registration
     Route::get('/registration', [\App\Http\Controllers\StudentRegistrationController::class, 'create'])->name('registration.create');
     Route::post('/registration', [\App\Http\Controllers\StudentRegistrationController::class, 'store'])->name('registration.store');
-    
+
     // Redirect legacy/wrong URL
-    Route::get('/applications/create', function() {
+    Route::get('/applications/create', function () {
         return redirect()->route('student.registration.create');
     });
-    
+
     // Profile & Settings
     Route::get('/profile', [\App\Http\Controllers\StudentProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [\App\Http\Controllers\StudentProfileController::class, 'update'])->name('profile.update');
     Route::get('/password', [\App\Http\Controllers\StudentProfileController::class, 'editPassword'])->name('password.edit');
     Route::patch('/password', [\App\Http\Controllers\StudentProfileController::class, 'updatePassword'])->name('password.update');
-    
 
 
     // Semester Academic Records
@@ -115,7 +121,7 @@ Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () 
     Route::get('/student/{studentId}/payments', [\App\Http\Controllers\ParentDashboardController::class, 'paymentHistory'])->name('parent.student.payments');
     Route::get('/notifications', [\App\Http\Controllers\ParentDashboardController::class, 'notifications'])->name('parent.notifications');
     Route::get('/school-contact', [\App\Http\Controllers\ParentDashboardController::class, 'schoolContact'])->name('parent.school-contact');
-    
+
     Route::get('/settings/password', [\App\Http\Controllers\ParentSettingsController::class, 'edit'])->name('parent.settings.password');
     Route::post('/settings/password', [\App\Http\Controllers\ParentSettingsController::class, 'updatePassword'])->name('parent.settings.password.update');
 });
@@ -123,13 +129,13 @@ Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () 
 Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [\App\Http\Controllers\TeacherDashboardController::class, 'index'])->name('dashboard');
-    
+
     // Marks Management
     Route::get('/marks', [\App\Http\Controllers\TeacherMarkController::class, 'index'])->name('marks.index');
     Route::get('/marks/enter', [\App\Http\Controllers\TeacherMarkController::class, 'create'])->name('marks.create');
     Route::post('/marks/store', [\App\Http\Controllers\TeacherMarkController::class, 'store'])->name('marks.store');
     Route::get('/marks/students', [\App\Http\Controllers\TeacherAssignmentController::class, 'getStudents'])->name('marks.students');
-    
+
     // Modern Mark Management Wizard (NEW)
     Route::prefix('marks/wizard')->name('marks.wizard.')->group(function () {
         Route::get('/', function () {
@@ -140,23 +146,23 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
         Route::get('/subjects/{section}', [\App\Http\Controllers\TeacherClassController::class, 'getSubjectsBySection'])->name('subjects');
         Route::get('/assessments/{subject}/{semester}', [\App\Http\Controllers\TeacherClassController::class, 'getAssessmentsBySubject'])->name('assessments');
     });
-    
+
     // Assessment Management (CRUD & Bulk Operations)
     Route::resource('assessments', \App\Http\Controllers\AssessmentController::class);
     Route::post('/assessments/{id}/import', [\App\Http\Controllers\AssessmentController::class, 'importMarks'])->name('assessments.import');
     Route::get('/assessments/{id}/template', [\App\Http\Controllers\AssessmentController::class, 'exportTemplate'])->name('assessments.template');
     Route::get('/assessments/{id}/stats', [\App\Http\Controllers\AssessmentController::class, 'getStats'])->name('assessments.stats');
-    
+
     // Assessment Management (Old 2-step workflow - Keep for backward compatibility)
     Route::get('/assessments-old', [\App\Http\Controllers\TeacherAssessmentController::class, 'index'])->name('assessments-old.index');
     Route::post('/assessments-old', [\App\Http\Controllers\TeacherAssessmentController::class, 'store'])->name('assessments-old.store');
     Route::put('/assessments-old/{assessment}', [\App\Http\Controllers\TeacherAssessmentController::class, 'update'])->name('assessments-old.update');
     Route::delete('/assessments-old/{assessment}', [\App\Http\Controllers\TeacherAssessmentController::class, 'destroy'])->name('assessments-old.destroy');
-    
+
     // Classes
     Route::get('/classes', [\App\Http\Controllers\TeacherClassController::class, 'index'])->name('classes.index');
     Route::get('/classes/{id}', [\App\Http\Controllers\TeacherClassController::class, 'show'])->name('classes.show');
-    
+
     // Rankings
     Route::get('/rankings', [\App\Http\Controllers\TeacherRankingController::class, 'index'])->name('rankings.index');
     Route::get('/rankings/live/{classId}', [\App\Http\Controllers\TeacherRankingController::class, 'live'])->name('rankings.live');
@@ -165,7 +171,7 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     Route::get('/analytics', [\App\Http\Controllers\TeacherAnalyticsController::class, 'index'])->name('analytics.index');
     Route::get('/analytics/class/{classId}', [\App\Http\Controllers\TeacherAnalyticsController::class, 'getClassAnalytics'])->name('analytics.class');
     Route::get('/analytics/student/{studentId}', [\App\Http\Controllers\TeacherAnalyticsController::class, 'getStudentAnalytics'])->name('analytics.student');
-    
+
     Route::get('/reports', [\App\Http\Controllers\TeacherReportController::class, 'index'])->name('reports.index');
 
     // Student Tracking
@@ -181,45 +187,45 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
 });
 
 // Director/Admin Routes
-Route::middleware(['auth', 'role:admin'])->prefix('director')->name('director.')->group(function () {
+Route::middleware(['auth', 'role:school_director|admin'])->prefix('director')->name('director.')->group(function () {
     // Dashboard & Metrics
     Route::get('/dashboard', [\App\Http\Controllers\DirectorDashboardController::class, 'index'])->name('dashboard');
     Route::get('/metrics/academic', [\App\Http\Controllers\DirectorDashboardController::class, 'getAcademicHealth'])->name('metrics.academic');
     Route::get('/metrics/operational', [\App\Http\Controllers\DirectorDashboardController::class, 'getOperationalMetrics'])->name('metrics.operational');
     Route::get('/metrics/financial', [\App\Http\Controllers\DirectorDashboardController::class, 'getFinancialOverview'])->name('metrics.financial');
-    
+
     // Profile
     Route::get('/profile', [\App\Http\Controllers\DirectorProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile/update', [\App\Http\Controllers\DirectorProfileController::class, 'update'])->name('profile.update');
     Route::put('/password/update', [\App\Http\Controllers\DirectorProfileController::class, 'updatePassword'])->name('password.update');
-    
+
     // Teacher Management
     Route::resource('teachers', \App\Http\Controllers\DirectorTeacherController::class);
     Route::get('/teachers/{id}/performance', [\App\Http\Controllers\DirectorTeacherController::class, 'getPerformanceMetrics'])->name('teachers.performance');
-    
+
     // Academic Analytics  
     Route::get('/academic/overview', [\App\Http\Controllers\DirectorAcademicController::class, 'getPerformanceOverview'])->name('academic.overview');
     Route::get('/academic/grade/{grade}', [\App\Http\Controllers\DirectorAcademicController::class, 'getGradeAnalytics'])->name('academic.grade');
     Route::get('/academic/heatmap', [\App\Http\Controllers\DirectorAcademicController::class, 'getSubjectHeatMap'])->name('academic.heatmap');
     Route::post('/academic/export', [\App\Http\Controllers\DirectorAcademicController::class, 'exportAnalytics'])->name('academic.export');
-    
+
     // Registration Control
     Route::get('/registration/status', [\App\Http\Controllers\DirectorRegistrationController::class, 'getStatus'])->name('registration.status');
     Route::post('/registration/toggle', [\App\Http\Controllers\DirectorRegistrationController::class, 'toggle'])->name('registration.toggle');
     Route::get('/registration/stats', [\App\Http\Controllers\DirectorRegistrationController::class, 'getEnrollmentStats'])->name('registration.stats');
     Route::post('/registration/process', [\App\Http\Controllers\DirectorRegistrationController::class, 'processApplications'])->name('registration.process');
-    
+
     // Student Statistics
     Route::get('/statistics/students', [\App\Http\Controllers\DirectorStudentStatisticsController::class, 'index'])->name('statistics.students');
     Route::get('/statistics/students/data', [\App\Http\Controllers\DirectorStudentStatisticsController::class, 'getStatisticsJson'])->name('statistics.students.data');
-    
+
     // Communication Center
     Route::resource('announcements', \App\Http\Controllers\DirectorCommunicationController::class);
     Route::get('/announcements/{id}/analytics', [\App\Http\Controllers\DirectorCommunicationController::class, 'getAnalytics'])->name('announcements.analytics');
 });
 
 // Legacy Admin Route (for backward compatibility)
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', function () {
         return redirect()->route('director.dashboard');
     })->name('dashboard');
@@ -228,7 +234,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::middleware(['auth', 'role:super_admin'])->prefix('super_admin')->name('super_admin.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [\App\Http\Controllers\SuperAdminController::class, 'dashboard'])->name('dashboard');
-    
+
     // 1. User Management
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [\App\Http\Controllers\SuperAdminUserController::class, 'index'])->name('index');
@@ -241,7 +247,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super_admin')->name('su
         Route::post('/{user}/deactivate', [\App\Http\Controllers\SuperAdminUserController::class, 'deactivate'])->name('deactivate');
         Route::post('/{user}/reset-password', [\App\Http\Controllers\SuperAdminUserController::class, 'resetPassword'])->name('reset-password');
     });
-    
+
     // 2. System Configuration
     Route::prefix('config')->name('config.')->group(function () {
         Route::get('/', [\App\Http\Controllers\SuperAdminSystemConfigController::class, 'index'])->name('index');
@@ -250,7 +256,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super_admin')->name('su
         Route::post('/academic', [\App\Http\Controllers\SuperAdminSystemConfigController::class, 'updateAcademic'])->name('academic');
         Route::post('/workflows', [\App\Http\Controllers\SuperAdminSystemConfigController::class, 'updateWorkflows'])->name('workflows');
     });
-    
+
     // 3. Security and Audit
     Route::prefix('security')->name('security.')->group(function () {
         Route::get('/audit-logs', [\App\Http\Controllers\SuperAdminSecurityController::class, 'auditLogs'])->name('audit-logs');
@@ -258,7 +264,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super_admin')->name('su
         Route::get('/settings', [\App\Http\Controllers\SuperAdminSecurityController::class, 'settings'])->name('settings');
         Route::post('/settings', [\App\Http\Controllers\SuperAdminSecurityController::class, 'updateSettings'])->name('settings.update');
     });
-    
+
     // 4. Data Oversight and Backup
     Route::prefix('data')->name('data.')->group(function () {
         Route::get('/backups', [\App\Http\Controllers\SuperAdminDataController::class, 'backups'])->name('backups');
@@ -267,7 +273,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super_admin')->name('su
         Route::get('/export', [\App\Http\Controllers\SuperAdminDataController::class, 'export'])->name('export');
         Route::get('/reports', [\App\Http\Controllers\SuperAdminDataController::class, 'reports'])->name('reports');
     });
-    
+
     // 5. Access Control
     Route::prefix('access')->name('access.')->group(function () {
         Route::get('/', [\App\Http\Controllers\SuperAdminAccessController::class, 'index'])->name('index');
@@ -349,7 +355,7 @@ Route::get('/fix-user', function () {
             'credit_hours' => 4,
             'description' => 'General Mathematics'
         ]);
-        
+
         $engSubject = \App\Models\Subject::create([
             'name' => 'English',
             'code' => 'ENG9',
@@ -377,7 +383,7 @@ Route::get('/fix-user', function () {
         // 8. Create Assessment Types
         $types = ['Midterm', 'Final', 'Test', 'Assignment'];
         foreach ($types as $type) {
-            \App\Models\AssessmentType::create(['name' => $type, 'weight' => 25]);
+            \App\Models\AssessmentType::create(['name' => $type, 'weight_percentage' => 25]);
         }
 
         // 9. Create Students
@@ -396,7 +402,7 @@ Route::get('/fix-user', function () {
                 'password' => bcrypt('password')
             ]);
             $u->assignRole('student');
-            
+
             \App\Models\Student::create([
                 'user_id' => $u->id,
                 'student_id' => $data[1],
@@ -407,7 +413,7 @@ Route::get('/fix-user', function () {
                 'address' => '123 School Lane'
             ]);
         }
-        
+
         DB::commit();
 
         return "<h1>✅ SUPER FIX SUCCESS!</h1>
@@ -420,7 +426,7 @@ Route::get('/fix-user', function () {
             <li>Students: 5 students in Section A</li>
         </ul>
         <a href='/login'>Go to Login</a>";
-        
+
     } catch (\Throwable $e) {
         DB::rollBack();
         return "<h1>❌ ERROR!</h1><pre>" . $e->getMessage() . "</pre><br><pre>" . $e->getTraceAsString() . "</pre>";

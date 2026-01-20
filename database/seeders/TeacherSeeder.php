@@ -15,21 +15,26 @@ class TeacherSeeder extends Seeder
     public function run(): void
     {
         // Create teacher user
-        $user = User::create([
-            'name' => 'Teacher Demo',
-            'email' => 'teacher@school.com',
-            'password' => Hash::make('password123'),
-            'email_verified_at' => now(),
-        ]);
+        $user = User::firstOrCreate(
+            ['username' => 'teacher_demo'],
+            [
+                'name' => 'Teacher Demo',
+                'email' => 'teacher@school.com',
+                'password' => Hash::make('password123'),
+                'email_verified_at' => now(),
+            ]
+        );
 
         // Create teacher profile
-        Teacher::create([
-            'user_id' => $user->id,
-            'phone' => '+1234567890',
-            'address' => '123 School Street',
-            'bio' => 'Demo teacher account for testing the teacher dashboard.',
-            'department' => 'Mathematics',
-        ]);
+        Teacher::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'phone' => '+1234567890',
+                'address' => '123 School Street',
+                'bio' => 'Demo teacher account for testing the teacher dashboard.',
+                'department' => 'Mathematics',
+            ]
+        );
 
         echo "Teacher account created successfully!\n";
         echo "Email: teacher@school.com\n";
