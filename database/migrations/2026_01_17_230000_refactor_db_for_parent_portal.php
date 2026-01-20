@@ -26,6 +26,12 @@ return new class extends Migration
         Schema::table('marks', function (Blueprint $table) {
             // Drop old enum if exists
             if (Schema::hasColumn('marks', 'assessment_type')) {
+                // Drop index first if it exists
+                try {
+                    $table->dropUnique('marks_student_subject_assessment_unique');
+                } catch (\Exception $e) {
+                    // Index might not exist
+                }
                 $table->dropColumn('assessment_type');
             }
             // assessment_type_id is added by 2026_01_17_200002_update_marks_table_for_rankings

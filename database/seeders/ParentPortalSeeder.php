@@ -19,31 +19,27 @@ class ParentPortalSeeder extends Seeder
     public function run(): void
     {
         // 1. Create Assessment Types
-        $types = [
-            'Midterm' => 20,
-            'Test 1' => 10,
-            'Test 2' => 10,
-            'Assignment' => 10,
-            'Final' => 50
-        ];
+        $types = ['Midterm', 'Test 1', 'Test 2', 'Assignment', 'Final'];
         $typeModels = [];
-        foreach ($types as $type => $weight) {
+        foreach ($types as $type) {
             $typeModels[$type] = AssessmentType::firstOrCreate(
                 ['name' => $type],
-                ['weight_percentage' => $weight]
+                ['weight_percentage' => 20] // Default weight
             );
         }
 
         // 2. Create Academic Structure
-        $year = AcademicYear::create([
-            'name' => '2025-2026', 
-            'status' => 'active', 
-            'start_date' => '2025-09-01', 
-            'end_date' => '2026-06-30'
-        ]);
+        $year = AcademicYear::firstOrCreate(
+            ['name' => '2025-2026'],
+            [
+                'status' => 'active', 
+                'start_date' => '2025-09-01', 
+                'end_date' => '2026-06-30'
+            ]
+        );
         
-        $grade = Grade::create(['name' => 'Grade 10', 'level' => 10]);
-        $section = Section::create(['name' => 'A', 'grade_id' => $grade->id]);
+        $grade = Grade::firstOrCreate(['name' => 'Grade 10'], ['level' => 10]);
+        $section = Section::firstOrCreate(['name' => 'A', 'grade_id' => $grade->id]);
         
         // Create Subjects
         $subjects = [
@@ -58,7 +54,7 @@ class ParentPortalSeeder extends Seeder
         
         $subjectModels = [];
         foreach ($subjects as $name => $code) {
-            $subjectModels[$name] = Subject::create(['name' => $name, 'code' => $code, 'grade_id' => $grade->id]);
+            $subjectModels[$name] = Subject::firstOrCreate(['code' => $code], ['name' => $name, 'grade_id' => $grade->id]);
         }
 
         // 3. Create Parent User & Role
@@ -66,31 +62,40 @@ class ParentPortalSeeder extends Seeder
             \Spatie\Permission\Models\Role::create(['name' => 'parent']);
         }
 
-        $parentUser = User::create([
-            'name' => 'Mrs. Chen',
-            'email' => 'parent@example.com',
-            'password' => Hash::make('password'),
-        ]);
+        $parentUser = User::firstOrCreate(
+            ['username' => 'parent_mary'],
+            [
+                'name' => 'Mrs. Chen',
+                'email' => 'parent@example.com',
+                'password' => Hash::make('password'),
+            ]
+        );
         $parentUser->assignRole('parent');
 
-        $parentProfile = ParentProfile::create([
-            'user_id' => $parentUser->id,
-            'phone' => '123-456-7890',
-            'address' => '123 Family Lane',
-        ]);
+        $parentProfile = ParentProfile::firstOrCreate(
+            ['user_id' => $parentUser->id],
+            [
+                'phone' => '123-456-7890',
+                'address' => '123 Family Lane',
+            ]
+        );
 
         // 4. Create Student
-        $student = Student::create([
-            'user_id' => User::factory()->create()->id,
-            'student_id' => 'STU-2025-045',
-            'parent_id' => $parentProfile->id, // Default logic, but pivot is safer
-            'grade_id' => $grade->id,
-            'section_id' => $section->id,
-            'dob' => '2009-05-15',
-            'gender' => 'Male',
-        ]);
+        $student = Student::firstOrCreate(
+            ['student_id' => 'STU-2025-045'],
+            [
+                'user_id' => User::factory()->create()->id,
+                'parent_id' => $parentProfile->id,
+                'grade_id' => $grade->id,
+                'section_id' => $section->id,
+                'dob' => '2009-05-15',
+                'gender' => 'Male',
+            ]
+        );
 
-        $parentProfile->students()->attach($student->id);
+        if (!$parentProfile->students()->where('students.id', $student->id)->exists()) {
+            $parentProfile->students()->attach($student->id);
+        }
 
         // 5. Create Marks with Realistic Data & Comments
         $comments = [

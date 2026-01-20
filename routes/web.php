@@ -376,7 +376,7 @@ Route::get('/fix-user', function () {
         // 8. Create Assessment Types
         $types = ['Midterm', 'Final', 'Test', 'Assignment'];
         foreach ($types as $type) {
-            \App\Models\AssessmentType::create(['name' => $type, 'weight' => 25]);
+            \App\Models\AssessmentType::create(['name' => $type, 'weight_percentage' => 25]);
         }
 
         // 9. Create Students
