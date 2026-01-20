@@ -79,10 +79,10 @@ export default function RegistrarLayout({ user, children }) {
 
             {/* Sidebar */}
             <aside
-                className={`fixed inset-y-0 left-0 z-20 w-64 bg-[#1E40AF] shadow-xl transform transition-transform duration-300 ease-in-out mt-16
+                className={`fixed inset-y-0 left-0 z-20 w-64 bg-[#1E40AF] shadow-xl transform transition-transform duration-300 ease-in-out mt-16 flex flex-col
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
-                <div className="py-6 px-4 space-y-2 overflow-y-auto h-[calc(100vh-4rem)]">
+                <div className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
                     {navigation.map((item) => (
                         <Link
                             key={item.name}
@@ -115,7 +115,7 @@ export default function RegistrarLayout({ user, children }) {
                     </div>
                 </div>
 
-                <div className="pt-4 mt-6 px-4 pb-6">
+                <div className="p-4 border-t border-blue-800 bg-[#1E40AF]">
                     <Link
                         href={route('logout')}
                         method="post"

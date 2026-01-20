@@ -87,7 +87,7 @@ class RegistrarStudentController extends Controller
             $section = $this->assignSection($validated['grade_id'], $validated['gender']);
 
             // 4. Generate Student ID
-            $studentId = $this->generateStudentId($validated['grade_id']);
+            $studentId = $this->generateStudentId();
 
             // 5. Create Student Notification
             Student::create([
@@ -165,24 +165,24 @@ class RegistrarStudentController extends Controller
         return $section;
     }
 
-    private function generateStudentId($gradeId)
+    private function generateStudentId()
     {
-        $year = date('Y');
-        $grade = Grade::find($gradeId);
-        $level = $grade ? $grade->level : 'XX';
+        $year = date('y'); // 2 digits
 
-        // Format: YYYY-GR-SEQUENCE (e.g., 2025-10-0042)
-        // Find last ID to increment
-        $lastStudent = Student::where('student_id', 'like', "$year-$level-%")->orderBy('id', 'desc')->first();
+        // Format: SEQUENCE/YY (e.g., 0001/26)
+        // Find last ID ending with /YY
+        $lastStudent = Student::where('student_id', 'like', "%/$year")
+            ->orderBy('id', 'desc')
+            ->first();
 
         $nextSeq = 1;
         if ($lastStudent) {
-            $parts = explode('-', $lastStudent->student_id);
-            if (count($parts) === 3) {
-                $nextSeq = intval($parts[2]) + 1;
+            $parts = explode('/', $lastStudent->student_id);
+            if (count($parts) === 2) {
+                $nextSeq = intval($parts[0]) + 1;
             }
         }
 
-        return "$year-$level-" . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
+        return str_pad($nextSeq, 4, '0', STR_PAD_LEFT) . '/' . $year;
     }
 }
