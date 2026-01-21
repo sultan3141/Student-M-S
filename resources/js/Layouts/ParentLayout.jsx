@@ -7,25 +7,60 @@ import {
     PhoneIcon,
     LockClosedIcon,
     ArrowRightOnRectangleIcon,
+    DocumentChartBarIcon,
+    TrophyIcon,
     Bars3Icon,
     XMarkIcon
 } from '@heroicons/react/24/outline';
 import ChangePasswordModal from '@/Components/ChangePasswordModal';
+import { useEffect } from 'react';
 
 export default function ParentLayout({ children }) {
-    const { auth, students } = usePage().props;
+    const { auth, students, student: pageStudent, selectedStudentId } = usePage().props;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-    // Default to first student if available
-    const [selectedStudent, setSelectedStudent] = useState(students ? students[0] : null);
+    // Determine active student ID from multiple sources
+    const activeStudentId = selectedStudentId || pageStudent?.id || students?.[0]?.id;
 
     const navigation = [
-        { name: 'My Children', href: route('parent.dashboard'), icon: UserGroupIcon },
-        { name: 'Payment Info', href: route('parent.student.payments', selectedStudent?.id || students?.[0]?.id || 1), icon: CurrencyDollarIcon },
-        { name: 'Academic Info', href: route('parent.student.marks', selectedStudent?.id || students?.[0]?.id || 1), icon: AcademicCapIcon },
-        { name: 'School Contact', href: route('parent.school-contact'), icon: PhoneIcon },
+        {
+            name: 'My Children',
+            href: route('parent.dashboard', { student: activeStudentId }),
+            icon: UserGroupIcon,
+            current: route().current('parent.dashboard')
+        },
+        {
+            name: 'Semester Academic Record',
+            href: route('parent.academic.semesters', activeStudentId),
+            icon: DocumentChartBarIcon,
+            description: 'Subject marks & Rank',
+            current: route().current('parent.academic.semesters') || route().current('parent.academic.semester.show')
+        },
+        {
+            name: 'Academic Year Record',
+            href: route('parent.academic.year.current', activeStudentId),
+            icon: TrophyIcon,
+            description: 'Yearly average & Final Rank',
+            current: route().current('parent.academic.year.current') || route().current('parent.academic.year.show')
+        },
+        {
+            name: 'Payment Info',
+            href: route('parent.student.payments', activeStudentId),
+            icon: CurrencyDollarIcon,
+            current: route().current('parent.student.payments')
+        },
+        {
+            name: 'School Contact',
+            href: route('parent.school-contact'),
+            icon: PhoneIcon,
+            current: route().current('parent.school-contact')
+        },
     ];
+
+    function classNames(...classes) {
+        return classes.filter(Boolean).join(' ');
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans text-neutral-gray">
@@ -43,13 +78,28 @@ export default function ParentLayout({ children }) {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className="group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
+                                    className={classNames(
+                                        item.current ? 'bg-indigo-900 text-white border-l-4 border-indigo-400' : 'text-indigo-100 hover:bg-indigo-700',
+                                        "group flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-200"
+                                    )}
+                                    onMouseEnter={() => {
+                                        // Prefetch on hover for instant navigation
+                                        if (!item.current) {
+                                            window.dispatchEvent(new CustomEvent('inertia:prefetch', { detail: { url: item.href } }));
+                                        }
+                                    }}
                                 >
                                     <item.icon
-                                        className="mr-3 flex-shrink-0 h-5 w-5"
+                                        className={classNames(
+                                            item.current ? 'text-white' : 'text-indigo-300 group-hover:text-white',
+                                            "mr-3 flex-shrink-0 h-5 w-5 transition-colors"
+                                        )}
                                         aria-hidden="true"
                                     />
-                                    {item.name}
+                                    <div className="flex flex-col">
+                                        <span>{item.name}</span>
+                                        {item.description && <span className={classNames(item.current ? 'text-indigo-200' : 'text-indigo-300', "text-[10px] font-normal")}>{item.description}</span>}
+                                    </div>
                                 </Link>
                             ))}
                         </nav>
@@ -102,25 +152,31 @@ export default function ParentLayout({ children }) {
                                 </button>
                             </div>
 
-                            {/* Navigation Items */}
-                            <div className="flex-grow flex flex-col">
-                                <nav className="flex-1 px-2 space-y-1">
-                                    {navigation.map((item) => (
-                                        <Link
-                                            key={item.name}
-                                            href={item.href}
-                                            className="group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
-                                            onClick={() => setShowingNavigationDropdown(false)}
-                                        >
-                                            <item.icon
-                                                className="mr-3 flex-shrink-0 h-5 w-5"
-                                                aria-hidden="true"
-                                            />
-                                            {item.name}
-                                        </Link>
-                                    ))}
-                                </nav>
-                            </div>
+                            <nav className="flex-1 px-2 space-y-1">
+                                {navigation.map((item) => (
+                                    <Link
+                                        key={item.name}
+                                        href={item.href}
+                                        className={classNames(
+                                            item.current ? 'bg-indigo-900 text-white border-l-4 border-indigo-400' : 'text-indigo-100 hover:bg-indigo-700',
+                                            "group flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-200"
+                                        )}
+                                        onClick={() => setShowingNavigationDropdown(false)}
+                                    >
+                                        <item.icon
+                                            className={classNames(
+                                                item.current ? 'text-white' : 'text-indigo-300 group-hover:text-white',
+                                                "mr-3 flex-shrink-0 h-5 w-5 transition-colors"
+                                            )}
+                                            aria-hidden="true"
+                                        />
+                                        <div className="flex flex-col">
+                                            <span>{item.name}</span>
+                                            {item.description && <span className={classNames(item.current ? 'text-indigo-200' : 'text-indigo-300', "text-[10px] font-normal")}>{item.description}</span>}
+                                        </div>
+                                    </Link>
+                                ))}
+                            </nav>
 
                             {/* Bottom Actions */}
                             <div className="flex-shrink-0 px-2 space-y-1 border-t border-indigo-700 pt-4">

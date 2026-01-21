@@ -13,6 +13,7 @@ class RegistrarController extends Controller
         $totalStudents = \App\Models\Student::count();
         $pendingPayments = \App\Models\Payment::where('status', 'Pending')->count();
         $pendingAmount = \App\Models\Payment::where('status', 'Pending')->sum('amount');
+        $totalGuardians = \App\Models\ParentProfile::count();
 
         // Fetch recent students
         $recentStudents = \App\Models\Student::with(['user', 'grade', 'section'])
@@ -26,6 +27,7 @@ class RegistrarController extends Controller
                 'totalActive' => $totalStudents,
                 'pendingPayments' => $pendingPayments,
                 'pendingAmount' => $pendingAmount,
+                'totalGuardians' => $totalGuardians,
             ],
             'recentStudents' => $recentStudents,
             'grades' => \App\Models\Grade::all(['id', 'name', 'level']),

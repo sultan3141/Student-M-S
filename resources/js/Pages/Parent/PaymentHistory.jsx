@@ -16,7 +16,7 @@ export default function PaymentHistory({ student, payments = [] }) {
                 {/* Payment History Section */}
                 <div className="bg-white shadow rounded-lg p-6">
                     <h2 className="text-lg font-semibold text-gray-900 mb-6">
-                        Payment History - {student?.first_name} {student?.last_name}
+                        Payment History - {student?.user?.name || 'N/A'}
                     </h2>
 
                     {payments && payments.length > 0 ? (

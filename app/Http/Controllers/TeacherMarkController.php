@@ -78,7 +78,7 @@ class TeacherMarkController extends Controller
                         'name' => $student->user->name,
                         'student_id' => $student->student_id,
                         'student_id_number' => $student->student_id,
-                        'mark' => $mark->marks_obtained ?? null,
+                        'mark' => $mark->score ?? null, // Changed from marks_obtained to score
                         'status' => $mark ? ($mark->is_submitted ? 'saved' : 'draft') : 'pending',
                     ];
                 });
@@ -157,10 +157,20 @@ class TeacherMarkController extends Controller
                         'section_id' => $assessment->section_id,
                         'semester' => $assessment->semester,
                         'teacher_id' => $teacher->id,
-                        'marks_obtained' => $item['mark'],
+                        'score' => $item['mark'], // Changed from marks_obtained to score
                         'assessment_type_id' => $assessment->assessment_type_id,
+                        'academic_year_id' => $assessment->academic_year_id,
+                        'is_submitted' => true,
                     ]
                 );
+            }
+            
+            // Clear cache after marks are updated
+            $studentIds = collect($validated['marks'])->pluck('student_id');
+            foreach ($studentIds as $studentId) {
+                \Cache::forget("student_{$studentId}_semesters");
+                \Cache::forget("student_{$studentId}_semester_{$assessment->semester}_year_{$assessment->academic_year_id}");
+                \Cache::forget("student_{$studentId}_academic_year_{$assessment->academic_year_id}");
             }
         });
 

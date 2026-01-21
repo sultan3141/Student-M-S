@@ -27,6 +27,20 @@ export default function StudentLayout({ children }) {
             current: route().current('student.dashboard'),
             description: 'Fee, Reg. & Promotion Status'
         },
+        {
+            name: 'Semester Academic Record',
+            href: route('student.academic.semesters'),
+            icon: DocumentChartBarIcon,
+            current: route().current('student.academic.semesters') || route().current('student.academic.semester.show'),
+            description: 'Subject marks & Rank'
+        },
+        {
+            name: 'Academic Year Record',
+            href: route('student.academic.year.current'),
+            icon: TrophyIcon,
+            current: route().current('student.academic.year.current') || route().current('student.academic.year.show'),
+            description: 'Yearly average & Final Rank'
+        },
     ];
 
     const bottomNavigation = [ // Consistent with Teacher Layout structure for alignment
@@ -38,14 +52,14 @@ export default function StudentLayout({ children }) {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="h-screen bg-gray-50 flex overflow-hidden">
             {/* Mobile Sidebar Overlay */}
             {sidebarOpen && (
                 <div className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm md:hidden" onClick={() => setSidebarOpen(false)}></div>
             )}
 
             {/* Main Sidebar - Dark Blue Theme (Matching Registration) */}
-            <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-blue-900 to-indigo-950 text-white transform transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
+            <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-blue-900 to-indigo-950 text-white transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col h-full flex-shrink-0`}>
                 {/* Logo Section */}
                 <div className="h-16 flex items-center px-6 border-b border-blue-800/50">
                     <div className="flex items-center space-x-3">
@@ -109,22 +123,7 @@ export default function StudentLayout({ children }) {
                             Log Out
                         </Link>
 
-                        {/* User Profile Summary (Mini) */}
-                        <div className="mt-6 flex items-center px-2 py-3 bg-blue-950/50 rounded-xl border border-blue-800/50">
-                            <img
-                                className="h-8 w-8 rounded-full border border-blue-400"
-                                src={auth.user.profile_photo_url || `https://ui-avatars.com/api/?name=${auth.user.name}&background=3B82F6&color=fff`}
-                                alt=""
-                            />
-                            <div className="ml-3 overflow-hidden">
-                                <p className="text-sm font-medium text-white truncate">
-                                    {auth.user.name}
-                                </p>
-                                <p className="text-xs text-blue-300 truncate">
-                                    Student Account
-                                </p>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
             </div>

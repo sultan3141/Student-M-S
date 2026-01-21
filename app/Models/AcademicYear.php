@@ -26,4 +26,9 @@ class AcademicYear extends Model
     {
         // Logic to get students enrolled in this year (e.g. via marks or assignments)
     }
+
+    public function marks()
+    {
+        return $this->hasMany(Mark::class);
+    }
 }

@@ -7,7 +7,8 @@ import {
     UserGroupIcon,
     ChartBarIcon,
     BuildingLibraryIcon,
-    ArrowRightOnRectangleIcon
+    ArrowRightOnRectangleIcon,
+    UsersIcon
 } from '@heroicons/react/24/outline';
 
 export default function RegistrarLayout({ user, children }) {
@@ -16,7 +17,8 @@ export default function RegistrarLayout({ user, children }) {
 
     const navigation = [
         { name: 'Dashboard', href: route('registrar.dashboard'), icon: HomeIcon, active: url.startsWith('/registrar/dashboard') },
-        { name: 'Enroll Student', href: route('registrar.students.create'), icon: AcademicCapIcon, active: url.startsWith('/registrar/students') },
+        { name: 'Enroll Student', href: route('registrar.students.create'), icon: AcademicCapIcon, active: url === '/registrar/students/create' },
+        { name: 'Student Management', href: route('registrar.students.index'), icon: UsersIcon, active: url.startsWith('/registrar/students') && !url.includes('/create') },
         { name: 'Payments', href: route('registrar.payments.index'), icon: BanknotesIcon, active: url.startsWith('/registrar/payments') },
         { name: 'Guardians', href: route('registrar.guardians.index'), icon: UserGroupIcon, active: url.startsWith('/registrar/guardians') },
         { name: 'Reports', href: route('registrar.reports.index'), icon: ChartBarIcon, active: url.startsWith('/registrar/reports') },

@@ -56,8 +56,10 @@ Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(functi
     Route::get('/dashboard', [\App\Http\Controllers\RegistrarController::class, 'dashboard'])->name('registrar.dashboard');
 
     // Student Management (New Controller)
+    Route::get('/students', [\App\Http\Controllers\RegistrarStudentController::class, 'index'])->name('registrar.students.index');
     Route::get('/students/create', [\App\Http\Controllers\RegistrarStudentController::class, 'create'])->name('registrar.students.create');
     Route::post('/students', [\App\Http\Controllers\RegistrarStudentController::class, 'store'])->name('registrar.students.store');
+    Route::delete('/students/{id}', [\App\Http\Controllers\RegistrarStudentController::class, 'destroy'])->name('registrar.students.destroy');
     Route::get('/parents/search', [\App\Http\Controllers\RegistrarStudentController::class, 'searchParents'])->name('registrar.parents.search');
 
     Route::resource('payments', \App\Http\Controllers\RegistrarPaymentController::class)
@@ -66,7 +68,11 @@ Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(functi
 
     // Guardian Management
     Route::get('/guardians', [\App\Http\Controllers\RegistrarGuardianController::class, 'index'])->name('registrar.guardians.index');
+    Route::get('/guardians/create', [\App\Http\Controllers\RegistrarGuardianController::class, 'create'])->name('registrar.guardians.create');
+    Route::post('/guardians', [\App\Http\Controllers\RegistrarGuardianController::class, 'store'])->name('registrar.guardians.store');
     Route::post('/guardians/link', [\App\Http\Controllers\RegistrarGuardianController::class, 'link'])->name('registrar.guardians.link');
+    Route::post('/guardians/unlink', [\App\Http\Controllers\RegistrarGuardianController::class, 'unlink'])->name('registrar.guardians.unlink');
+    Route::post('/guardians/{id}/reset-password', [\App\Http\Controllers\RegistrarGuardianController::class, 'resetPassword'])->name('registrar.guardians.reset-password');
 
     // Application Monitor
     Route::get('/completion', [\App\Http\Controllers\RegistrarCompletionController::class, 'index'])->name('registrar.completion.index');
@@ -116,11 +122,22 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
 Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\ParentDashboardController::class, 'index'])->name('parent.dashboard');
     Route::get('/student/{studentId}', [\App\Http\Controllers\ParentDashboardController::class, 'profile'])->name('parent.student.profile');
+
+    // Registration
+    Route::get('/registration/{studentId}', [\App\Http\Controllers\ParentDashboardController::class, 'registrationCreate'])->name('parent.registration.create');
+    Route::post('/registration/{studentId}', [\App\Http\Controllers\ParentDashboardController::class, 'registrationStore'])->name('parent.registration.store');
+
     Route::get('/student/{studentId}/marks', [\App\Http\Controllers\ParentDashboardController::class, 'marks'])->name('parent.student.marks');
     Route::get('/student/{studentId}/progress', [\App\Http\Controllers\ParentDashboardController::class, 'progress'])->name('parent.student.progress');
     Route::get('/student/{studentId}/payments', [\App\Http\Controllers\ParentDashboardController::class, 'paymentHistory'])->name('parent.student.payments');
     Route::get('/notifications', [\App\Http\Controllers\ParentDashboardController::class, 'notifications'])->name('parent.notifications');
     Route::get('/school-contact', [\App\Http\Controllers\ParentDashboardController::class, 'schoolContact'])->name('parent.school-contact');
+
+    // Academic Records (New - Aligned with Student)
+    Route::get('/student/{studentId}/academic/semesters', [\App\Http\Controllers\ParentDashboardController::class, 'semesterIndex'])->name('parent.academic.semesters');
+    Route::get('/student/{studentId}/academic/semesters/{semester}/{academicYear}', [\App\Http\Controllers\ParentDashboardController::class, 'semesterShow'])->name('parent.academic.semester.show');
+    Route::get('/student/{studentId}/academic/year/current', [\App\Http\Controllers\ParentDashboardController::class, 'academicYearCurrent'])->name('parent.academic.year.current');
+    Route::get('/student/{studentId}/academic/year/{academicYear}', [\App\Http\Controllers\ParentDashboardController::class, 'academicYearShow'])->name('parent.academic.year.show');
 
     Route::get('/settings/password', [\App\Http\Controllers\ParentSettingsController::class, 'edit'])->name('parent.settings.password');
     Route::post('/settings/password', [\App\Http\Controllers\ParentSettingsController::class, 'updatePassword'])->name('parent.settings.password.update');

@@ -1,11 +1,17 @@
 import { UserCircleIcon } from '@heroicons/react/24/solid';
+import { memo } from 'react';
 
-export default function StudentCard({ student, isSelected = false, onClick }) {
-    const getInitials = (firstName, lastName) => {
-        const first = firstName?.charAt(0) || '';
-        const last = lastName?.charAt(0) || '';
-        return `${first}${last}`.toUpperCase();
+const StudentCard = memo(({ student, isSelected = false, onClick }) => {
+    const getInitials = (name) => {
+        if (!name) return 'ST';
+        const parts = name.split(' ');
+        if (parts.length >= 2) {
+            return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
     };
+
+    const studentName = student.user?.name || student.first_name + ' ' + student.last_name || 'Unknown Student';
 
     return (
         <button
@@ -24,18 +30,22 @@ export default function StudentCard({ student, isSelected = false, onClick }) {
                     ${isSelected ? 'bg-indigo-600' : 'bg-indigo-500'}
                 `}>
                     <span className="text-white font-semibold text-lg">
-                        {getInitials(student.first_name, student.last_name)}
+                        {getInitials(studentName)}
                     </span>
                 </div>
                 <div className="flex-1">
                     <h3 className={`font-semibold ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>
-                        {student.first_name} {student.last_name}
+                        {studentName}
                     </h3>
                     <p className="text-sm text-gray-600">
-                        {student.grade?.name || 'N/A'} - {student.section?.name || 'N/A'}
+                        {student.grade?.name || 'N/A'} - Section {student.section?.name || 'N/A'}
                     </p>
                 </div>
             </div>
         </button>
     );
-}
+});
+
+StudentCard.displayName = 'StudentCard';
+
+export default StudentCard;

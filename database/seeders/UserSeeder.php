@@ -151,6 +151,15 @@ class UserSeeder extends Seeder
             ]
         );
         $parent1->assignRole('parent');
+        
+        // Create parent profile for Mary
+        $parentProfile1 = \App\Models\ParentProfile::updateOrCreate(
+            ['user_id' => $parent1->id],
+            [
+                'phone' => '+251-911-123456',
+                'address' => '789 Parent Street, Addis Ababa',
+            ]
+        );
 
         $parent2 = User::firstOrCreate(
             ['username' => 'p_david'],
@@ -161,7 +170,37 @@ class UserSeeder extends Seeder
             ]
         );
         $parent2->assignRole('parent');
+        
+        // Create parent profile for David
+        $parentProfile2 = \App\Models\ParentProfile::updateOrCreate(
+            ['user_id' => $parent2->id],
+            [
+                'phone' => '+251-911-654321',
+                'address' => '321 Guardian Avenue, Addis Ababa',
+            ]
+        );
 
-        $this->command->info('✅ Created 8 test users with valid roles');
+        // Link parents to students (will be done after students are created)
+        // This is handled by LinkParentsToStudentsSeeder or can be done here if students exist
+        $aliceStudent = \App\Models\Student::where('user_id', $student1->id)->first();
+        $bobStudent = \App\Models\Student::where('user_id', $student2->id)->first();
+        
+        if ($aliceStudent && !$parentProfile1->students()->where('students.id', $aliceStudent->id)->exists()) {
+            $parentProfile1->students()->attach($aliceStudent->id);
+            $this->command->info("✅ Linked Mary to Alice");
+        }
+        
+        if ($bobStudent && !$parentProfile2->students()->where('students.id', $bobStudent->id)->exists()) {
+            $parentProfile2->students()->attach($bobStudent->id);
+            $this->command->info("✅ Linked David to Bob");
+        }
+        
+        // Mary can also be guardian of Bob
+        if ($bobStudent && !$parentProfile1->students()->where('students.id', $bobStudent->id)->exists()) {
+            $parentProfile1->students()->attach($bobStudent->id);
+            $this->command->info("✅ Linked Mary to Bob (second child)");
+        }
+
+        $this->command->info('✅ Created 8 test users with valid roles and parent profiles');
     }
 }

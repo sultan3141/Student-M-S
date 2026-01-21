@@ -14,6 +14,67 @@ use Illuminate\Validation\Rule;
 
 class RegistrarStudentController extends Controller
 {
+    /**
+     * Display a listing of all students with their credentials
+     */
+    public function index(Request $request)
+    {
+        $query = Student::with(['user', 'grade', 'section', 'parents.user']);
+
+        // Search functionality
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->whereHas('user', function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            })->orWhere('student_id', 'like', "%{$search}%");
+        }
+
+        // Filter by grade
+        if ($request->has('grade_id') && $request->grade_id) {
+            $query->where('grade_id', $request->grade_id);
+        }
+
+        $students = $query->orderBy('student_id')->paginate(15)->withQueryString();
+
+        // Get grades for filter dropdown
+        $grades = Grade::select('id', 'name')->orderBy('level')->get();
+
+        return inertia('Registrar/Students/Index', [
+            'students' => $students,
+            'grades' => $grades,
+            'filters' => $request->only(['search', 'grade_id']),
+        ]);
+    }
+
+    /**
+     * Delete a student and their user account
+     */
+    public function destroy($id)
+    {
+        try {
+            $student = Student::with('user')->findOrFail($id);
+            $studentName = $student->user->name;
+            $studentId = $student->student_id;
+
+            DB::transaction(function () use ($student) {
+                // Remove parent-student relationships
+                $student->parents()->detach();
+                
+                // Delete student record
+                $student->delete();
+                
+                // Delete user account
+                $student->user->delete();
+            });
+
+            return redirect()->back()->with('success', "Student {$studentName} ({$studentId}) has been deleted successfully.");
+        } catch (\Exception $e) {
+            \Log::error('Student deletion error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete student: ' . $e->getMessage());
+        }
+    }
     public function create()
     {
         return inertia('Registrar/CreateStudent', [
@@ -89,19 +150,23 @@ class RegistrarStudentController extends Controller
             // 4. Generate Student ID
             $studentId = $this->generateStudentId();
 
-            // 5. Create Student Notification
-            Student::create([
+            // 5. Create Student Record
+            $student = Student::create([
                 'user_id' => $studentUser->id,
                 'student_id' => $studentId,
                 'gender' => $validated['gender'],
                 'dob' => $validated['dob'],
-                'parent_id' => $parentId,
                 'grade_id' => $validated['grade_id'],
                 'section_id' => $section->id,
                 // 'previous_school' => $validated['previous_school'], // If column exists
             ]);
 
-            return redirect()->route('registrar.dashboard')->with('success', "Student $studentId registered successfully.");
+            // 6. Link Student to Parent via pivot table
+            if ($parentProfile) {
+                $parentProfile->students()->attach($student->id);
+            }
+
+            return redirect()->route('registrar.dashboard')->with('success', "Student $studentId registered successfully and linked to guardian.");
         });
     }
 

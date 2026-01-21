@@ -8,6 +8,29 @@ export default defineConfig({
             input: 'resources/js/app.jsx',
             refresh: true,
         }),
-        react(),
+        react({
+            // Enable Fast Refresh for better development experience
+            fastRefresh: true,
+        }),
     ],
+    build: {
+        // Optimize chunk splitting for better caching
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'vendor': ['react', 'react-dom'],
+                    'inertia': ['@inertiajs/react'],
+                    'heroicons': ['@heroicons/react/24/outline', '@heroicons/react/24/solid'],
+                }
+            }
+        },
+        // Increase chunk size warning limit
+        chunkSizeWarningLimit: 1000,
+        // Use esbuild for faster minification
+        minify: 'esbuild',
+    },
+    // Optimize dependencies
+    optimizeDeps: {
+        include: ['react', 'react-dom', '@inertiajs/react'],
+    },
 });

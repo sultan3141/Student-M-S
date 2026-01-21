@@ -66,6 +66,24 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                     </div>
                 </div>
 
+                {/* Guardian Stats Banner */}
+                <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow-lg p-6 text-white">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-lg font-bold mb-1">Guardian Portal Management</h3>
+                            <p className="text-green-100 text-sm">Manage parent accounts and link students to guardians</p>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-4xl font-black">{stats.totalGuardians}</div>
+                            <div className="text-sm text-green-100 mt-1">Total Guardians</div>
+                        </div>
+                        <Link href={route('registrar.guardians.index')} className="bg-white text-green-700 px-6 py-3 rounded-lg font-bold hover:bg-green-50 transition-all transform hover:scale-105 shadow-lg flex items-center">
+                            <UserGroupIcon className="w-5 h-5 mr-2" />
+                            Manage Guardians
+                        </Link>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* 2. Quick Actions / Links */}
                     <div className="lg:col-span-1 space-y-6">
@@ -100,10 +118,10 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                                     <AcademicCapIcon className="w-8 h-8 mb-2 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                     <span className="text-xs font-bold text-gray-700 group-hover:text-blue-700">Class Lists</span>
                                 </button>
-                                <button className="p-3 text-center border rounded hover:border-blue-500 hover:bg-blue-50 transition group flex flex-col items-center">
+                                <Link href={route('registrar.guardians.index')} className="p-3 text-center border rounded hover:border-blue-500 hover:bg-blue-50 transition group flex flex-col items-center">
                                     <UserGroupIcon className="w-8 h-8 mb-2 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                     <span className="text-xs font-bold text-gray-700 group-hover:text-blue-700">Guardians</span>
-                                </button>
+                                </Link>
                                 <button className="p-3 text-center border rounded hover:border-blue-500 hover:bg-blue-50 transition group flex flex-col items-center">
                                     <Cog6ToothIcon className="w-8 h-8 mb-2 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                     <span className="text-xs font-bold text-gray-700 group-hover:text-blue-700">Settings</span>
