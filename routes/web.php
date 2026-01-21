@@ -154,6 +154,7 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     Route::get('/marks/students', [\App\Http\Controllers\TeacherAssignmentController::class, 'getStudents'])->name('marks.students');
 
     // Modern Mark Management Wizard (NEW)
+
     Route::prefix('marks/wizard')->name('marks.wizard.')->group(function () {
         Route::get('/', function () {
             return Inertia::render('Teacher/Marks/MarkWizard');
@@ -162,6 +163,14 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
         Route::get('/sections/{grade}', [\App\Http\Controllers\TeacherClassController::class, 'getSectionsByGrade'])->name('sections');
         Route::get('/subjects/{section}', [\App\Http\Controllers\TeacherClassController::class, 'getSubjectsBySection'])->name('subjects');
         Route::get('/assessments/{subject}/{semester}', [\App\Http\Controllers\TeacherClassController::class, 'getAssessmentsBySubject'])->name('assessments');
+    });
+
+    // Attendance Management (NEW)
+    Route::prefix('attendance')->name('attendance.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\TeacherAttendanceController::class, 'index'])->name('index');
+        Route::get('/create/{section}', [\App\Http\Controllers\TeacherAttendanceController::class, 'create'])->name('create');
+        Route::post('/store', [\App\Http\Controllers\TeacherAttendanceController::class, 'store'])->name('store');
+        Route::get('/history', [\App\Http\Controllers\TeacherAttendanceController::class, 'history'])->name('history');
     });
 
     // Assessment Management (CRUD & Bulk Operations)

@@ -14,7 +14,7 @@ class TeacherReportController extends Controller
     public function index()
     {
         $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
-        
+
         // 1. Mark Distribution across all subjects
         $distribution = Mark::where('teacher_id', $teacher->id)
             ->selectRaw('
@@ -39,7 +39,7 @@ class TeacherReportController extends Controller
             ->join('sections', 'marks.section_id', '=', 'sections.id')
             ->join('grades', 'marks.grade_id', '=', 'grades.id')
             ->select(
-                DB::raw('CONCAT(grades.name, " - ", sections.name) as class_name'),
+                DB::raw('grades.name || " - " || sections.name as class_name'),
                 DB::raw('SUM(CASE WHEN score >= 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(*) as pass_rate')
             )
             ->groupBy('grades.name', 'sections.name')

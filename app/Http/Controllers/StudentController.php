@@ -9,10 +9,9 @@ class StudentController extends Controller
     public function dashboard()
     {
         $user = auth()->user();
-        
-        // Single query to get student with minimal data
+
         $student = $user->student()
-            ->select('id', 'user_id', 'student_id', 'grade_id', 'section_id')
+            ->with(['grade', 'section'])
             ->first();
 
         if (!$student) {
@@ -43,165 +42,131 @@ class StudentController extends Controller
                 ->get();
         });
 
-        // Get stats in ONE query using subqueries
-        $stats = \DB::table('marks')
-            ->where('student_id', $student->id)
+        // Get attendance data
+        $attendanceRecords = \App\Models\Attendance::where('student_id', $student->id)
             ->where('academic_year_id', $academicYear->id)
-            ->selectRaw('ROUND(AVG(score), 2) as gpa')
-            ->selectRaw('COUNT(*) as total_marks')
-            ->first();
-
-        // Get rank from semester_results
-        $rank = \DB::table('semester_results')
-            ->where('student_id', $student->id)
-            ->where('academic_year_id', $academicYear->id)
-            ->orderBy('semester', 'desc')
-            ->value('rank') ?? 'N/A';
-
-        // Get attendance count
-        $attendanceStats = \DB::table('attendances')
-            ->where('student_id', $student->id)
-            ->where('academic_year_id', $academicYear->id)
-            ->selectRaw("COUNT(*) as total")
-            ->selectRaw("SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) as present")
-            ->first();
-        
-        $attendanceRate = $attendanceStats && $attendanceStats->total > 0 
-            ? round(($attendanceStats->present / $attendanceStats->total) * 100, 1) 
-            : 100;
-
-        // Get registration status
-        $hasRegistration = \DB::table('registrations')
-            ->where('student_id', $student->id)
-            ->where('academic_year_id', $academicYear->id)
-            ->exists();
-
-        // Get grade and section names in one query
-        $gradeSection = \DB::table('students')
-            ->join('grades', 'students.grade_id', '=', 'grades.id')
-            ->join('sections', 'students.section_id', '=', 'sections.id')
-            ->where('students.id', $student->id)
-            ->select('grades.name as grade_name', 'sections.name as section_name')
-            ->first();
-
-        // Get school-wide statistics for the new dashboard layout
-        $statistics = cache()->remember('school_wide_statistics_v2', 600, function () {
-            $totalStudents = \App\Models\Student::count();
-            $maleStudents = \App\Models\Student::where('gender', 'Male')->count();
-            $femaleStudents = \App\Models\Student::where('gender', 'Female')->count();
-            $totalInstructors = \App\Models\Teacher::count();
-
-            // Grade breakdown for 9-12
-            $gradeBreakdown = \DB::table('grades')
-                ->leftJoin('students', 'grades.id', '=', 'students.grade_id')
-                ->whereIn('grades.level', [9, 10, 11, 12])
-                ->select('grades.name', 'grades.level', \DB::raw('count(students.id) as count'))
-                ->groupBy('grades.id', 'grades.name', 'grades.level')
-                ->orderBy('grades.level')
-                ->get()
-                ->map(function($grade) use ($totalStudents) {
-                    return [
-                        'name' => $grade->name,
-                        'level' => $grade->level,
-                        'count' => $grade->count,
-                        'percent' => $totalStudents > 0 ? round(($grade->count / $totalStudents) * 100, 1) : 0
-                    ];
-                });
-
-            return [
-                'students' => [
-                    'male' => $maleStudents,
-                    'female' => $femaleStudents,
-                    'total' => $totalStudents,
-                    'malePercent' => $totalStudents > 0 ? round(($maleStudents / $totalStudents) * 100, 1) : 0,
-                    'femalePercent' => $totalStudents > 0 ? round(($femaleStudents / $totalStudents) * 100, 1) : 0,
-                ],
-                'instructors' => $totalInstructors,
-                'gradeBreakdown' => $gradeBreakdown,
-            ];
-        });
-
-        // Get historical performance from final_results
-        $pastPerformance = \DB::table('final_results')
-            ->join('academic_years', 'final_results.academic_year_id', '=', 'academic_years.id')
-            ->where('student_id', $student->id)
-            ->orderBy('academic_years.start_date', 'asc')
-            ->select('academic_years.name as year', 'combined_average as average')
             ->get();
 
+        $attendanceStats = [
+            'total' => $attendanceRecords->count(),
+            'present' => $attendanceRecords->where('status', 'Present')->count(),
+            'rate' => $attendanceRecords->count() > 0
+                ? round(($attendanceRecords->where('status', 'Present')->count() / $attendanceRecords->count()) * 100, 1)
+                : 100,
+            'recent' => $attendanceRecords->sortByDesc('date')->take(5)->map(function ($record) {
+                return [
+                    'date' => \Carbon\Carbon::parse($record->date)->format('M d, Y'),
+                    'status' => $record->status,
+                    'remarks' => $record->remarks,
+                ];
+            })->values()
+        ];
+
+        // Get marks data
+        $marksRecords = \App\Models\Mark::where('student_id', $student->id)
+            ->where('academic_year_id', $academicYear->id)
+            ->with(['subject', 'assessment'])
+            ->get();
+
+        $average = $marksRecords->avg('score') ?? 0;
+        $gpa = $average > 0 ? round($average / 25, 2) : 0;
+
+        // Calculate rank
+        $sectionStudents = \App\Models\Student::where('section_id', $student->section_id)->pluck('id');
+        $studentAverages = \DB::table('marks')
+            ->whereIn('student_id', $sectionStudents)
+            ->where('academic_year_id', $academicYear->id)
+            ->select('student_id', \DB::raw('AVG(score) as avg_score'))
+            ->groupBy('student_id')
+            ->orderByDesc('avg_score')
+            ->get();
+
+        $rank = $studentAverages->search(function ($item) use ($student) {
+            return $item->student_id == $student->id;
+        });
+        $rank = $rank !== false ? $rank + 1 : null;
+
+        $marksStats = [
+            'gpa' => $gpa,
+            'average' => round($average, 1),
+            'rank' => $rank,
+            'totalStudents' => $sectionStudents->count(),
+            'totalSubjects' => $marksRecords->unique('subject_id')->count(),
+            'recent' => $marksRecords->sortByDesc('created_at')->take(5)->map(function ($mark) {
+                return [
+                    'subject' => $mark->subject->name ?? 'Unknown',
+                    'assessment' => $mark->assessment->name ?? 'Assessment',
+                    'score' => $mark->score,
+                    'maxScore' => $mark->max_score ?? 100,
+                    'percentage' => round(($mark->score / ($mark->max_score ?? 100)) * 100, 1),
+                ];
+            })->values()
+        ];
+
         return inertia('Student/Dashboard', [
-            'student' => [
-                'id' => $student->id,
-                'student_id' => $student->student_id,
-                'user' => ['name' => $user->name],
-                'grade' => ['name' => $gradeSection ? $gradeSection->grade_name : 'N/A'],
-                'section' => ['name' => $gradeSection ? $gradeSection->section_name : 'N/A'],
-                'current_registration' => $hasRegistration ? ['exists' => true] : null,
-            ],
+            'student' => $student,
             'academicYear' => $academicYear,
-            'subjects' => $subjects,
-            'promotionStatus' => 'Eligible',
-            'stats' => [
-                'gpa' => $stats && $stats->gpa ? round($stats->gpa / 25, 2) : 0,
-                'attendance' => $attendanceRate,
-                'rank' => $rank,
-                'pass_percentage' => 85,
-            ],
-            'statistics' => $statistics,
-            'pastPerformance' => $pastPerformance,
+            'attendance' => $attendanceStats,
+            'marks' => $marksStats,
+            'schedule' => [],
+            'notifications' => [],
         ]);
     }
 
     private function calculateGPAFast($studentId, $academicYearId)
     {
-        if (!$academicYearId) return 0;
-        
+        if (!$academicYearId)
+            return 0;
+
         $cacheKey = "gpa_{$studentId}_{$academicYearId}";
-        
+
         return cache()->remember($cacheKey, 300, function () use ($studentId, $academicYearId) {
             $average = \App\Models\Mark::where('student_id', $studentId)
                 ->where('academic_year_id', $academicYearId)
                 ->avg('score');
-            
+
             return $average ? round($average / 25, 2) : 0;
         });
     }
 
     private function getCurrentRankFast($studentId, $gradeId, $academicYearId)
     {
-        if (!$academicYearId || !$gradeId) return null;
-        
+        if (!$academicYearId || !$gradeId)
+            return null;
+
         $cacheKey = "rank_{$studentId}_{$academicYearId}";
-        
+
         return cache()->remember($cacheKey, 300, function () use ($studentId, $gradeId, $academicYearId) {
             $semesterResult = \App\Models\SemesterResult::where('student_id', $studentId)
                 ->where('academic_year_id', $academicYearId)
                 ->where('grade_id', $gradeId)
                 ->latest()
                 ->value('rank');
-            
+
             return $semesterResult;
         });
     }
 
     private function calculateAttendanceRateFast($studentId, $academicYearId)
     {
-        if (!$academicYearId) return 100;
-        
+        if (!$academicYearId)
+            return 100;
+
         $cacheKey = "attendance_{$studentId}_{$academicYearId}";
-        
+
         return cache()->remember($cacheKey, 300, function () use ($studentId, $academicYearId) {
             $total = \App\Models\Attendance::where('student_id', $studentId)
                 ->where('academic_year_id', $academicYearId)
                 ->count();
-            
-            if ($total === 0) return 100;
-            
+
+            if ($total === 0)
+                return 100;
+
             $present = \App\Models\Attendance::where('student_id', $studentId)
                 ->where('academic_year_id', $academicYearId)
                 ->where('status', 'Present')
                 ->count();
-            
+
             return round(($present / $total) * 100, 1);
         });
     }
@@ -224,23 +189,25 @@ class StudentController extends Controller
 
     private function getPendingAssignmentsCount($student, $academicYear)
     {
-        if (!$academicYear || !$student->grade_id) return 0;
-        
+        if (!$academicYear || !$student->grade_id)
+            return 0;
+
         // Get all assessments for subjects in this grade
         $assessmentIds = \App\Models\Assessment::where('academic_year_id', $academicYear->id)
-            ->whereHas('subject', function($q) use ($student) {
+            ->whereHas('subject', function ($q) use ($student) {
                 $q->where('grade_id', $student->grade_id);
             })
             ->where('type', 'assignment')
             ->pluck('id');
-        
-        if ($assessmentIds->isEmpty()) return 0;
+
+        if ($assessmentIds->isEmpty())
+            return 0;
 
         // Count how many have NO mark for this student
         $submittedCount = \App\Models\Mark::where('student_id', $student->id)
             ->whereIn('assessment_id', $assessmentIds)
             ->count();
-            
+
         return $assessmentIds->count() - $submittedCount;
     }
 
@@ -302,10 +269,10 @@ class StudentController extends Controller
     public function academicRecords()
     {
         $user = auth()->user();
-        
+
         // Eager load all relationships at once
         $student = $user->student()->with(['grade', 'section'])->first();
-        
+
         // Use cached academic year
         $academicYear = cache()->remember('current_academic_year', 3600, function () {
             return \App\Models\AcademicYear::where('is_current', true)
@@ -323,15 +290,15 @@ class StudentController extends Controller
         // Group marks by subject to calculate subject-wise performance and ranks
         $subjectPerformance = [];
         $subjects = $marks->groupBy('subject_id');
-        
+
         // Get section students IDs once for all calculations
         $sectionStudentIds = \App\Models\Student::where('section_id', $student->section_id)
             ->pluck('id');
-        
+
         foreach ($subjects as $subjectId => $subjectMarks) {
             $subject = $subjectMarks->first()->subject;
             $averageScore = $subjectMarks->avg('score');
-            
+
             // Calculate rank for this subject within section - optimized query
             $subjectAverages = \App\Models\Mark::where('subject_id', $subjectId)
                 ->whereIn('student_id', $sectionStudentIds)
@@ -339,13 +306,13 @@ class StudentController extends Controller
                 ->groupBy('student_id')
                 ->orderByDesc('avg_score')
                 ->get();
-            
-            $rank = $subjectAverages->search(function($item) use ($student) {
+
+            $rank = $subjectAverages->search(function ($item) use ($student) {
                 return $item->student_id == $student->id;
             }) + 1;
-            
+
             // Get detailed assessment breakdown for this subject
-            $assessmentBreakdown = $subjectMarks->map(function($mark) {
+            $assessmentBreakdown = $subjectMarks->map(function ($mark) {
                 return [
                     'assessment_type' => $mark->assessment_type,
                     'semester' => $mark->semester,
@@ -354,7 +321,7 @@ class StudentController extends Controller
                     'date' => $mark->created_at->format('Y-m-d'),
                 ];
             });
-            
+
             $subjectPerformance[] = [
                 'subject' => $subject,
                 'average_score' => round($averageScore, 2),
@@ -364,11 +331,11 @@ class StudentController extends Controller
                 'grade' => $this->calculateLetterGrade($averageScore),
             ];
         }
-        
+
         // Calculate trend data (average score per semester)
-        $trendData = $marks->groupBy(function($mark) {
+        $trendData = $marks->groupBy(function ($mark) {
             return $mark->academicYear->name . ' - ' . $mark->semester;
-        })->map(function($periodMarks, $period) {
+        })->map(function ($periodMarks, $period) {
             return [
                 'period' => $period,
                 'average' => round($periodMarks->avg('score'), 2),
@@ -383,13 +350,17 @@ class StudentController extends Controller
             'academicYear' => $academicYear,
         ]);
     }
-    
+
     private function calculateLetterGrade($score)
     {
-        if ($score >= 90) return 'A';
-        if ($score >= 80) return 'B';
-        if ($score >= 70) return 'C';
-        if ($score >= 60) return 'D';
+        if ($score >= 90)
+            return 'A';
+        if ($score >= 80)
+            return 'B';
+        if ($score >= 70)
+            return 'C';
+        if ($score >= 60)
+            return 'D';
         return 'F';
     }
 
@@ -447,7 +418,7 @@ class StudentController extends Controller
 
         $subjects = collect();
         if ($student->grade_id) {
-             $subjects = \App\Models\Subject::where('grade_id', $student->grade_id)->get();
+            $subjects = \App\Models\Subject::where('grade_id', $student->grade_id)->get();
         }
 
         $streams = \App\Models\Stream::all();

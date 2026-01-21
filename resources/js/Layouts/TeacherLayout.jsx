@@ -23,6 +23,7 @@ export default function TeacherLayout({ children }) {
         { name: 'Dashboard Overview', href: route('teacher.dashboard'), icon: HomeIcon, current: route().current('teacher.dashboard') },
         { name: 'Students', href: route('teacher.students.index'), icon: UserGroupIcon, current: route().current('teacher.students.*') },
         { name: 'Classes', href: route('teacher.classes.index'), icon: AcademicCapIcon, current: route().current('teacher.classes.*') },
+        { name: 'Attendance', href: route('teacher.attendance.index'), icon: CalendarDaysIcon, current: route().current('teacher.attendance.*') },
         { name: 'Marks', href: route('teacher.marks.index'), icon: ClipboardDocumentCheckIcon, current: route().current('teacher.marks.*') },
         { name: 'Calendar', href: '#', icon: CalendarDaysIcon, current: false },
     ];
