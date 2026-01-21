@@ -111,15 +111,29 @@ export default function Index({ auth, students, grades, filters }) {
                                                     <p className="text-gray-600 text-xs">{student.section?.name}</p>
                                                 </td>
                                                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                    {student.parent?.user?.name || '-'}
+                                                    {student.parents && student.parents.length > 0 ? (
+                                                        <div className="font-medium text-gray-900">{student.parents[0].user?.name}</div>
+                                                    ) : (
+                                                        <span className="text-gray-400 italic">Not Assigned</span>
+                                                    )}
                                                 </td>
                                                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                    <Link
-                                                        href={route('director.students.show', student.id)}
-                                                        className="text-blue-600 hover:text-blue-900"
-                                                    >
-                                                        View Profile
-                                                    </Link>
+                                                    <div className="flex space-x-3">
+                                                        <Link
+                                                            href={route('director.students.show', student.id)}
+                                                            className="text-blue-600 hover:text-blue-900 font-bold"
+                                                        >
+                                                            View
+                                                        </Link>
+                                                        {student.parents && student.parents.length > 0 && (
+                                                            <Link
+                                                                href={route('director.parents.show', student.parents[0].id)}
+                                                                className="text-emerald-600 hover:text-emerald-900 font-bold"
+                                                            >
+                                                                Parent
+                                                            </Link>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}

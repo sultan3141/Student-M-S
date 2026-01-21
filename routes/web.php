@@ -249,6 +249,10 @@ Route::middleware(['auth', 'role:school_director|admin', 'audit'])->prefix('dire
     Route::get('/students', [\App\Http\Controllers\DirectorStudentController::class, 'index'])->name('students.index');
     Route::get('/students/{student}', [\App\Http\Controllers\DirectorStudentController::class, 'show'])->name('students.show');
 
+    // Parent Directory (New)
+    Route::get('/parents', [\App\Http\Controllers\DirectorParentController::class, 'index'])->name('parents.index');
+    Route::get('/parents/{parent}', [\App\Http\Controllers\DirectorParentController::class, 'show'])->name('parents.show');
+
     // Communication Center
     Route::resource('announcements', \App\Http\Controllers\DirectorCommunicationController::class);
     Route::get('/announcements/{id}/analytics', [\App\Http\Controllers\DirectorCommunicationController::class, 'getAnalytics'])->name('announcements.analytics');
@@ -328,8 +332,6 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super_admin')->name('su
 });
 
 
-// Emergency Quick Fix Route - VISIT THIS ONCE: http://localhost:8000/fix-user
-// Emergency Quick Fix Route - VISIT THIS ONCE: http://localhost:8000/fix-user
 Route::get('/fix-user', function () {
     try {
         DB::beginTransaction();

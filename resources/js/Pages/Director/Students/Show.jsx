@@ -76,19 +76,19 @@ export default function Show({ auth, student, academic_history, payment_history 
                                 <h4 className="font-bold text-gray-700">Guardian Information</h4>
                             </div>
                             <div className="p-6">
-                                {student.parent ? (
+                                {student.parents && student.parents.length > 0 ? (
                                     <div className="space-y-3">
                                         <div>
                                             <label className="text-xs text-gray-500 uppercase">Name</label>
-                                            <p className="text-gray-900">{student.parent.user?.name}</p>
+                                            <p className="text-gray-900 font-bold">{student.parents[0].user?.name}</p>
                                         </div>
                                         <div>
                                             <label className="text-xs text-gray-500 uppercase">Phone</label>
-                                            <p className="text-gray-900">{student.parent.phone || '-'}</p>
+                                            <p className="text-gray-900">{student.parents[0].phone || '-'}</p>
                                         </div>
                                         <div>
-                                            <label className="text-xs text-gray-500 uppercase">Relationship</label>
-                                            <p className="text-gray-900">{student.parent.relationship || 'Parent'}</p>
+                                            <label className="text-xs text-gray-500 uppercase">Email</label>
+                                            <p className="text-gray-900">{student.parents[0].user?.email || '-'}</p>
                                         </div>
                                     </div>
                                 ) : (

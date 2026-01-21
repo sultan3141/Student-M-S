@@ -15,7 +15,7 @@ class DirectorStudentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Student::with(['user', 'grade', 'section', 'parent'])
+        $query = Student::with(['user', 'grade', 'section', 'parent.user'])
             ->latest();
 
         // Apply Filters
@@ -52,15 +52,14 @@ class DirectorStudentController extends Controller
      */
     public function show(Student $student)
     {
-        $student->load(['user', 'grade', 'section', 'parent', 'academicRecords', 'payments']);
+        $student->load(['user', 'grade', 'section', 'parent.user', 'registrations', 'payments', 'marks', 'semesterResults']);
         
-        // Calculate attendance summary if available
-        // $attendance = ...
-
         return Inertia::render('Director/Students/Show', [
             'student' => $student,
-            'academic_history' => $student->academicRecords, // Assuming relationship exists
-            'payment_history' => $student->payments, // Assuming relationship exists
+            'registrations' => $student->registrations,
+            'payment_history' => $student->payments,
+            'marks' => $student->marks,
+            'semester_results' => $student->semesterResults,
         ]);
     }
 }
