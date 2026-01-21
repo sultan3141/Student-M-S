@@ -218,7 +218,7 @@ class TeacherClassController extends Controller
 
         $assessmentData = $assessments->map(function ($assessment) {
             $totalStudents = \App\Models\Student::where('section_id', $assessment->section_id)->count();
-            $marksEntered = $assessment->marks()->whereNotNull('marks_obtained')->count();
+            $marksEntered = $assessment->marks()->whereNotNull('score')->count();
 
             return [
                 'id' => $assessment->id,

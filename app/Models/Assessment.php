@@ -96,13 +96,13 @@ class Assessment extends Model
         $totalStudents = Student::where('section_id', $this->section_id)->count();
         if ($totalStudents === 0) return 0;
         
-        $marksEntered = $this->marks()->whereNotNull('marks_obtained')->count();
+        $marksEntered = $this->marks()->whereNotNull('score')->count();
         return round(($marksEntered / $totalStudents) * 100, 2);
     }
 
     public function getAverageScoreAttribute()
     {
-        return $this->marks()->whereNotNull('marks_obtained')->avg('marks_obtained');
+        return $this->marks()->whereNotNull('score')->avg('score');
     }
 
     public function publish()

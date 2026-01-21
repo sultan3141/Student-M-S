@@ -22,7 +22,6 @@ class Mark extends Model
         'score',
         'score_obtained',
         'max_score',
-        'marks_obtained',
         'is_submitted',
         'submitted_at',
         'is_locked',
@@ -31,7 +30,7 @@ class Mark extends Model
     ];
 
     protected $casts = [
-        'marks_obtained' => 'decimal:2',
+        'score' => 'decimal:2',
         'is_submitted' => 'boolean',
         'is_locked' => 'boolean',
         'submitted_at' => 'datetime',
@@ -86,12 +85,12 @@ class Mark extends Model
     // Scopes
     public function scopeSubmitted($query)
     {
-        return $query->where('is_submitted', true);
+        return $query->whereRaw('is_submitted::boolean = TRUE');
     }
 
     public function scopeUnsubmitted($query)
     {
-        return $query->where('is_submitted', false);
+        return $query->whereRaw('is_submitted::boolean = FALSE');
     }
 
     public function scopeForTeacher($query, $teacherId)

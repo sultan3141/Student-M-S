@@ -16,7 +16,7 @@ class DirectorRegistrationController extends Controller
      */
     public function getStatus()
     {
-        $currentYear = AcademicYear::where('is_current', true)->first();
+        $currentYear = AcademicYear::whereRaw('is_current::boolean = TRUE')->first();
         $period = RegistrationPeriod::where('academic_year_id', $currentYear->id ?? 1)->first();
 
         $totalCapacity = 1500; // Mock - should be from settings or calculation
@@ -51,13 +51,30 @@ class DirectorRegistrationController extends Controller
     /**
      * Toggle registration (open/close).
      */
+    /**
+     * Toggle registration (open/close).
+     */
     public function toggle(Request $request)
     {
         $validated = $request->validate([
             'status' => 'required|in:open,closed',
         ]);
 
-        $currentYear = AcademicYear::where('is_current', true)->firstOrFail();
+        $currentYear = AcademicYear::whereRaw('is_current::boolean = TRUE')->firstOrFail();
+        
+        // Prevent closing if pending applications exist
+        if ($validated['status'] === 'closed') {
+            // Check for pending applications
+            // Assuming AdmissionApplication model exists, otherwise placeholder
+            $pendingCount = \App\Models\AdmissionApplication::where('status', 'pending')
+                ->where('academic_year_id', $currentYear->id)
+                ->count();
+                
+            if ($pendingCount > 0) {
+                return back()->withErrors(['status' => "Cannot close registration. There are {$pendingCount} pending applications that must be processed first."]);
+            }
+        }
+
         $period = RegistrationPeriod::firstOrCreate(
             ['academic_year_id' => $currentYear->id],
             [
@@ -68,6 +85,14 @@ class DirectorRegistrationController extends Controller
         );
 
         $period->update(['status' => $validated['status']]);
+
+        // Audit Log
+        \App\Services\AuditLogger::log(
+            'REGISTRATION_STATUS_CHANGE',
+            'ADMISSION',
+            "Changed registration status to {$validated['status']} for Academic Year {$currentYear->name}",
+            ['year_id' => $currentYear->id, 'new_status' => $validated['status']]
+        );
 
         return redirect()->back()->with('success', 'Registration ' . ($validated['status'] === 'open' ? 'opened' : 'closed') . ' successfully');
     }

@@ -22,7 +22,7 @@ class PaymentSeeder extends Seeder
         }
 
         // Get current academic year
-        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = TRUE')->first();
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current::boolean = TRUE')->first();
         if (!$academicYear) {
             $this->command->info('No current academic year found. Please create one first.');
             return;

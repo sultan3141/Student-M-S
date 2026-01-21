@@ -67,6 +67,14 @@ class DirectorCommunicationController extends Controller
             $this->sendEmail($announcement);
         }
 
+        // Audit Log
+        \App\Services\AuditLogger::log(
+            'ANNOUNCEMENT_SENT',
+            'COMMUNICATION',
+            "Sent announcement '{$validated['subject']}' to {$validated['recipient_type']}",
+            ['recipient_count' => $totalRecipients, 'schedule' => $validated['schedule_type']]
+        );
+
         return redirect()->route('director.announcements.index')
             ->with('success', 'Announcement ' . ($validated['schedule_type'] === 'now' ? 'sent' : 'scheduled') . ' successfully');
     }
@@ -102,6 +110,13 @@ class DirectorCommunicationController extends Controller
             case 'specific':
                 return count($ids);
             default:
+                // Handle Grade specific: 'grade_9', etc.
+                if (str_starts_with($type, 'grade_')) {
+                    $gradeId = str_replace('grade_', '', $type);
+                    return User::whereHas('student', function($q) use ($gradeId) {
+                        $q->where('grade_id', $gradeId);
+                    })->count();
+                }
                 return 0;
         }
     }

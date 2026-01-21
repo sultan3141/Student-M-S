@@ -23,7 +23,7 @@ class StudentController extends Controller
         $academicYear = cache()->remember('current_academic_year', 3600, function () {
             return \DB::table('academic_years')
                 ->select('id', 'name')
-                ->whereRaw('is_current = TRUE')
+                ->whereRaw('is_current::boolean = TRUE')
                 ->first();
         });
         

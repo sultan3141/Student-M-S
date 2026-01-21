@@ -23,12 +23,14 @@ export default function DirectorLayout({ children }) {
 
     const navigation = [
         { name: 'Dashboard', href: '/director/dashboard', icon: HomeIcon },
+        { name: 'Students', href: '/director/students', icon: UserCircleIcon },
         { name: 'Teachers', href: '/director/teachers', icon: UsersIcon },
         { name: 'Academic', href: '/director/academic/overview', icon: AcademicCapIcon },
         { name: 'Profile', href: '/director/profile', icon: UserCircleIcon },
         { name: 'Registration', href: '/director/registration/status', icon: ChartBarIcon },
         { name: 'Documents', href: '/director/documents', icon: DocumentTextIcon },
         { name: 'Communication', href: '/director/announcements', icon: ChatBubbleLeftRightIcon },
+        { name: 'Audit Log', href: '/director/audit', icon: Cog6ToothIcon },
     ];
 
     const currentPath = window.location.pathname;
