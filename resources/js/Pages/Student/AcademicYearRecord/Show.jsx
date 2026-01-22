@@ -113,11 +113,11 @@ export default function AcademicYearRecordShow({
                     </Link>
 
                     {/* Final Average */}
-                    <div className="executive-card bg-gradient-to-br from-blue-900 to-indigo-900 border-blue-800 !p-6 relative overflow-hidden transform hover:scale-[1.02] shadow-xl shadow-blue-900/10">
+                    <div className="executive-card bg-gradient-to-br from-blue-600 to-indigo-600 border-blue-500 !p-6 relative overflow-hidden transform hover:scale-[1.02] shadow-xl shadow-blue-600/20">
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <ChartBarIcon className="w-20 h-20 text-white" />
                         </div>
-                        <p className="text-blue-200 text-xs font-bold uppercase tracking-widest mb-2 relative z-10">Final Average</p>
+                        <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-2 relative z-10">Final Average</p>
                         <div className="flex items-baseline space-x-2 relative z-10">
                             <h2 className="text-5xl font-black text-white">{final_average ? final_average : '--'}%</h2>
                         </div>
@@ -164,7 +164,6 @@ export default function AcademicYearRecordShow({
                             <thead>
                                 <tr className="bg-gray-50/30">
                                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Subject</th>
-                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Credits</th>
                                     <th className="px-6 py-4 text-center text-xs font-bold text-blue-600 uppercase tracking-wider">Semester 1</th>
                                     <th className="px-6 py-4 text-center text-xs font-bold text-indigo-600 uppercase tracking-wider">Semester 2</th>
                                     <th className="px-6 py-4 text-center text-xs font-bold text-gray-900 uppercase tracking-wider">Annual Final</th>
@@ -185,9 +184,6 @@ export default function AcademicYearRecordShow({
                                                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{subject.code}</div>
                                                     </div>
                                                 </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-500">
-                                                {subject.credit_hours}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 <span className={`text-sm font-bold ${subject.semester1_average ? 'text-blue-600' : 'text-gray-300'}`}>
@@ -217,7 +213,7 @@ export default function AcademicYearRecordShow({
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-16 text-center">
+                                        <td colSpan="5" className="px-6 py-16 text-center">
                                             <div className="flex flex-col items-center">
                                                 <ScaleIcon className="w-12 h-12 text-gray-200 mb-2" />
                                                 <p className="text-gray-400 font-bold">No academic data available for this year</p>

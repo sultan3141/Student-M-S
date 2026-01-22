@@ -240,6 +240,8 @@ Route::middleware(['auth', 'role:school_director|admin', 'audit'])->prefix('dire
     Route::post('/registration/toggle', [\App\Http\Controllers\DirectorRegistrationController::class, 'toggle'])->name('registration.toggle');
     Route::get('/registration/stats', [\App\Http\Controllers\DirectorRegistrationController::class, 'getEnrollmentStats'])->name('registration.stats');
     Route::post('/registration/process', [\App\Http\Controllers\DirectorRegistrationController::class, 'processApplications'])->name('registration.process');
+    Route::get('/registration/export-excel', [\App\Http\Controllers\DirectorRegistrationController::class, 'exportExcel'])->name('registration.export-excel');
+    Route::get('/registration/export-pdf', [\App\Http\Controllers\DirectorRegistrationController::class, 'exportPdf'])->name('registration.export-pdf');
 
     // Student Statistics & Directory
     Route::get('/statistics/students', [\App\Http\Controllers\DirectorStudentStatisticsController::class, 'index'])->name('statistics.students');

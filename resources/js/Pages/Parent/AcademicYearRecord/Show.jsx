@@ -39,15 +39,15 @@ export default function AcademicYearShow({ student, academic_year, semester1_ave
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {/* Final Average */}
-                    <div className="executive-card bg-gradient-to-br from-indigo-900 to-blue-900 border-indigo-800 !p-6 text-white transform hover:scale-[1.02] shadow-xl shadow-indigo-900/10 h-full relative overflow-hidden group">
+                    <div className="executive-card bg-gradient-to-br from-blue-600 to-indigo-600 border-blue-500 !p-6 text-white transform hover:scale-[1.02] shadow-xl shadow-blue-600/20 h-full relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                             <TrophyIcon className="w-24 h-24" />
                         </div>
-                        <p className="text-indigo-200 text-[10px] font-black uppercase tracking-widest mb-1 relative z-10">Yearly Average</p>
+                        <p className="text-blue-100 text-[10px] font-black uppercase tracking-widest mb-1 relative z-10">Yearly Average</p>
                         <div className="flex items-baseline space-x-1 relative z-10">
                             <h2 className="text-4xl font-black">{final_average || 'N/A'}<span className="text-xl opacity-70">%</span></h2>
                         </div>
-                        <p className="mt-2 text-[10px] text-indigo-300 font-bold uppercase tracking-tight relative z-10">Combined Semester Mastery</p>
+                        <p className="mt-2 text-[10px] text-blue-100 font-bold uppercase tracking-tight relative z-10">Combined Semester Mastery</p>
                     </div>
 
                     {/* Final Rank */}
@@ -117,7 +117,6 @@ export default function AcademicYearShow({ student, academic_year, semester1_ave
                             <thead>
                                 <tr className="bg-gray-50/30">
                                     <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Subject</th>
-                                    <th scope="col" className="px-4 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Credit</th>
                                     <th scope="col" className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Semester 1</th>
                                     <th scope="col" className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Semester 2</th>
                                     <th scope="col" className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Annual Avg</th>
@@ -131,9 +130,6 @@ export default function AcademicYearShow({ student, academic_year, semester1_ave
                                                 <span className="text-sm font-bold text-gray-900">{subject.name}</span>
                                                 <span className="text-xs text-gray-400 font-mono tracking-tight uppercase">{subject.code}</span>
                                             </div>
-                                        </td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-center">
-                                            <span className="text-xs font-bold text-gray-500">{subject.credit_hours}</span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
                                             <span className={`text-sm font-bold ${getGradeColor(subject.semester1_average)}`}>

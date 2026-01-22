@@ -223,25 +223,33 @@ export default function Dashboard({ statistics, recentData }) {
                     <table className="w-full min-w-[1000px]">
                         <thead className="bg-gray-50 border-y border-gray-100 sticky top-0">
                             <tr>
-                                <th className="text-left py-3 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Student Name</th>
-                                <th className="text-left py-3 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">ID</th>
-                                <th className="text-left py-3 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Grade/Section</th>
-                                <th className="text-left py-3 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Parent/Guardian</th>
-                                <th className="text-center py-3 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">ID</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Student Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Grade/Section</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Parent/Guardian</th>
+                                <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {paginatedStudents.length > 0 ? (
                                 paginatedStudents.map((student) => (
                                     <tr key={student.id} className="hover:bg-blue-50/30 transition-colors">
-                                        <td className="py-4 px-6">
-                                            <div className="font-semibold text-gray-900">{student.user?.name}</div>
-                                            <div className="text-xs text-gray-500">{student.user?.email}</div>
-                                        </td>
-                                        <td className="py-4 px-6 text-sm text-gray-600 font-mono">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
                                             {student.student_id}
                                         </td>
-                                        <td className="py-4 px-6">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <div>
+                                                    <div className="text-sm font-semibold text-gray-900">
+                                                        {student.user?.name || 'N/A'}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        {student.user?.email}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
                                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                                 {student.grade?.name} - {student.section?.name}
                                             </span>
@@ -253,18 +261,18 @@ export default function Dashboard({ statistics, recentData }) {
                                                 <span className="text-gray-400 italic">Not Assigned</span>
                                             )}
                                         </td>
-                                        <td className="py-4 px-6 text-center">
-                                            <div className="flex items-center justify-center space-x-2">
+                                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                            <div className="flex justify-center space-x-3">
                                                 <Link
                                                     href={route('director.students.show', student.id)}
-                                                    className="text-blue-600 hover:text-blue-900 font-bold text-sm px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all border border-transparent hover:border-blue-100"
+                                                    className="text-blue-600 hover:text-blue-900 font-bold bg-blue-50 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-blue-100"
                                                 >
                                                     View
                                                 </Link>
                                                 {student.parents && student.parents.length > 0 && (
                                                     <Link
                                                         href={route('director.parents.show', student.parents[0].id)}
-                                                        className="text-emerald-600 hover:text-emerald-900 font-bold text-sm px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-all border border-transparent hover:border-emerald-100"
+                                                        className="text-emerald-600 hover:text-emerald-900 font-bold bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-emerald-100"
                                                     >
                                                         Parent
                                                     </Link>

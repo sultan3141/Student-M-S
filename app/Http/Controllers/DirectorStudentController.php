@@ -15,7 +15,7 @@ class DirectorStudentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Student::with(['user', 'grade', 'section', 'parent.user'])
+        $query = Student::with(['user', 'grade', 'section', 'parents.user'])
             ->latest();
 
         // Apply Filters
@@ -52,7 +52,7 @@ class DirectorStudentController extends Controller
      */
     public function show(Student $student)
     {
-        $student->load(['user', 'grade', 'section', 'parent.user', 'registrations', 'payments', 'marks', 'semesterResults']);
+        $student->load(['user', 'grade', 'section', 'parents.user', 'registrations', 'payments', 'marks', 'semesterResults']);
         
         return Inertia::render('Director/Students/Show', [
             'student' => $student,

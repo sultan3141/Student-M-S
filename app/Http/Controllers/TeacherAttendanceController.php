@@ -52,7 +52,7 @@ class TeacherAttendanceController extends Controller
             $q->whereIn('id', TeacherAssignment::where('teacher_id', $teacher->id)->pluck('section_id'));
         })
             ->whereBetween('date', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
-            ->selectRaw('count(*) as total, sum(case when status = "Present" then 1 else 0 end) as present')
+            ->selectRaw("count(*) as total, sum(case when status = 'Present' then 1 else 0 end) as present")
             ->first();
 
         $weekRate = $weekStats->total > 0 ? round(($weekStats->present / $weekStats->total) * 100, 1) : 0;

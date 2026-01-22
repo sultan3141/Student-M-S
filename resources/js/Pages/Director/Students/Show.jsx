@@ -2,7 +2,7 @@ import React from 'react';
 import DirectorLayout from '@/Layouts/DirectorLayout';
 import { Head, Link } from '@inertiajs/react';
 
-export default function Show({ auth, student, academic_history, payment_history }) {
+export default function Show({ auth, student, registrations, payment_history, marks, semester_results }) {
     return (
         <DirectorLayout
             user={auth.user}
@@ -13,29 +13,29 @@ export default function Show({ auth, student, academic_history, payment_history 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Header Card */}
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                        <div className="p-6 bg-white border-b border-gray-200 flex justify-between items-center">
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-xl mb-6 border border-gray-100">
+                        <div className="p-8 bg-white flex flex-col md:flex-row justify-between items-center gap-6">
                             <div className="flex items-center">
-                                <div className="h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-500">
+                                <div className="h-24 w-24 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl font-bold text-blue-600 border border-blue-100 shadow-sm">
                                     {student.user?.name?.charAt(0)}
                                 </div>
                                 <div className="ml-6">
-                                    <h3 className="text-2xl font-bold text-gray-900">{student.user?.name}</h3>
-                                    <p className="text-gray-600">ID: {student.student_id}</p>
-                                    <div className="mt-2 flex gap-2">
-                                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Active</span>
-                                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{student.grade?.name} - {student.section?.name}</span>
+                                    <h3 className="text-3xl font-extrabold text-navy-900" style={{ color: '#0F172A' }}>{student.user?.name}</h3>
+                                    <p className="text-gray-500 font-mono text-sm mt-1">ID: {student.student_id}</p>
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full border border-emerald-200 uppercase tracking-wider">Active</span>
+                                        <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full border border-blue-200 uppercase tracking-wider">{student.grade?.name} - {student.section?.name}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-3">
                                 <Link
                                     href={route('director.students.index')}
-                                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200"
+                                    className="bg-white text-gray-700 px-5 py-2.5 rounded-lg hover:bg-gray-50 border border-gray-300 transition-all font-medium text-sm shadow-sm"
                                 >
                                     Back to Directory
                                 </Link>
-                                <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                <button className="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-all font-bold text-sm shadow-md shadow-blue-200">
                                     Generate Transcript
                                 </button>
                             </div>
