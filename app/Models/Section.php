@@ -13,4 +13,36 @@ class Section extends Model
     public function grade()
     {
         return $this->belongsTo(Grade::class);
-    }}
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    public function students()
+    {
+        return $this->hasMany(Student::class);
+    }
+
+    public function classTeacher()
+    {
+        return $this->belongsTo(Teacher::class, 'class_teacher_id');
+    }
+
+    public function teacherAssignments()
+    {
+        return $this->hasMany(TeacherAssignment::class);
+    }
+
+    public function subjects()
+    {
+        return $this->belongsToMany(Subject::class, 'teacher_assignments')
+            ->withPivot(['teacher_id', 'academic_year_id']);
+    }
+
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class);
+    }
+}

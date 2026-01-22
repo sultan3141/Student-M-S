@@ -30,6 +30,50 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Dashboard
                                 </NavLink>
+                                {/* Role based links - simplified check given `user` prop */}
+                                {user.roles && user.roles.some(r => r.name === 'registrar') && (
+                                    <>
+                                        <NavLink href={route('registrar.dashboard')} active={route().current('registrar.dashboard')}>
+                                            Registrar
+                                        </NavLink>
+                                        <NavLink href={route('registrar.payments.index')} active={route().current('registrar.payments.index')}>
+                                            Payments
+                                        </NavLink>
+                                    </>
+                                )}
+                                {user.roles && user.roles.some(r => r.name === 'teacher') && (
+                                    <>
+                                        <NavLink href={route('teacher.dashboard')} active={route().current('teacher.dashboard')}>
+                                            Teacher
+                                        </NavLink>
+                                        <NavLink href={route('teacher.marks.index')} active={route().current('teacher.marks.index')}>
+                                            Marks
+                                        </NavLink>
+                                        <NavLink href={route('teacher.attendance.index')} active={route().current('teacher.attendance.index')}>
+                                            Attendance
+                                        </NavLink>
+                                    </>
+                                )}
+                                {user.roles && user.roles.some(r => r.name === 'student') && (
+                                    <>
+                                        <NavLink href={route('student.dashboard')} active={route().current('student.dashboard')}>
+                                            My Dashboard
+                                        </NavLink>
+                                        <NavLink href={route('student.records')} active={route().current('student.records')}>
+                                            Records
+                                        </NavLink>
+                                    </>
+                                )}
+                                {user.roles && user.roles.some(r => r.name === 'school_director') && (
+                                    <>
+                                        <NavLink href={route('director.dashboard')} active={route().current('director.dashboard')}>
+                                            Director Panel
+                                        </NavLink>
+                                        <NavLink href={route('director.teachers.index')} active={route().current('director.teachers.index')}>
+                                            Teachers
+                                        </NavLink>
+                                    </>
+                                )}
                             </div>
                         </div>
 

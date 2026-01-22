@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ParentModel extends Model
+class ParentProfile extends Model
 {
-    /** @use HasFactory<\Database\Factories\ParentModelFactory> */
+    /** @use HasFactory<\Database\Factories\ParentProfileFactory> */
+    use HasFactory;
+    
     protected $table = 'parents';
 
     protected $fillable = [
@@ -23,5 +25,6 @@ class ParentModel extends Model
 
     public function students()
     {
-        return $this->hasMany(Student::class, 'parent_id');
-    }}
+        return $this->belongsToMany(Student::class, 'parent_student', 'parent_id', 'student_id');
+    }
+}

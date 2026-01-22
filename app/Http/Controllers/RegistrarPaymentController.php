@@ -6,12 +6,34 @@ use Illuminate\Http\Request;
 
 class RegistrarPaymentController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
+        $query = \App\Models\Payment::with(['student.user', 'academicYear'])
+            ->latest();
+
+        // Search functionality
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->whereHas('student.user', function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })->orWhereHas('student', function($q) use ($search) {
+                $q->where('student_id', 'like', "%{$search}%");
+            });
+        }
+
+        $payments = $query->paginate(10)->withQueryString();
+
+        // Stats for Fee Collection Center
+        $stats = [
+             'todayCollected' => \App\Models\Payment::whereDate('transaction_date', today())->sum('amount'),
+             'monthlyCollected' => \App\Models\Payment::whereMonth('transaction_date', now()->month)->sum('amount'),
+             'pendingCount' => \App\Models\Payment::where('status', 'Pending')->count(),
+        ];
+
         return inertia('Registrar/Payments/Index', [
-            'payments' => \App\Models\Payment::with(['student.user', 'academicYear'])
-                ->latest()
-                ->paginate(10),
+            'payments' => $payments,
+            'stats' => $stats,
+             'filters' => $request->only(['search']),
         ]);
     }
 

@@ -36,6 +36,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('employee_id')->unique()->nullable();
+            $table->string('qualification')->nullable();
             $table->string('specialization')->nullable();
             $table->string('phone')->nullable();
             $table->timestamps();
@@ -47,6 +48,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_profiles_tables');
+        Schema::dropIfExists('teachers');
+        Schema::dropIfExists('students');
+        Schema::dropIfExists('parents');
     }
 };

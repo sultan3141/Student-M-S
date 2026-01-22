@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class MarkChangeLog extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'mark_id',
+        'teacher_id',
+        'action',
+        'old_value',
+        'new_value',
+        'ip_address',
+        'user_agent',
+    ];
+
+    public function mark()
+    {
+        return $this->belongsTo(Mark::class);
+    }
+
+    public function teacher()
+    {
+        return $this->belongsTo(Teacher::class);
+    }
+}

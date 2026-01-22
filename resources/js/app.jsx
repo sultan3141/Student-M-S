@@ -1,4 +1,5 @@
 import '../css/app.css';
+import '../css/director-theme.css';
 import './bootstrap';
 
 import { createInertiaApp } from '@inertiajs/react';
@@ -20,6 +21,9 @@ createInertiaApp({
         root.render(<App {...props} />);
     },
     progress: {
-        color: '#4B5563',
+        delay: 0, // Show progress bar immediately
+        color: '#4F46E5', // Indigo color
+        includeCSS: true,
+        showSpinner: true, // Show spinner for better feedback
     },
 });

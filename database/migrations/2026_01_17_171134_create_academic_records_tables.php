@@ -58,6 +58,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('academic_records_tables');
+        Schema::dropIfExists('audit_logs');
+        Schema::dropIfExists('payments');
+        Schema::dropIfExists('marks');
+        Schema::dropIfExists('enrollments');
     }
 };
