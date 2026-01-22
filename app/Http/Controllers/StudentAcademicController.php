@@ -81,7 +81,6 @@ class StudentAcademicController extends Controller
                 'subject' => $subject,
                 'average_score' => round($averageScore, 2),
                 'assessments' => $assessmentBreakdown,
-                'grade' => $this->calculateLetterGrade($averageScore),
             ];
         }
         
@@ -101,15 +100,6 @@ class StudentAcademicController extends Controller
             'trendData' => $trendData,
             'academicYear' => $academicYear,
         ]);
-    }
-
-    private function calculateLetterGrade($score)
-    {
-        if ($score >= 90) return 'A';
-        if ($score >= 80) return 'B';
-        if ($score >= 70) return 'C';
-        if ($score >= 60) return 'D';
-        return 'F';
     }
 
     public function rankings()
@@ -164,7 +154,6 @@ class StudentAcademicController extends Controller
                 'id' => $subject->id,
                 'name' => $subject->name,
                 'code' => $subject->code,
-                'credit_hours' => $subject->credit_hours,
                 'teacher' => $teacherAssignment ? $teacherAssignment->teacher->user->name : 'Not Assigned',
                 'teacher_email' => $teacherAssignment ? $teacherAssignment->teacher->user->email : null,
             ];
