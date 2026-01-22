@@ -67,6 +67,11 @@ class Assessment extends Model
         return $this->hasMany(Mark::class);
     }
 
+    public function components()
+    {
+        return $this->hasMany(AssessmentComponent::class);
+    }
+
     // Scopes
     public function scopePublished($query)
     {
