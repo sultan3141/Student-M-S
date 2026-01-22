@@ -53,12 +53,14 @@ class DirectorDashboardController extends Controller
     }
 
     /**
-     * Get all students and recent parents for dashboard.
+     * Get recent students and parents for dashboard.
      */
     private function getRecentData()
     {
         return [
             'recentStudents' => Student::with(['user', 'grade', 'section', 'parents.user'])
+                ->latest()
+                ->take(50) // Limit to 50 most recent students for performance
                 ->get()
                 ->sortBy(fn($student) => $student->user->name ?? '')
                 ->values(),
