@@ -1,7 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import TeacherLayout from '@/Layouts/TeacherLayout';
-import GradeSelector from '@/Components/Marks/GradeSelector';
 import SectionSelector from '@/Components/Marks/SectionSelector';
 import SubjectAssessmentSelector from '@/Components/Marks/SubjectAssessmentSelector';
 import {
@@ -13,8 +12,7 @@ import {
 import axios from 'axios';
 
 export default function MarkWizard() {
-    const [step, setStep] = useState(1); // 1: Grade, 2: Section, 3: Subject/Assessment
-    const [selectedGrade, setSelectedGrade] = useState(null);
+    const [step, setStep] = useState(1); // 1: Section Selection, 2: Subject/Assessment Selection
     const [selectedSection, setSelectedSection] = useState(null);
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [semester, setSemester] = useState(2); // Default to semester 2
@@ -26,24 +24,14 @@ export default function MarkWizard() {
         average_completion: 75
     });
 
-    const handleGradeSelect = (grade) => {
-        setSelectedGrade(grade);
-        setStep(2);
-    };
-
+    // Step 1: Section Selection (only assigned sections)
     const handleSectionSelect = (section) => {
         setSelectedSection(section);
-        setStep(3);
-    };
-
-    const handleBackToGrades = () => {
-        setStep(1);
-        setSelectedGrade(null);
-        setSelectedSection(null);
+        setStep(2);
     };
 
     const handleBackToSections = () => {
-        setStep(2);
+        setStep(1);
         setSelectedSection(null);
     };
 
@@ -58,7 +46,7 @@ export default function MarkWizard() {
                         📊 Mark Management Dashboard
                     </h1>
                     <p className="text-blue-100 text-lg">
-                        Streamlined workflow to enter and manage student marks
+                        Work with your assigned classes and sections
                     </p>
                 </div>
             </div>
@@ -113,21 +101,14 @@ export default function MarkWizard() {
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
                             {step > 1 ? <CheckCircleIcon className="w-6 h-6" /> : '1'}
                         </div>
-                        <span className="ml-2 font-medium hidden sm:inline">Grade</span>
+                        <span className="ml-2 font-medium hidden sm:inline">Select Assigned Class</span>
                     </div>
                     <div className={`h-1 w-16 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
                     <div className={`flex items-center ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
                             {step > 2 ? <CheckCircleIcon className="w-6 h-6" /> : '2'}
                         </div>
-                        <span className="ml-2 font-medium hidden sm:inline">Section</span>
-                    </div>
-                    <div className={`h-1 w-16 ${step >= 3 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
-                    <div className={`flex items-center ${step >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
-                            3
-                        </div>
-                        <span className="ml-2 font-medium hidden sm:inline">Subject & Assessment</span>
+                        <span className="ml-2 font-medium hidden sm:inline">Mark Entry</span>
                     </div>
                 </div>
             </div>
@@ -135,22 +116,16 @@ export default function MarkWizard() {
             {/* Main Content Area */}
             <div className="bg-white rounded-lg shadow-md p-8">
                 {step === 1 && (
-                    <GradeSelector onSelectGrade={handleGradeSelect} />
-                )}
-
-                {step === 2 && selectedGrade && (
                     <SectionSelector
-                        gradeId={selectedGrade.id}
-                        gradeName={selectedGrade.name}
                         onSelectSection={handleSectionSelect}
-                        onBack={handleBackToGrades}
+                        // No gradeId prop - fetch only assigned sections
                     />
                 )}
 
-                {step === 3 && selectedSection && (
+                {step === 2 && selectedSection && (
                     <SubjectAssessmentSelector
                         sectionId={selectedSection.id}
-                        gradeName={selectedGrade.name}
+                        gradeName={selectedSection.grade_name || 'Class'}
                         sectionName={selectedSection.name}
                         semester={semester}
                         onSemesterChange={setSemester}

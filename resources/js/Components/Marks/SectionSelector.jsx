@@ -37,21 +37,22 @@ const statusConfig = {
     }
 };
 
-export default function SectionSelector({ gradeId, gradeName, onSelectSection, onBack }) {
+export default function SectionSelector({ onSelectSection, onBack }) {
     const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [hoveredSection, setHoveredSection] = useState(null);
 
     useEffect(() => {
-        fetchSections();
-    }, [gradeId]);
+        fetchAssignedSections();
+    }, []);
 
-    const fetchSections = async () => {
+    const fetchAssignedSections = async () => {
         try {
-            const response = await axios.get(`/teacher/marks/wizard/sections/${gradeId}`);
+            // Always fetch only assigned sections (no grade selection)
+            const response = await axios.get('/teacher/marks/wizard/all-sections');
             setSections(response.data);
         } catch (error) {
-            console.error('Error fetching sections:', error);
+            console.error('Error fetching assigned sections:', error);
         } finally {
             setLoading(false);
         }
@@ -69,19 +70,21 @@ export default function SectionSelector({ gradeId, gradeName, onSelectSection, o
         <div>
             {/* Header */}
             <div className="mb-8">
-                <button
-                    onClick={onBack}
-                    className="flex items-center text-blue-600 hover:text-blue-700 mb-4 transition-colors"
-                >
-                    <ArrowLeftIcon className="w-5 h-5 mr-2" />
-                    Back to Grades
-                </button>
+                {onBack && (
+                    <button
+                        onClick={onBack}
+                        className="flex items-center text-blue-600 hover:text-blue-700 mb-4 transition-colors"
+                    >
+                        <ArrowLeftIcon className="w-5 h-5 mr-2" />
+                        Back
+                    </button>
+                )}
 
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                    📚 Select Section - {gradeName}
+                    📚 My Assigned Classes
                 </h2>
                 <p className="text-gray-600">
-                    Available sections for {gradeName}
+                    Select a class assigned to you by the school directorate
                 </p>
             </div>
 
@@ -117,9 +120,15 @@ export default function SectionSelector({ gradeId, gradeName, onSelectSection, o
                             </div>
 
                             {/* Section Name */}
-                            <h3 className="text-2xl font-bold text-gray-900 mb-4 pr-20">
-                                {section.name}
+                            <h3 className="text-xl font-bold text-gray-900 mb-1 pr-20">
+                                {section.full_name || section.name}
                             </h3>
+                            {section.grade_name && (
+                                <p className="text-sm font-medium text-gray-500 mb-4">{section.grade_name}</p>
+                            )}
+                            {!section.grade_name && (
+                                <div className="mb-4"></div>
+                            )}
 
                             {/* Section Details */}
                             <div className="space-y-3">
@@ -173,7 +182,8 @@ export default function SectionSelector({ gradeId, gradeName, onSelectSection, o
 
             {sections.length === 0 && (
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500 text-lg">No sections found for this grade.</p>
+                    <p className="text-gray-500 text-lg">No classes have been assigned to you yet.</p>
+                    <p className="text-gray-400 text-sm mt-2">Contact the school directorate to get class assignments.</p>
                 </div>
             )}
 
