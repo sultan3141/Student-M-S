@@ -3,16 +3,10 @@ import { Head, Link } from '@inertiajs/react';
 
 export default function Transcript({ auth, student, academicYear, schoolInfo }) {
 
-    const calculateGPA = (marks) => {
+    const calculateAverage = (marks) => {
         if (!marks || marks.length === 0) return 0;
-        let totalPoints = 0;
-        marks.forEach(mark => {
-            if (mark.score_obtained >= 90) totalPoints += 4.0;
-            else if (mark.score_obtained >= 80) totalPoints += 3.0;
-            else if (mark.score_obtained >= 70) totalPoints += 2.0;
-            else if (mark.score_obtained >= 60) totalPoints += 1.0;
-        });
-        return (totalPoints / marks.length).toFixed(2);
+        const total = marks.reduce((sum, mark) => sum + (mark.score_obtained || 0), 0);
+        return (total / marks.length).toFixed(1);
     };
 
     const gpa = calculateGPA(student.marks);

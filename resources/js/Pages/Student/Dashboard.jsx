@@ -69,20 +69,20 @@ export default function StudentDashboard({ auth, student, academicYear, attendan
                     </div>
                 </div>
 
-                {/* GPA */}
+                {/* Average Score */}
                 <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                     <div className="flex items-center justify-between mb-4">
                         <div className="p-3 bg-emerald-50 rounded-lg">
                             <ChartBarIcon className="w-6 h-6 text-emerald-600" />
                         </div>
                         <span className="text-2xl font-bold text-emerald-600">
-                            {marks?.gpa?.toFixed(2) || '0.00'}
+                            {marks?.average?.toFixed(1) || '0.0'}%
                         </span>
                     </div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">Current GPA</h3>
+                    <h3 className="text-sm font-medium text-gray-500 mb-2">Current Average</h3>
                     <div className="flex items-center justify-between text-xs text-gray-500">
                         <span>{marks?.totalSubjects || 0} Subjects</span>
-                        <span>{marks?.average || 0}%</span>
+                        <span>Score: {marks?.average || 0}%</span>
                     </div>
                 </div>
 

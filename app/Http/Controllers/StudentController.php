@@ -118,14 +118,14 @@ class StudentController extends Controller
         if (!$academicYearId)
             return 0;
 
-        $cacheKey = "gpa_{$studentId}_{$academicYearId}";
+        $cacheKey = "average_{$studentId}_{$academicYearId}";
 
         return cache()->remember($cacheKey, 300, function () use ($studentId, $academicYearId) {
             $average = \App\Models\Mark::where('student_id', $studentId)
                 ->where('academic_year_id', $academicYearId)
                 ->avg('score');
 
-            return $average ? round($average / 25, 2) : 0;
+            return $average ? round($average, 2) : 0;
         });
     }
 
@@ -328,7 +328,6 @@ class StudentController extends Controller
                 'rank' => $rank,
                 'total_students' => $subjectAverages->count(),
                 'assessments' => $assessmentBreakdown,
-                'grade' => $this->calculateLetterGrade($averageScore),
             ];
         }
 
@@ -349,19 +348,6 @@ class StudentController extends Controller
             'trendData' => $trendData,
             'academicYear' => $academicYear,
         ]);
-    }
-
-    private function calculateLetterGrade($score)
-    {
-        if ($score >= 90)
-            return 'A';
-        if ($score >= 80)
-            return 'B';
-        if ($score >= 70)
-            return 'C';
-        if ($score >= 60)
-            return 'D';
-        return 'F';
     }
 
     // FR-02: Admission Application

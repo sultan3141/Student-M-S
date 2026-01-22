@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -153,12 +155,13 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     Route::post('/marks/store', [\App\Http\Controllers\TeacherMarkController::class, 'store'])->name('marks.store');
     Route::get('/marks/students', [\App\Http\Controllers\TeacherAssignmentController::class, 'getStudents'])->name('marks.students');
 
-    // Modern Mark Management Wizard (NEW)
-
+    // Modern Mark Management Wizard (Updated - No Grade Selection)
     Route::prefix('marks/wizard')->name('marks.wizard.')->group(function () {
         Route::get('/', function () {
             return Inertia::render('Teacher/Marks/MarkWizard');
         })->name('index');
+        Route::get('/all-sections', [\App\Http\Controllers\TeacherClassController::class, 'getAllAssignedSections'])->name('all-sections');
+        // Deprecated routes - kept for backward compatibility but return empty data
         Route::get('/grades', [\App\Http\Controllers\TeacherClassController::class, 'getTeacherGrades'])->name('grades');
         Route::get('/sections/{grade}', [\App\Http\Controllers\TeacherClassController::class, 'getSectionsByGrade'])->name('sections');
         Route::get('/subjects/{section}', [\App\Http\Controllers\TeacherClassController::class, 'getSubjectsBySection'])->name('subjects');
@@ -178,6 +181,16 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     Route::post('/assessments/{id}/import', [\App\Http\Controllers\AssessmentController::class, 'importMarks'])->name('assessments.import');
     Route::get('/assessments/{id}/template', [\App\Http\Controllers\AssessmentController::class, 'exportTemplate'])->name('assessments.template');
     Route::get('/assessments/{id}/stats', [\App\Http\Controllers\AssessmentController::class, 'getStats'])->name('assessments.stats');
+
+    // Custom Assessment Management (NEW)
+    Route::prefix('custom-assessments')->name('custom-assessments.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\TeacherCustomAssessmentController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\TeacherCustomAssessmentController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\TeacherCustomAssessmentController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\TeacherCustomAssessmentController::class, 'show'])->name('show');
+        Route::get('/{id}/enter-marks', [\App\Http\Controllers\TeacherCustomAssessmentController::class, 'enterMarks'])->name('enter-marks');
+        Route::post('/{id}/store-marks', [\App\Http\Controllers\TeacherCustomAssessmentController::class, 'storeMarks'])->name('store-marks');
+    });
 
     // Assessment Management (Old 2-step workflow - Keep for backward compatibility)
     Route::get('/assessments-old', [\App\Http\Controllers\TeacherAssessmentController::class, 'index'])->name('assessments-old.index');
@@ -228,6 +241,12 @@ Route::middleware(['auth', 'role:school_director|admin', 'audit'])->prefix('dire
     // Teacher Management
     Route::resource('teachers', \App\Http\Controllers\DirectorTeacherController::class);
     Route::get('/teachers/{id}/performance', [\App\Http\Controllers\DirectorTeacherController::class, 'getPerformanceMetrics'])->name('teachers.performance');
+    
+    // Teacher Assignments (NEW)
+    Route::get('/teacher-assignments', [\App\Http\Controllers\SchoolDirectorController::class, 'teacherAssignments'])->name('teacher.assignments');
+    Route::post('/teacher-assignments', [\App\Http\Controllers\SchoolDirectorController::class, 'assignTeacher'])->name('teacher.assign');
+    Route::delete('/teacher-assignments/{assignmentId}', [\App\Http\Controllers\SchoolDirectorController::class, 'removeTeacherAssignment'])->name('teacher.assignment.remove');
+    Route::get('/grades/{gradeId}/sections', [\App\Http\Controllers\SchoolDirectorController::class, 'getSectionsByGrade'])->name('grades.sections');
 
     // Academic Analytics  
     Route::get('/academic/overview', [\App\Http\Controllers\DirectorAcademicController::class, 'getPerformanceOverview'])->name('academic.overview');

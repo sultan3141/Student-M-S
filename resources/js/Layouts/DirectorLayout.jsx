@@ -15,6 +15,7 @@ import {
     MagnifyingGlassIcon,
     CalendarIcon,
     UserCircleIcon,
+    ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 
 export default function DirectorLayout({ children }) {
@@ -26,6 +27,7 @@ export default function DirectorLayout({ children }) {
         { name: 'Students', href: '/director/students', icon: UserCircleIcon },
         { name: 'Parents', href: '/director/parents', icon: UsersIcon },
         { name: 'Teachers', href: '/director/teachers', icon: UsersIcon },
+        { name: 'Teacher Assignments', href: '/director/teacher-assignments', icon: ClipboardDocumentListIcon },
         { name: 'Academic', href: '/director/academic/overview', icon: AcademicCapIcon },
         { name: 'Profile', href: '/director/profile', icon: UserCircleIcon },
         { name: 'Registration', href: '/director/registration/status', icon: ChartBarIcon },

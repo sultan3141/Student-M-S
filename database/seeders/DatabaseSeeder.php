@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             FixStudentAliceSeeder::class,
             TeacherSeeder::class,
+            TeacherAssignmentSeeder::class, // Add teacher assignments
             ParentPortalSeeder::class,
             StudentMarksSeeder::class,
             StudentReportSeeder::class,

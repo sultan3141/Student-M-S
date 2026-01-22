@@ -15,15 +15,16 @@ class TeacherReportController extends Controller
     {
         $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
 
-        // 1. Mark Distribution across all subjects
-        $distribution = Mark::where('teacher_id', $teacher->id)
+        // 1. Score Statistics across all subjects
+        $statistics = Mark::where('teacher_id', $teacher->id)
             ->selectRaw('
                 count(*) as total,
-                SUM(CASE WHEN score >= 90 THEN 1 ELSE 0 END) as grade_A,
-                SUM(CASE WHEN score >= 80 AND score < 90 THEN 1 ELSE 0 END) as grade_B,
-                SUM(CASE WHEN score >= 70 AND score < 80 THEN 1 ELSE 0 END) as grade_C,
-                SUM(CASE WHEN score >= 60 AND score < 70 THEN 1 ELSE 0 END) as grade_D,
-                SUM(CASE WHEN score < 60 THEN 1 ELSE 0 END) as grade_F
+                AVG(score) as average_score,
+                MIN(score) as min_score,
+                MAX(score) as max_score,
+                SUM(CASE WHEN score >= 80 THEN 1 ELSE 0 END) as high_performers,
+                SUM(CASE WHEN score >= 60 THEN 1 ELSE 0 END) as passing_students,
+                SUM(CASE WHEN score < 60 THEN 1 ELSE 0 END) as failing_students
             ')
             ->first();
 
@@ -46,7 +47,7 @@ class TeacherReportController extends Controller
             ->get();
 
         return Inertia::render('Teacher/Reports/Index', [
-            'distribution' => $distribution,
+            'statistics' => $statistics,
             'subjectPerformance' => $subjectPerformance,
             'classPassRate' => $classPassRate,
         ]);

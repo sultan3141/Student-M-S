@@ -99,57 +99,40 @@ class TeacherClassController extends Controller
 
     /**
      * Get grades taught by the teacher with section counts.
-     * For the mark management wizard - Step 1: Grade Selection
+     * DEPRECATED: Teachers can no longer select grades - they work only with assigned sections
+     * This method is kept for backward compatibility but returns empty data
      */
     public function getTeacherGrades()
     {
-        $teacherId = auth()->user()->teacher->id;
-        
-        // Get unique grades the teacher teaches
-        $grades = \App\Models\Grade::whereHas('sections.subjects.teachers', function ($query) use ($teacherId) {
-            $query->where('teachers.id', $teacherId);
-        })->with('sections')->get();
-
-        $gradeData = $grades->map(function ($grade) use ($teacherId) {
-            $sectionCount = \App\Models\Section::where('grade_id', $grade->id)
-                ->whereHas('subjects.teachers', function ($query) use ($teacherId) {
-                    $query->where('teachers.id', $teacherId);
-                })->count();
-
-            return [
-                'id' => $grade->id,
-                'name' => $grade->name,
-                'level' => $grade->level, // 9, 10, 11, or 12
-                'section_count' => $sectionCount,
-            ];
-        });
-
-        return response()->json($gradeData);
+        // Teachers can no longer select grades independently
+        // They can only work with sections assigned to them by school directorate
+        return response()->json([]);
     }
 
     /**
-     * Get sections by grade with student counts, schedules, and completion status.
-     * For the mark management wizard - Step 2: Section Selection
+     * Get all assigned sections for the teacher.
+     * Teachers can only work with sections bound to them by school directorate
+     * This is now the primary method for section selection
      */
-    public function getSectionsByGrade($gradeId)
+    public function getAllAssignedSections()
     {
         $teacherId = auth()->user()->teacher->id;
 
-        $sections = \App\Models\Section::where('grade_id', $gradeId)
-            ->whereHas('subjects.teachers', function ($query) use ($teacherId) {
-                $query->where('teachers.id', $teacherId);
-            })
-            ->with(['students', 'assessments'])
+        // Get sections only from teacher_assignments table (bound by school directorate)
+        $sections = \App\Models\Section::whereHas('teacherAssignments', function ($query) use ($teacherId) {
+            $query->where('teacher_id', $teacherId);
+        })
+            ->with(['grade', 'students', 'assessments'])
             ->get();
 
         $sectionData = $sections->map(function ($section) {
             $totalStudents = $section->students->count();
-            
+
             // Calculate completion status based on recent assessments
             $recentAssessments = $section->assessments()->latest()->take(5)->get();
             $completedAssessments = $recentAssessments->filter(fn($a) => $a->status === 'published')->count();
             $totalAssessments = $recentAssessments->count();
-            
+
             $status = 'pending';
             if ($totalAssessments > 0) {
                 $completionRate = ($completedAssessments / $totalAssessments) * 100;
@@ -160,13 +143,15 @@ class TeacherClassController extends Controller
                 }
             }
 
-            // Mock schedule and room data (replace with actual data if available)
+            // Mock schedule and room data
             $schedule = 'Mon, Wed, Fri';
             $room = 'Room ' . (200 + $section->id);
 
             return [
                 'id' => $section->id,
                 'name' => $section->name,
+                'grade_name' => $section->grade->name,
+                'full_name' => $section->grade->name . ' - ' . $section->name,
                 'student_count' => $totalStudents,
                 'schedule' => $schedule,
                 'room' => $room,
@@ -180,15 +165,29 @@ class TeacherClassController extends Controller
     }
 
     /**
+     * Get sections by grade with student counts, schedules, and completion status.
+     * DEPRECATED: Teachers can no longer select grades - they work only with assigned sections
+     * This method is kept for backward compatibility but returns empty data
+     */
+    public function getSectionsByGrade($gradeId)
+    {
+        // Teachers can no longer select grades independently
+        // They can only work with sections assigned to them by school directorate
+        return response()->json([]);
+    }
+
+    /**
      * Get subjects by section.
-     * For the mark management wizard - Step 3: Subject Selection
+     * Only returns subjects that the teacher is assigned to teach in this section
      */
     public function getSubjectsBySection($sectionId)
     {
         $teacherId = auth()->user()->teacher->id;
 
-        $subjects = \App\Models\Subject::whereHas('teachers', function ($query) use ($teacherId, $sectionId) {
-            $query->where('teachers.id', $teacherId);
+        // Get subjects only from teacher_assignments for this specific section
+        $subjects = \App\Models\Subject::whereHas('teacherAssignments', function ($query) use ($teacherId, $sectionId) {
+            $query->where('teacher_id', $teacherId)
+                  ->where('section_id', $sectionId);
         })->get();
 
         $subjectData = $subjects->map(function ($subject) {

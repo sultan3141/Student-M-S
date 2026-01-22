@@ -64,8 +64,8 @@ export default function Show({ student, history, subjects }) {
                         </div>
                     </div>
                     <div className="text-center bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <p className="text-sm text-blue-600 font-semibold uppercase">Overall Grade</p>
-                        <p className="text-3xl font-black text-blue-800 mt-1">A-</p>
+                        <p className="text-sm text-blue-600 font-semibold uppercase">Overall Average</p>
+                        <p className="text-3xl font-black text-blue-800 mt-1">{student.average || '0'}%</p>
                     </div>
                 </div>
             </div>
@@ -93,13 +93,7 @@ export default function Show({ student, history, subjects }) {
                             <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
                                 <span className="font-medium text-gray-800">{subject.subject}</span>
                                 <div className="flex items-center space-x-3">
-                                    <span className="text-sm text-gray-500">{subject.score}%</span>
-                                    <span className={`px-2 py-0.5 text-xs font-bold rounded-md ${subject.letter.startsWith('A') ? 'bg-green-100 text-green-700' :
-                                            subject.letter.startsWith('B') ? 'bg-blue-100 text-blue-700' :
-                                                'bg-orange-100 text-orange-700'
-                                        }`}>
-                                        {subject.letter}
-                                    </span>
+                                    <span className="text-lg font-bold text-gray-800">{subject.score}%</span>
                                 </div>
                             </div>
                         ))}
