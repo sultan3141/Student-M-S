@@ -11,23 +11,15 @@ class SuperAdminSystemConfigController extends Controller
     {
         // Fetch current system configuration
         $config = [
-            'grading' => [
-                'scales' => [
-                    ['min' => 90, 'max' => 100, 'grade' => 'A+', 'gpa' => 4.0],
-                    ['min' => 85, 'max' => 89, 'grade' => 'A', 'gpa' => 3.75],
-                    ['min' => 80, 'max' => 84, 'grade' => 'B+', 'gpa' => 3.5],
-                    ['min' => 75, 'max' => 79, 'grade' => 'B', 'gpa' => 3.0],
-                    ['min' => 70, 'max' => 74, 'grade' => 'C+', 'gpa' => 2.5],
-                    ['min' => 60, 'max' => 69, 'grade' => 'C', 'gpa' => 2.0],
-                    ['min' => 50, 'max' => 59, 'grade' => 'D', 'gpa' => 1.0],
-                    ['min' => 0, 'max' => 49, 'grade' => 'F', 'gpa' => 0.0],
-                ],
+            'scoring' => [
                 'assessmentTypes' => [
                     ['name' => 'Quiz', 'percentage' => 10],
                     ['name' => 'Assignment', 'percentage' => 15],
                     ['name' => 'Mid-term', 'percentage' => 25],
                     ['name' => 'Final Exam', 'percentage' => 50],
                 ],
+                'passingScore' => 60,
+                'maxScore' => 100,
             ],
             'fees' => [
                 'structures' => [
@@ -68,12 +60,12 @@ class SuperAdminSystemConfigController extends Controller
         ]);
     }
 
-    public function updateGrading(Request $request)
+    public function updateScoring(Request $request)
     {
-        // TODO: Implement grading scale update logic
+        // TODO: Implement scoring configuration update logic
         // This would typically update a settings table or config file
         
-        return back()->with('success', 'Grading configuration updated successfully.');
+        return back()->with('success', 'Scoring configuration updated successfully.');
     }
 
     public function updateFees(Request $request)

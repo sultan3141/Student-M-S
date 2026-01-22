@@ -3,14 +3,9 @@ import TeacherLayout from '@/Layouts/TeacherLayout';
 import PerformanceChart from '@/Components/Dashboard/PerformanceChart';
 import { ChartBarIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 
-export default function Index({ distribution, subjectPerformance, classPassRate }) {
+export default function Index({ statistics, subjectPerformance, classPassRate }) {
 
-    // Transform distribution object to array for chart if needed, 
-    // but PerformanceChart expects raw marks usually. 
-    // Adapting PerformanceChart to accept aggregated data or creating new ones.
-
-    // For this demo, I'll create simple visual bars for the aggregated data directly here
-    // rather than complex Chart.js implementation to ensure it works without npm install steps if they failed.
+    // Transform statistics object to display score statistics instead of grade distribution
 
     return (
         <TeacherLayout>
@@ -20,7 +15,7 @@ export default function Index({ distribution, subjectPerformance, classPassRate 
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Academic Reports</h1>
                     <p className="mt-1 text-sm text-gray-500">
-                        Performance analytics and grade distribution across your classes.
+                        Performance analytics and score distribution across your classes.
                     </p>
                 </div>
                 <button className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
@@ -31,39 +26,37 @@ export default function Index({ distribution, subjectPerformance, classPassRate 
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-                {/* Grade Distribution Card */}
+                {/* Score Statistics Card */}
                 <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-semibold text-gray-900">Overall Grade Distribution</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">Score Statistics</h3>
                         <ChartBarIcon className="h-5 w-5 text-gray-400" />
                     </div>
 
-                    <div className="flex items-end space-x-4 h-64 mt-4">
-                        {[
-                            { label: 'F (<60)', count: distribution.grade_F, color: 'bg-red-400' },
-                            { label: 'D (60-69)', count: distribution.grade_D, color: 'bg-orange-400' },
-                            { label: 'C (70-79)', count: distribution.grade_C, color: 'bg-yellow-400' },
-                            { label: 'B (80-89)', count: distribution.grade_B, color: 'bg-blue-400' },
-                            { label: 'A (90+)', count: distribution.grade_A, color: 'bg-green-400' },
-                        ].map((item, idx) => {
-                            const max = Math.max(distribution.grade_A, distribution.grade_B, distribution.grade_C, distribution.grade_D, distribution.grade_F, 1);
-                            const height = `${(item.count / max) * 100}%`;
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center p-4 bg-blue-50 rounded-lg">
+                            <div className="text-2xl font-bold text-blue-600">{statistics?.average_score?.toFixed(1) || '0.0'}</div>
+                            <div className="text-sm text-gray-600">Average Score</div>
+                        </div>
+                        <div className="text-center p-4 bg-green-50 rounded-lg">
+                            <div className="text-2xl font-bold text-green-600">{statistics?.high_performers || 0}</div>
+                            <div className="text-sm text-gray-600">High Performers (80+)</div>
+                        </div>
+                        <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                            <div className="text-2xl font-bold text-yellow-600">{statistics?.passing_students || 0}</div>
+                            <div className="text-sm text-gray-600">Passing (60+)</div>
+                        </div>
+                        <div className="text-center p-4 bg-red-50 rounded-lg">
+                            <div className="text-2xl font-bold text-red-600">{statistics?.failing_students || 0}</div>
+                            <div className="text-sm text-gray-600">Below 60</div>
+                        </div>
+                    </div>
 
-                            return (
-                                <div key={idx} className="flex-1 flex flex-col items-center group">
-                                    <div className="relative w-full flex flex-col justify-end h-full">
-                                        <div
-                                            className={`w-full rounded-t-md ${item.color} opacity-80 group-hover:opacity-100 transition-all`}
-                                            style={{ height: height }}
-                                        ></div>
-                                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-sm font-bold text-gray-700">
-                                            {item.count}
-                                        </span>
-                                    </div>
-                                    <span className="mt-2 text-xs font-medium text-gray-500">{item.label}</span>
-                                </div>
-                            );
-                        })}
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div className="flex justify-between text-sm text-gray-600">
+                            <span>Min Score: {statistics?.min_score || 0}</span>
+                            <span>Max Score: {statistics?.max_score || 0}</span>
+                        </div>
                     </div>
                 </div>
 

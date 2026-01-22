@@ -3,10 +3,10 @@ import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function SystemConfiguration({ config }) {
-    const [activeTab, setActiveTab] = useState('grading');
+    const [activeTab, setActiveTab] = useState('scoring');
 
     const tabs = [
-        { id: 'grading', name: 'Grading System', icon: '📊' },
+        { id: 'scoring', name: 'Scoring System', icon: '📊' },
         { id: 'fees', name: 'Fee Structure', icon: '💰' },
         { id: 'academic', name: 'Academic Settings', icon: '📚' },
         { id: 'workflows', name: 'Workflows', icon: '⚙️' },
@@ -43,36 +43,28 @@ export default function SystemConfiguration({ config }) {
                 </div>
 
                 <div className="p-6">
-                    {/* Grading System Tab */}
-                    {activeTab === 'grading' && (
+                    {/* Scoring System Tab */}
+                    {activeTab === 'scoring' && (
                         <div>
-                            <h3 className="text-lg font-bold mb-4">Grading Scale</h3>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Min %</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Max %</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">GPA</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {config?.grading?.scales?.map((scale, idx) => (
-                                            <tr key={idx}>
-                                                <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{scale.grade}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-gray-700">{scale.min}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-gray-700">{scale.max}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-gray-700">{scale.gpa}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <h3 className="text-lg font-bold mb-4">Scoring Configuration</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                <div className="border border-gray-200 rounded-lg p-4 text-center">
+                                    <div className="text-2xl font-bold text-blue-600">{config?.scoring?.maxScore || 100}</div>
+                                    <div className="text-sm text-gray-600">Maximum Score</div>
+                                </div>
+                                <div className="border border-gray-200 rounded-lg p-4 text-center">
+                                    <div className="text-2xl font-bold text-green-600">{config?.scoring?.passingScore || 60}</div>
+                                    <div className="text-sm text-gray-600">Passing Score</div>
+                                </div>
+                                <div className="border border-gray-200 rounded-lg p-4 text-center">
+                                    <div className="text-2xl font-bold text-purple-600">Numerical</div>
+                                    <div className="text-sm text-gray-600">Score Type</div>
+                                </div>
                             </div>
 
                             <h3 className="text-lg font-bold mt-8 mb-4">Assessment Types</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {config?.grading?.assessmentTypes?.map((type, idx) => (
+                                {config?.scoring?.assessmentTypes?.map((type, idx) => (
                                     <div key={idx} className="border border-gray-200 rounded-lg p-4">
                                         <div className="flex justify-between items-center">
                                             <span className="font-medium text-gray-900">{type.name}</span>
