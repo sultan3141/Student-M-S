@@ -39,7 +39,7 @@ class DirectorRegistrationController extends Controller
         });
 
         // Get registration report data
-        $registrations = \App\Models\Registration::with(['student.user', 'student.grade', 'academic_year'])
+        $registrations = \App\Models\Registration::with(['student.user', 'student.grade', 'academicYear'])
             ->where('academic_year_id', $currentYear->id ?? 1)
             ->get();
 
@@ -161,7 +161,7 @@ class DirectorRegistrationController extends Controller
         try {
             $currentYear = AcademicYear::whereRaw('is_current::boolean = TRUE')->first();
             
-            $registrations = \App\Models\Registration::with(['student.user', 'student.grade', 'academic_year'])
+            $registrations = \App\Models\Registration::with(['student.user', 'student.grade', 'academicYear'])
                 ->where('academic_year_id', $currentYear->id ?? 1)
                 ->get();
 
@@ -190,7 +190,7 @@ class DirectorRegistrationController extends Controller
         try {
             $currentYear = AcademicYear::whereRaw('is_current::boolean = TRUE')->first();
             
-            $registrations = \App\Models\Registration::with(['student.user', 'student.grade', 'academic_year'])
+            $registrations = \App\Models\Registration::with(['student.user', 'student.grade', 'academicYear'])
                 ->where('academic_year_id', $currentYear->id ?? 1)
                 ->get();
 
@@ -248,7 +248,7 @@ class DirectorRegistrationController extends Controller
                     $registration->student->grade->name ?? 'N/A',
                     ucfirst($registration->status),
                     $registration->created_at->format('M d, Y'),
-                    $registration->academic_year->name ?? 'N/A',
+                    $registration->academicYear->name ?? 'N/A',
                 ]);
             }
             

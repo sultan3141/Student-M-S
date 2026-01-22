@@ -29,6 +29,7 @@ export default function DirectorLayout({ children }) {
         { name: 'Teachers', href: '/director/teachers', icon: UsersIcon },
         { name: 'Teacher Assignments', href: '/director/teacher-assignments', icon: ClipboardDocumentListIcon },
         { name: 'Academic', href: '/director/academic/overview', icon: AcademicCapIcon },
+        { name: 'Schedule', href: '/director/schedule', icon: CalendarIcon },
         { name: 'Profile', href: '/director/profile', icon: UserCircleIcon },
         { name: 'Registration', href: '/director/registration/status', icon: ChartBarIcon },
         { name: 'Documents', href: '/director/documents', icon: DocumentTextIcon },

@@ -3,6 +3,7 @@ import DirectorLayout from '@/Layouts/DirectorLayout';
 import { Head } from '@inertiajs/react';
 import StudentBarChart from '@/Components/Charts/StudentBarChart';
 import StudentDonutChart from '@/Components/Charts/StudentDonutChart';
+import SchoolSchedule from '@/Components/Director/SchoolSchedule';
 import { UsersIcon, UserGroupIcon, AcademicCapIcon, UserIcon, ArrowRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { Link } from '@inertiajs/react';
 
@@ -433,6 +434,11 @@ export default function Dashboard({ statistics, recentData }) {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* School Schedule Section */}
+            <div className="mb-8">
+                <SchoolSchedule />
             </div>
         </DirectorLayout>
     );

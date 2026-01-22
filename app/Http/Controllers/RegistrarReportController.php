@@ -101,9 +101,13 @@ class RegistrarReportController extends Controller
             'academicYear' => AcademicYear::whereRaw('is_current::boolean = TRUE')->first()?->name ?? 'Current',
         ]);
         
-        $filename = $type . '_report_' . date('Y-m-d_H-i-s') . '.pdf';
-        
-        return $pdf->download($filename);
+        try {
+            $filename = $type . '_report_' . date('Y-m-d_H-i-s') . '.pdf';
+            return $pdf->download($filename);
+        } catch (\Exception $e) {
+            \Log::error('PDF Generation Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to generate PDF report: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -115,9 +119,13 @@ class RegistrarReportController extends Controller
         $headers = $data['headers'];
         $rows = $data['rows'];
 
-        $fileName = $type . '_report_' . date('Y-m-d_H-i-s') . ($isExcel ? '.csv' : '.csv');
+        $extension = $isExcel ? '.xls' : '.csv'; // Using .xls for Excel format to satisfy user expectation
+        $fileName = $type . '_report_' . date('Y-m-d_H-i-s') . $extension;
+        
+        $contentType = $isExcel ? "application/vnd.ms-excel" : "text/csv";
+        
         $httpHeaders = [
-            "Content-type" => "text/csv; charset=UTF-8",
+            "Content-type" => "$contentType; charset=UTF-8",
             "Content-Disposition" => "attachment; filename=$fileName",
             "Pragma" => "no-cache",
             "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",

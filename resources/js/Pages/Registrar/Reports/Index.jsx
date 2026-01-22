@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import RegistrarLayout from '@/Layouts/RegistrarLayout';
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { 
-    ChartBarIcon, 
-    DocumentArrowDownIcon, 
+import {
+    ChartBarIcon,
+    DocumentArrowDownIcon,
     AcademicCapIcon,
     BanknotesIcon,
     UserGroupIcon,
@@ -94,7 +94,19 @@ export default function Index({ stats, recentReports, grades, academicYears }) {
 
     const handleGenerateReport = (e) => {
         e.preventDefault();
-        post(route('registrar.reports.generate'));
+
+        // Build query string from form data
+        const params = new URLSearchParams();
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== null && value !== '') {
+                params.append(key, value);
+            }
+        });
+
+        const url = `${route('registrar.reports.generate')}?${params.toString()}`;
+
+        // Trigger download via window.location.href
+        window.location.href = url;
     };
 
     const selectedReportType = reportTypes.find(r => r.id === selectedReport);
@@ -194,7 +206,7 @@ export default function Index({ stats, recentReports, grades, academicYears }) {
 
                     {/* Report Generator */}
                     <div className="lg:col-span-2 space-y-6">
-                        
+
                         {/* Report Type Selection */}
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <h3 className="text-lg font-bold text-gray-900 mb-4">📊 Select Report Type</h3>
@@ -203,11 +215,10 @@ export default function Index({ stats, recentReports, grades, academicYears }) {
                                     <div
                                         key={report.id}
                                         onClick={() => handleReportTypeChange(report.id)}
-                                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                                            selectedReport === report.id
+                                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedReport === report.id
                                                 ? `border-${report.color}-500 bg-${report.color}-50`
                                                 : 'border-gray-200 hover:border-gray-300'
-                                        }`}
+                                            }`}
                                     >
                                         <div className="flex items-start space-x-3">
                                             <report.icon className={`w-6 h-6 ${selectedReport === report.id ? `text-${report.color}-600` : 'text-gray-400'}`} />
@@ -228,9 +239,9 @@ export default function Index({ stats, recentReports, grades, academicYears }) {
                         {/* Report Configuration */}
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <h3 className="text-lg font-bold text-gray-900 mb-4">⚙️ Report Configuration</h3>
-                            
+
                             <form onSubmit={handleGenerateReport} className="space-y-4">
-                                
+
                                 {/* Format Selection */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Output Format</label>
@@ -239,11 +250,10 @@ export default function Index({ stats, recentReports, grades, academicYears }) {
                                             <div
                                                 key={format.id}
                                                 onClick={() => handleFormatChange(format.id)}
-                                                className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                                                    selectedFormat === format.id
+                                                className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedFormat === format.id
                                                         ? 'border-blue-500 bg-blue-50'
                                                         : 'border-gray-200 hover:border-gray-300'
-                                                }`}
+                                                    }`}
                                             >
                                                 <h5 className={`font-medium ${selectedFormat === format.id ? 'text-blue-900' : 'text-gray-900'}`}>
                                                     {format.name}
@@ -259,7 +269,7 @@ export default function Index({ stats, recentReports, grades, academicYears }) {
                                 {/* Dynamic Filters */}
                                 {selectedReportType && selectedReportType.fields.length > 0 && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        
+
                                         {selectedReportType.fields.includes('grade_id') && (
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Grade</label>
@@ -335,7 +345,7 @@ export default function Index({ stats, recentReports, grades, academicYears }) {
 
                     {/* Recent Reports & Quick Stats */}
                     <div className="space-y-6">
-                        
+
                         {/* Quick Stats */}
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <h3 className="text-lg font-bold text-gray-900 mb-4">📈 Quick Stats</h3>
@@ -373,11 +383,10 @@ export default function Index({ stats, recentReports, grades, academicYears }) {
                                             <h4 className="font-medium text-gray-900 text-sm">{report.name}</h4>
                                             <p className="text-xs text-gray-500">{report.date} • {report.size}</p>
                                         </div>
-                                        <span className={`px-2 py-1 text-xs font-bold rounded ${
-                                            report.type === 'PDF' ? 'bg-red-100 text-red-800' :
-                                            report.type === 'Excel' ? 'bg-green-100 text-green-800' :
-                                            'bg-blue-100 text-blue-800'
-                                        }`}>
+                                        <span className={`px-2 py-1 text-xs font-bold rounded ${report.type === 'PDF' ? 'bg-red-100 text-red-800' :
+                                                report.type === 'Excel' ? 'bg-green-100 text-green-800' :
+                                                    'bg-blue-100 text-blue-800'
+                                            }`}>
                                             {report.type}
                                         </span>
                                     </div>

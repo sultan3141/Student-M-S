@@ -85,7 +85,7 @@ Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(functi
 
     // Reporting Center
     Route::get('/reports', [\App\Http\Controllers\RegistrarReportController::class, 'index'])->name('registrar.reports.index');
-    Route::post('/reports/generate', [\App\Http\Controllers\RegistrarReportController::class, 'generate'])->name('registrar.reports.generate');
+    Route::get('/reports/generate', [\App\Http\Controllers\RegistrarReportController::class, 'generate'])->name('registrar.reports.generate');
 
     // Audit Log
     Route::get('/audit', [\App\Http\Controllers\RegistrarAuditController::class, 'index'])->name('registrar.audit.index');
@@ -261,6 +261,13 @@ Route::middleware(['auth', 'role:school_director|admin', 'audit'])->prefix('dire
     Route::post('/registration/process', [\App\Http\Controllers\DirectorRegistrationController::class, 'processApplications'])->name('registration.process');
     Route::get('/registration/export-excel', [\App\Http\Controllers\DirectorRegistrationController::class, 'exportExcel'])->name('registration.export-excel');
     Route::get('/registration/export-pdf', [\App\Http\Controllers\DirectorRegistrationController::class, 'exportPdf'])->name('registration.export-pdf');
+
+    // School Schedule
+    Route::get('/schedule', [\App\Http\Controllers\DirectorScheduleController::class, 'index'])->name('schedule.index');
+    Route::get('/schedule/today', [\App\Http\Controllers\DirectorScheduleController::class, 'getTodaySchedule'])->name('schedule.today');
+    Route::get('/schedule/grade/{grade}', [\App\Http\Controllers\DirectorScheduleController::class, 'getGradeSchedule'])->name('schedule.grade');
+    Route::get('/schedule/export-pdf', [\App\Http\Controllers\DirectorScheduleController::class, 'exportPdf'])->name('schedule.export-pdf');
+    Route::get('/schedule/export-csv', [\App\Http\Controllers\DirectorScheduleController::class, 'exportCsv'])->name('schedule.export-csv');
 
     // Student Statistics & Directory
     Route::get('/statistics/students', [\App\Http\Controllers\DirectorStudentStatisticsController::class, 'index'])->name('statistics.students');
