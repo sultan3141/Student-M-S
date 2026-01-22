@@ -211,7 +211,7 @@ export default function Show({ assessment, students }) {
                                         <div className="text-2xl font-bold text-red-600">
                                             {students.filter(s => s.total_score < 60 && s.total_score !== null).length}
                                         </div>
-                                        <div className="text-sm text-red-700">Needs Support (<60)</div>
+                                        <div className="text-sm text-red-700">Needs Support (&lt;60)</div>
                                     </div>
                                 </div>
                             </div>
