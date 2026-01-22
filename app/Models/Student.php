@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Student extends Model
 {
     /** @use HasFactory<\Database\Factories\StudentFactory> */
+    use HasFactory;
+    
     protected $fillable = [
         'user_id',
         'student_id',
@@ -29,5 +31,25 @@ class Student extends Model
     public function parent()
     {
         return $this->belongsTo(ParentModel::class, 'parent_id');
+    }
+
+    public function grade()
+    {
+        return $this->belongsTo(Grade::class);
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
+
+    public function stream()
+    {
+        return $this->belongsTo(Stream::class);
+    }
+
+    public function marks()
+    {
+        return $this->hasMany(Mark::class);
     }
 }

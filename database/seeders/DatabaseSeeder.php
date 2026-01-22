@@ -30,5 +30,23 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $admin->assignRole('super_admin');
+
+        // Create School Director
+        $director = User::factory()->create([
+            'name' => 'School Director',
+            'email' => 'director@ipsms.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $director->assignRole('school_director');
+
+        // Create a sample teacher
+        $teacher = User::factory()->create([
+            'name' => 'John Teacher',
+            'email' => 'teacher@ipsms.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $teacher->assignRole('teacher');
     }
 }

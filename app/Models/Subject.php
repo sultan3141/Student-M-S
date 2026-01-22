@@ -15,4 +15,14 @@ class Subject extends Model
     {
         return $this->belongsTo(Grade::class);
     }
+
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class);
+    }
+
+    public function marks()
+    {
+        return $this->hasManyThrough(Mark::class, Assessment::class);
+    }
 }

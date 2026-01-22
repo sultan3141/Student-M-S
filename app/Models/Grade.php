@@ -13,4 +13,20 @@ class Grade extends Model
     public function sections()
     {
         return $this->hasMany(Section::class);
-    }}
+    }
+
+    public function students()
+    {
+        return $this->hasMany(Student::class);
+    }
+
+    public function subjects()
+    {
+        return $this->hasMany(Subject::class);
+    }
+
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class);
+    }
+}
