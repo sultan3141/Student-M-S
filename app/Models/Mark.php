@@ -90,12 +90,12 @@ class Mark extends Model
     // Scopes
     public function scopeSubmitted($query)
     {
-        return $query->where('is_submitted', true);
+        return $query->whereRaw('is_submitted::boolean = TRUE');
     }
 
     public function scopeUnsubmitted($query)
     {
-        return $query->where('is_submitted', false);
+        return $query->whereRaw('is_submitted::boolean = FALSE');
     }
 
     public function scopeForTeacher($query, $teacherId)

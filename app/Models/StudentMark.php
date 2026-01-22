@@ -10,7 +10,7 @@ class StudentMark extends Model
     protected $fillable = [
         'student_id',
         'assessment_id',
-        'marks_obtained',
+        'score',
         'remarks',
     ];
 
@@ -28,7 +28,7 @@ class StudentMark extends Model
     public function getPercentageAttribute()
     {
         if ($this->assessment && $this->assessment->max_marks > 0) {
-            return ($this->marks_obtained / $this->assessment->max_marks) * 100;
+            return ($this->score / $this->assessment->max_marks) * 100;
         }
         return 0;
     }

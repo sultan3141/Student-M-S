@@ -37,6 +37,8 @@ class ClearAllCache extends Command
 
         $this->info('');
         $this->info('All caches cleared successfully!');
+        $this->info('');
+        $this->info('💡 Tip: Run "php artisan cache:warm-director" to pre-warm director dashboard cache');
         
         return 0;
     }

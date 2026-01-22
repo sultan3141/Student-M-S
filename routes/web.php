@@ -226,7 +226,7 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
 });
 
 // Director/Admin Routes
-Route::middleware(['auth', 'role:school_director|admin'])->prefix('director')->name('director.')->group(function () {
+Route::middleware(['auth', 'role:school_director|admin', 'audit'])->prefix('director')->name('director.')->group(function () {
     // Dashboard & Metrics
     Route::get('/dashboard', [\App\Http\Controllers\DirectorDashboardController::class, 'index'])->name('dashboard');
     Route::get('/metrics/academic', [\App\Http\Controllers\DirectorDashboardController::class, 'getAcademicHealth'])->name('metrics.academic');
@@ -260,13 +260,35 @@ Route::middleware(['auth', 'role:school_director|admin'])->prefix('director')->n
     Route::get('/registration/stats', [\App\Http\Controllers\DirectorRegistrationController::class, 'getEnrollmentStats'])->name('registration.stats');
     Route::post('/registration/process', [\App\Http\Controllers\DirectorRegistrationController::class, 'processApplications'])->name('registration.process');
 
-    // Student Statistics
+    // Student Statistics & Directory
     Route::get('/statistics/students', [\App\Http\Controllers\DirectorStudentStatisticsController::class, 'index'])->name('statistics.students');
     Route::get('/statistics/students/data', [\App\Http\Controllers\DirectorStudentStatisticsController::class, 'getStatisticsJson'])->name('statistics.students.data');
+    
+    // Student Directory (New)
+    Route::get('/students', [\App\Http\Controllers\DirectorStudentController::class, 'index'])->name('students.index');
+    Route::get('/students/{student}', [\App\Http\Controllers\DirectorStudentController::class, 'show'])->name('students.show');
+
+    // Parent Directory (New)
+    Route::get('/parents', [\App\Http\Controllers\DirectorParentController::class, 'index'])->name('parents.index');
+    Route::get('/parents/{parent}', [\App\Http\Controllers\DirectorParentController::class, 'show'])->name('parents.show');
 
     // Communication Center
     Route::resource('announcements', \App\Http\Controllers\DirectorCommunicationController::class);
     Route::get('/announcements/{id}/analytics', [\App\Http\Controllers\DirectorCommunicationController::class, 'getAnalytics'])->name('announcements.analytics');
+
+    // Documents Management - Specific routes BEFORE resource routes
+    Route::post('/documents/generate-batch', [\App\Http\Controllers\DirectorDocumentsController::class, 'generateBatch'])->name('documents.generate-batch');
+    Route::get('/documents/export-data', [\App\Http\Controllers\DirectorDocumentsController::class, 'exportData'])->name('documents.export-data');
+    Route::post('/documents/{document}/generate', [\App\Http\Controllers\DirectorDocumentsController::class, 'generate'])->name('documents.generate');
+    Route::get('/documents/{document}/preview', [\App\Http\Controllers\DirectorDocumentsController::class, 'preview'])->name('documents.preview');
+    Route::resource('documents', \App\Http\Controllers\DirectorDocumentsController::class);
+
+    // Audit Logging - Specific routes BEFORE parameterized routes
+    Route::get('/audit', [\App\Http\Controllers\DirectorAuditController::class, 'index'])->name('audit.index');
+    Route::get('/audit/export', [\App\Http\Controllers\DirectorAuditController::class, 'export'])->name('audit.export');
+    Route::get('/audit/statistics', [\App\Http\Controllers\DirectorAuditController::class, 'statistics'])->name('audit.statistics');
+    Route::post('/audit/clear-old', [\App\Http\Controllers\DirectorAuditController::class, 'clearOld'])->name('audit.clear-old');
+    Route::get('/audit/{log}', [\App\Http\Controllers\DirectorAuditController::class, 'show'])->name('audit.show');
 });
 
 // Legacy Admin Route (for backward compatibility)
@@ -329,8 +351,6 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super_admin')->name('su
 });
 
 
-// Emergency Quick Fix Route - VISIT THIS ONCE: http://localhost:8000/fix-user
-// Emergency Quick Fix Route - VISIT THIS ONCE: http://localhost:8000/fix-user
 Route::get('/fix-user', function () {
     try {
         DB::beginTransaction();
@@ -475,5 +495,35 @@ Route::get('/fix-user', function () {
     } catch (\Throwable $e) {
         DB::rollBack();
         return "<h1>❌ ERROR!</h1><pre>" . $e->getMessage() . "</pre><br><pre>" . $e->getTraceAsString() . "</pre>";
+    }
+});
+
+Route::get('/create-director', function () {
+    try {
+        // Ensure role exists
+        if (!\Spatie\Permission\Models\Role::where('name', 'school_director')->exists()) {
+                \Spatie\Permission\Models\Role::create(['name' => 'school_director', 'guard_name' => 'web']);
+        }
+
+        $user = \App\Models\User::firstOrCreate(
+            ['username' => 'director'],
+            [
+                'name' => 'School Director',
+                'email' => 'director@school.com',
+                'password' => bcrypt('password')
+            ]
+        );
+        
+        // Force update password and role just in case
+        $user->password = bcrypt('password');
+        $user->save();
+        $user->syncRoles(['school_director']);
+
+        return "<h1>✅ Director Account Ready</h1>
+                <p><strong>Username:</strong> director</p>
+                <p><strong>Password:</strong> password</p>
+                <a href='/login'>Go to Login</a>";
+    } catch (\Throwable $e) {
+        return "Error: " . $e->getMessage();
     }
 });

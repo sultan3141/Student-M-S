@@ -18,8 +18,29 @@ class StudentController extends Controller
             return redirect()->route('student.profile.edit')->with('error', 'Student record not found.');
         }
 
-        $academicYear = \App\Models\AcademicYear::where('is_current', true)->first()
-            ?? \App\Models\AcademicYear::first();
+        // Get academic year - cached globally with proper boolean handling
+        $academicYear = cache()->remember('current_academic_year', 3600, function () {
+            return \DB::table('academic_years')
+                ->select('id', 'name')
+                ->whereRaw('is_current::boolean = TRUE')
+                ->first();
+        });
+        
+        // Fallback if no current academic year
+        if (!$academicYear) {
+            $academicYear = \DB::table('academic_years')
+                ->select('id', 'name')
+                ->orderBy('id', 'desc')
+                ->first();
+        }
+        
+        // Get subjects - cached per grade
+        $subjects = cache()->remember("subjects_grade_{$student->grade_id}", 3600, function () use ($student) {
+            return \DB::table('subjects')
+                ->select('id', 'name', 'code', 'credit_hours')
+                ->where('grade_id', $student->grade_id)
+                ->get();
+        });
 
         // Get attendance data
         $attendanceRecords = \App\Models\Attendance::where('student_id', $student->id)

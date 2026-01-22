@@ -53,7 +53,7 @@ class RegistrarReportController extends Controller
             'pending_payments' => Payment::where('status', 'Pending')->count(),
             'completed_payments' => Payment::where('status', 'Paid')->count(),
             'total_marks' => Mark::count(),
-            'current_academic_year' => AcademicYear::whereRaw('is_current = TRUE')->first()?->name ?? 'Not Set',
+            'current_academic_year' => AcademicYear::whereRaw('is_current::boolean = TRUE')->first()?->name ?? 'Not Set',
         ];
     }
 
@@ -98,7 +98,7 @@ class RegistrarReportController extends Controller
             'title' => $this->getReportName($type),
             'headers' => $data['headers'],
             'rows' => $data['rows'],
-            'academicYear' => AcademicYear::whereRaw('is_current = TRUE')->first()?->name ?? 'Current',
+            'academicYear' => AcademicYear::whereRaw('is_current::boolean = TRUE')->first()?->name ?? 'Current',
         ]);
         
         $filename = $type . '_report_' . date('Y-m-d_H-i-s') . '.pdf';

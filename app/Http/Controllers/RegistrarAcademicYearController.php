@@ -14,7 +14,7 @@ class RegistrarAcademicYearController extends Controller
      */
     public function index()
     {
-        $currentYear = AcademicYear::where('is_current', true)->first();
+        $currentYear = AcademicYear::whereRaw('is_current::boolean = TRUE')->first();
         // Placeholder for next year logic
         $nextYear = AcademicYear::where('id', '>', $currentYear->id ?? 0)->first();
 

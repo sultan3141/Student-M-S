@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import DirectorLayout from '@/Layouts/DirectorLayout';
 import { Head, Link } from '@inertiajs/react';
 import {
@@ -10,17 +11,18 @@ import {
     BuildingOfficeIcon,
     ArrowLeftIcon,
     CheckCircleIcon,
+    PlusIcon,
+    TrashIcon,
 } from '@heroicons/react/24/outline';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
 
-export default function Create() {
+export default function Create({ subjects, grades, sections }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         username: '',
-        email: '',
         password: '',
         employee_id: '',
         qualification: '',
@@ -30,9 +32,34 @@ export default function Create() {
         department: '',
     });
 
+    const [assignments, setAssignments] = useState([{ subject_id: '', grade_id: '', section_id: '' }]);
+
+    const addAssignment = () => {
+        setAssignments([...assignments, { subject_id: '', grade_id: '', section_id: '' }]);
+    };
+
+    const removeAssignment = (index) => {
+        const newAssignments = assignments.filter((_, i) => i !== index);
+        setAssignments(newAssignments);
+    };
+
+    const updateAssignment = (index, field, value) => {
+        const newAssignments = [...assignments];
+        newAssignments[index][field] = value;
+        setAssignments(newAssignments);
+    };
+
     const submit = (e) => {
         e.preventDefault();
-        post(route('director.teachers.store'));
+
+        post(route('director.teachers.store'), {
+            transform: (data) => ({
+                ...data,
+                subjects: assignments.map(a => a.subject_id).filter(id => id),
+                grades: assignments.map(a => a.grade_id).filter(id => id),
+                sections: assignments.map(a => a.section_id).filter(id => id),
+            })
+        });
     };
 
     return (
@@ -232,6 +259,85 @@ export default function Create() {
                                 />
                                 <InputError message={errors.password} className="mt-2" />
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Class Assignments */}
+                    <div className="executive-card mb-6">
+                        <div className="flex items-center justify-between text-gold-600 mb-6 pb-4 border-b border-gray-100">
+                            <div className="flex items-center space-x-2">
+                                <AcademicCapIcon className="h-6 w-6" />
+                                <h2 className="text-lg font-semibold text-navy-900">Class Assignments</h2>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={addAssignment}
+                                className="text-sm flex items-center text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                                <PlusIcon className="h-4 w-4 mr-1" />
+                                Add Class
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {assignments.map((assignment, index) => (
+                                <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-gray-50 p-4 rounded-lg">
+                                    {/* Subject */}
+                                    <div>
+                                        <InputLabel value="Subject" />
+                                        <select
+                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                                            value={assignment.subject_id}
+                                            onChange={(e) => updateAssignment(index, 'subject_id', e.target.value)}
+                                        >
+                                            <option value="">Select Subject</option>
+                                            {subjects.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code})</option>)}
+                                        </select>
+                                    </div>
+
+                                    {/* Grade */}
+                                    <div>
+                                        <InputLabel value="Grade" />
+                                        <select
+                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                                            value={assignment.grade_id}
+                                            onChange={(e) => updateAssignment(index, 'grade_id', e.target.value)}
+                                        >
+                                            <option value="">Select Grade</option>
+                                            {grades.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                                        </select>
+                                    </div>
+
+                                    {/* Section */}
+                                    <div>
+                                        <InputLabel value="Section" />
+                                        <select
+                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                                            value={assignment.section_id}
+                                            onChange={(e) => updateAssignment(index, 'section_id', e.target.value)}
+                                        >
+                                            <option value="">Select Section</option>
+                                            {sections
+                                                .filter(s => !assignment.grade_id || s.grade_id == assignment.grade_id)
+                                                .map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        </select>
+                                    </div>
+
+                                    {/* Remove Action */}
+                                    <div className="pb-1">
+                                        {index > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeAssignment(index)}
+                                                className="text-red-600 hover:text-red-800 p-2"
+                                            >
+                                                <TrashIcon className="h-5 w-5" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                            <InputError message={errors.assignments} className="mt-2" />
                         </div>
                     </div>
 

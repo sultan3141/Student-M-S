@@ -95,7 +95,7 @@ class AssessmentController extends Controller
     {
         $assessment = Assessment::with('marks')->findOrFail($id);
         
-        $marks = $assessment->marks->whereNotNull('marks_obtained')->pluck('marks_obtained');
+        $marks = $assessment->marks->whereNotNull('score')->pluck('score');
         
         if ($marks->isEmpty()) {
             return response()->json([
@@ -219,7 +219,7 @@ class AssessmentController extends Controller
                         'assessment_id' => $assessment->id,
                     ],
                     [
-                        'marks_obtained' => $mark,
+                        'score' => $mark,
                         'max_marks' => $assessment->max_score,
                     ]
                 );
