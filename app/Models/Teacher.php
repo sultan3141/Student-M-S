@@ -40,6 +40,20 @@ class Teacher extends Model
             ->distinct();
     }
 
+    public function grades()
+    {
+        return $this->belongsToMany(Grade::class, 'teacher_assignments')
+            ->withPivot(['subject_id', 'section_id', 'academic_year_id'])
+            ->distinct();
+    }
+
+    public function sections()
+    {
+        return $this->belongsToMany(Section::class, 'teacher_assignments')
+            ->withPivot(['subject_id', 'grade_id', 'academic_year_id'])
+            ->distinct();
+    }
+
     public function marks()
     {
         return $this->hasMany(Mark::class);

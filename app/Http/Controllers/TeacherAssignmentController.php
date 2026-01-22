@@ -13,16 +13,31 @@ class TeacherAssignmentController extends Controller
     {
         $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
         
-        $subjects = $teacher->subjects()
-            ->when($request->grade_id, function($q) use ($request) {
-                return $q->wherePivot('grade_id', $request->grade_id);
-            })
-            ->when($request->section_id, function($q) use ($request) {
-                return $q->wherePivot('section_id', $request->section_id);
-            })
-            ->get(['id', 'name', 'code']);
+        // Get subjects from teacher_assignments table only
+        $query = $teacher->assignments()
+            ->with(['subject', 'grade', 'section']);
             
-        return response()->json($subjects);
+        if ($request->grade_id) {
+            $query->where('grade_id', $request->grade_id);
+        }
+        
+        if ($request->section_id) {
+            $query->where('section_id', $request->section_id);
+        }
+        
+        $assignments = $query->get();
+        
+        $subjects = $assignments->map(function($assignment) {
+            return [
+                'id' => $assignment->subject->id,
+                'name' => $assignment->subject->name,
+                'code' => $assignment->subject->code,
+                'grade_name' => $assignment->grade->name,
+                'section_name' => $assignment->section->name,
+            ];
+        })->unique('id');
+            
+        return response()->json($subjects->values());
     }
     
     public function getStudents(Request $request)
@@ -31,9 +46,16 @@ class TeacherAssignmentController extends Controller
             'section_id' => 'required|exists:sections,id',
         ]);
         
-        // Ensure teacher handles this section
+        // Ensure teacher is assigned to this section
         $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
-        // Add check logic here if needed
+        
+        $hasAssignment = $teacher->assignments()
+            ->where('section_id', $request->section_id)
+            ->exists();
+            
+        if (!$hasAssignment) {
+            return response()->json(['error' => 'You are not assigned to this section'], 403);
+        }
 
         $students = Student::where('section_id', $request->section_id)
             ->with(['user:id,name,profile_photo_path'])

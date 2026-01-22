@@ -29,4 +29,20 @@ class Section extends Model
     {
         return $this->belongsTo(Teacher::class, 'class_teacher_id');
     }
+
+    public function teacherAssignments()
+    {
+        return $this->hasMany(TeacherAssignment::class);
+    }
+
+    public function subjects()
+    {
+        return $this->belongsToMany(Subject::class, 'teacher_assignments')
+            ->withPivot(['teacher_id', 'academic_year_id']);
+    }
+
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class);
+    }
 }

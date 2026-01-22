@@ -23,6 +23,7 @@ class Mark extends Model
         'score_obtained',
         'max_score',
         'marks_obtained',
+        'component_scores', // JSON field for component-wise scores
         'is_submitted',
         'submitted_at',
         'is_locked',
@@ -32,6 +33,9 @@ class Mark extends Model
 
     protected $casts = [
         'marks_obtained' => 'decimal:2',
+        'score' => 'decimal:2',
+        'max_score' => 'decimal:2',
+        'component_scores' => 'array', // Cast JSON to array
         'is_submitted' => 'boolean',
         'is_locked' => 'boolean',
         'submitted_at' => 'datetime',
