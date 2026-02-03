@@ -24,6 +24,7 @@ export default function DirectorLayout({ children }) {
 
     const navigation = [
         { name: 'Dashboard', href: '/director/dashboard', icon: HomeIcon },
+        { name: 'Semester Management', href: '/director/semesters', icon: LockClosedIcon },
         { name: 'Students', href: '/director/students', icon: UserCircleIcon },
         { name: 'Parents', href: '/director/parents', icon: UsersIcon },
         { name: 'Teachers', href: '/director/teachers', icon: UsersIcon },
