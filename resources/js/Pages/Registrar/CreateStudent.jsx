@@ -4,7 +4,7 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import axios from 'axios';
 
 export default function CreateStudent() {
-    const { grades } = usePage().props;
+    const { grades, streams } = usePage().props;
 
     // Form Mode: single (default), bulk (future)
     const [mode, setMode] = useState('single');
@@ -20,6 +20,7 @@ export default function CreateStudent() {
         gender: 'Female',
         dob: '',
         grade_id: grades && grades.length > 0 ? grades[0].id : '',
+        stream_id: '',
         previous_school: '',
 
         parent_mode: 'new', // Syncs with local state on submit
@@ -79,7 +80,7 @@ export default function CreateStudent() {
 
     return (
         <RegistrarLayout user={usePage().props.auth.user}>
-            <Head title="Student Registration Portal" />
+            <Head title="Student Admission Portal" />
 
             <div className="max-w-4xl mx-auto space-y-6">
 
@@ -87,18 +88,34 @@ export default function CreateStudent() {
                 <div className="bg-white rounded-lg shadow-sm border border-[#E5E7EB] p-6 flex flex-col md:flex-row justify-between items-center">
                     <div>
                         <h2 className="text-2xl font-bold text-[#1F2937] flex items-center">
-                            <span className="mr-2">👤</span> STUDENT REGISTRATION PORTAL
+                            <span className="mr-2">👤</span> STUDENT ADMISSION PORTAL
                         </h2>
                         <p className="text-sm text-gray-500 mt-1">Enrollment for {new Date().getFullYear()}-{new Date().getFullYear() + 1} Academic Year</p>
                     </div>
                 </div>
+
+                {/* General Error Display */}
+                {errors.general && (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-sm">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <span className="text-red-500 text-xl">⚠️</span>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700 font-bold">
+                                    {errors.general}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {mode === 'single' && (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Form Section */}
                         <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-[#E5E7EB] overflow-hidden">
                             <div className="bg-[#1E40AF] px-6 py-3 border-b border-blue-800">
-                                <h3 className="font-bold text-white">NEW STUDENT ENTRY</h3>
+                                <h3 className="font-bold text-white">NEW ADMISSION ENTRY</h3>
                             </div>
                             <form onSubmit={handleSubmit} className="p-6 space-y-6">
 
@@ -253,17 +270,62 @@ export default function CreateStudent() {
                                             </select>
                                             {errors.grade_id && <p className="text-red-500 text-xs mt-1">{errors.grade_id}</p>}
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Previous School</label>
-                                            <input
-                                                type="text"
-                                                value={data.previous_school}
-                                                onChange={e => setData('previous_school', e.target.value)}
-                                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#228B22] focus:border-[#228B22]"
-                                                placeholder="Optional"
-                                            />
-                                        </div>
+
+                                        {/* Stream Selection - Only for Grade 11 & 12 */}
+                                        {(() => {
+                                            const selectedGrade = grades?.find(g => g.id === parseInt(data.grade_id));
+                                            const isGrade11or12 = selectedGrade && (selectedGrade.name.includes('11') || selectedGrade.name.includes('12'));
+
+                                            return isGrade11or12 ? (
+                                                <div>
+                                                    <label className="block text-sm font-bold text-gray-700">Stream <span className="text-red-500">*</span></label>
+                                                    <select
+                                                        value={data.stream_id}
+                                                        onChange={e => setData('stream_id', e.target.value)}
+                                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#228B22] focus:border-[#228B22]"
+                                                    >
+                                                        <option value="">Select Stream</option>
+                                                        {streams && streams.map(s => (
+                                                            <option key={s.id} value={s.id}>{s.name}</option>
+                                                        ))}
+                                                    </select>
+                                                    {errors.stream_id && <p className="text-red-500 text-xs mt-1">{errors.stream_id}</p>}
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700">Previous School</label>
+                                                    <input
+                                                        type="text"
+                                                        value={data.previous_school}
+                                                        onChange={e => setData('previous_school', e.target.value)}
+                                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#228B22] focus:border-[#228B22]"
+                                                        placeholder="Optional"
+                                                    />
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
+
+                                    {/* Previous School - Show on separate row for Grade 11/12 */}
+                                    {(() => {
+                                        const selectedGrade = grades?.find(g => g.id === parseInt(data.grade_id));
+                                        const isGrade11or12 = selectedGrade && (selectedGrade.name.includes('11') || selectedGrade.name.includes('12'));
+
+                                        return isGrade11or12 ? (
+                                            <div className="grid grid-cols-1 gap-4 mt-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700">Previous School</label>
+                                                    <input
+                                                        type="text"
+                                                        value={data.previous_school}
+                                                        onChange={e => setData('previous_school', e.target.value)}
+                                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#228B22] focus:border-[#228B22]"
+                                                        placeholder="Optional"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ) : null;
+                                    })()}
                                 </div>
 
                                 <div className="pt-4 border-t border-gray-200 flex items-center justify-end space-x-3">

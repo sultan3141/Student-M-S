@@ -95,6 +95,7 @@ class TeacherMarkController extends Controller
                 'students' => $students,
                 'subject' => $assessment->subject->name,
                 'semester' => $assessment->semester,
+                'is_locked' => !\App\Models\SemesterStatus::isOpen($assessment->grade_id, $assessment->semester, $assessment->academic_year_id),
             ]);
         }
         
@@ -144,9 +145,23 @@ class TeacherMarkController extends Controller
             abort(403);
         }
 
-        DB::transaction(function () use ($validated, $assessment, $teacher) {
+        // Verify semester is OPEN (for specific academic year)
+        if (!\App\Models\SemesterStatus::isOpen($assessment->grade_id, $assessment->semester, $assessment->academic_year_id)) {
+            return redirect()->back()->withErrors(['error' => "Result entry for Semester {$assessment->semester} is currently CLOSED."]);
+        }
+
+        DB::transaction(function () use ($validated, $assessment, $teacher, $request) {
             foreach ($validated['marks'] as $item) {
-                Mark::updateOrCreate(
+                // Fetch existing to track changes
+                $existingMark = Mark::where('student_id', $item['student_id'])
+                    ->where('assessment_id', $validated['assessment_id'])
+                    ->first();
+
+                $oldScore = $existingMark ? $existingMark->score : null;
+                $newScore = $item['mark'];
+
+                // Update or Create
+                $mark = Mark::updateOrCreate(
                     [
                         'student_id' => $item['student_id'],
                         'assessment_id' => $validated['assessment_id'],
@@ -157,12 +172,29 @@ class TeacherMarkController extends Controller
                         'section_id' => $assessment->section_id,
                         'semester' => $assessment->semester,
                         'teacher_id' => $teacher->id,
-                        'score' => $item['mark'], // Changed from marks_obtained to score
+                        'score' => $newScore,
                         'assessment_type_id' => $assessment->assessment_type_id,
                         'academic_year_id' => $assessment->academic_year_id,
                         'is_submitted' => true,
                     ]
                 );
+
+                // Audit Log
+                if ($oldScore !== (float)$newScore) { // Compare values
+                   $action = $existingMark ? 'updated' : 'created';
+                   // If it's an update but value didn't change (strict check vs approx), skip? 
+                   // But here we checked !== so we log.
+                   
+                   \App\Models\MarkChangeLog::create([
+                        'mark_id' => $mark->id,
+                        'teacher_id' => $teacher->id,
+                        'action' => $action,
+                        'old_value' => $oldScore !== null ? (string)$oldScore : null,
+                        'new_value' => (string)$newScore,
+                        'ip_address' => $request->ip(),
+                        'user_agent' => $request->userAgent()
+                   ]);
+                }
             }
             
             // Clear cache after marks are updated

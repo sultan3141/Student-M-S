@@ -16,6 +16,7 @@ import {
     CalendarIcon,
     UserCircleIcon,
     ClipboardDocumentListIcon,
+    LockClosedIcon,
 } from '@heroicons/react/24/outline';
 
 export default function DirectorLayout({ children }) {
@@ -24,6 +25,8 @@ export default function DirectorLayout({ children }) {
 
     const navigation = [
         { name: 'Dashboard', href: '/director/dashboard', icon: HomeIcon },
+        // Revised "Semester Management" Section
+        { name: 'Academic Years', href: '/director/academic-years', icon: CalendarIcon },
         { name: 'Semester Management', href: '/director/semesters', icon: LockClosedIcon },
         { name: 'Students', href: '/director/students', icon: UserCircleIcon },
         { name: 'Parents', href: '/director/parents', icon: UsersIcon },
@@ -50,29 +53,29 @@ export default function DirectorLayout({ children }) {
                 ></div>
             )}
 
-            {/* Sidebar */}
+            {/* Ultra Compact Sidebar */}
             <aside
-                className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed top-0 left-0 z-50 h-screen w-52 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     } director-sidebar`}
             >
-                {/* Sidebar Header */}
-                <div className="p-6 border-b border-white border-opacity-20">
+                {/* Minimal Sidebar Header */}
+                <div className="p-3 border-b border-white border-opacity-20">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-xl font-bold text-white">School Director</h1>
-                            <p className="text-xs text-gold-400">Command Center</p>
+                            <h1 className="text-base font-bold text-white">Director</h1>
+                            <p className="text-xs text-gold-400">Executive</p>
                         </div>
                         <button
                             onClick={() => setSidebarOpen(false)}
                             className="lg:hidden text-white hover:text-gold-400"
                         >
-                            <XMarkIcon className="h-6 w-6" />
+                            <XMarkIcon className="h-4 w-4" />
                         </button>
                     </div>
                 </div>
 
-                {/* Navigation Links */}
-                <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                {/* Ultra Compact Navigation Links */}
+                <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
                     {navigation.map((item) => {
                         const Icon = item.icon;
                         const isActive = currentPath.startsWith(item.href);
@@ -81,26 +84,29 @@ export default function DirectorLayout({ children }) {
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+                                className={`flex items-center space-x-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${isActive
+                                    ? 'bg-white bg-opacity-20 text-white shadow-sm'
+                                    : 'text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
+                                    }`}
                             >
-                                <Icon className="h-5 w-5" />
-                                <span>{item.name}</span>
+                                <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                                <span className="truncate">{item.name}</span>
                             </Link>
                         );
                     })}
                 </nav>
 
-                {/* Sidebar Footer */}
-                <div className="p-4 border-t border-white border-opacity-20">
-                    <div className="flex items-center space-x-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-gold-500 flex items-center justify-center text-white font-bold">
+                {/* Minimal Sidebar Footer */}
+                <div className="p-2 border-t border-white border-opacity-20">
+                    <div className="flex items-center space-x-2 mb-1.5 px-1">
+                        <div className="w-7 h-7 rounded-full bg-gold-500 flex items-center justify-center text-white font-bold text-xs">
                             {auth?.user?.name?.charAt(0) || 'D'}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white truncate">
+                            <p className="text-xs font-medium text-white truncate">
                                 {auth?.user?.name || 'Director'}
                             </p>
-                            <p className="text-xs text-gray-300">Administrator</p>
+                            <p className="text-xs text-gray-300">Admin</p>
                         </div>
                     </div>
 
@@ -108,35 +114,33 @@ export default function DirectorLayout({ children }) {
                         href="/logout"
                         method="post"
                         as="button"
-                        className="sidebar-nav-item w-full text-left"
+                        className="flex items-center space-x-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white transition-all w-full text-left"
                     >
-                        <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                        <ArrowRightOnRectangleIcon className="h-3.5 w-3.5" />
                         <span>Logout</span>
                     </Link>
                 </div>
             </aside>
 
             {/* Main Content Area */}
-            <div className="lg:pl-64 flex flex-col min-h-screen">
+            <div className="lg:pl-52 flex flex-col min-h-screen">
 
-                {/* Top Bar (Mobile) */}
-                <div className="sticky top-0 z-30 lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+                {/* Ultra Compact Top Bar (Mobile) */}
+                <div className="sticky top-0 z-30 lg:hidden bg-white border-b border-gray-200 px-3 py-2 flex items-center justify-between shadow-sm">
                     <button
                         onClick={() => setSidebarOpen(true)}
                         className="text-gray-600 hover:text-navy-900"
                     >
-                        <Bars3Icon className="h-6 w-6" />
+                        <Bars3Icon className="h-5 w-5" />
                     </button>
-                    <h1 className="text-lg font-semibold text-navy-900">Director Dashboard</h1>
-                    <div className="flex items-center space-x-4">
-                        <Link href="/logout" method="post" as="button" className="text-red-600">
-                            <ArrowRightOnRectangleIcon className="h-6 w-6" />
-                        </Link>
-                    </div>
+                    <h1 className="text-xs font-semibold text-navy-900">Director Panel</h1>
+                    <Link href="/logout" method="post" as="button" className="text-red-600">
+                        <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                    </Link>
                 </div>
 
-                {/* Page Content */}
-                <main className="p-6 lg:p-8 flex-1 bg-gray-50/50">
+                {/* Ultra Compact Page Content */}
+                <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
                     {children}
                 </main>
             </div>

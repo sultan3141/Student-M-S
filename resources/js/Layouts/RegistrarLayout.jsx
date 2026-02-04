@@ -17,7 +17,8 @@ export default function RegistrarLayout({ user, children }) {
 
     const navigation = [
         { name: 'Dashboard', href: route('registrar.dashboard'), icon: HomeIcon, active: url.startsWith('/registrar/dashboard') },
-        { name: 'Enroll Student', href: route('registrar.students.create'), icon: AcademicCapIcon, active: url === '/registrar/students/create' },
+        { name: 'Student Admission', href: route('registrar.students.create'), icon: AcademicCapIcon, active: url === '/registrar/students/create' },
+        { name: 'Admitted Students', href: route('registrar.admission.index'), icon: UsersIcon, active: url.startsWith('/registrar/admission') && !url.includes('/assessment-types') },
         { name: 'Student Management', href: route('registrar.students.index'), icon: UsersIcon, active: url.startsWith('/registrar/students') && !url.includes('/create') },
         { name: 'Payments', href: route('registrar.payments.index'), icon: BanknotesIcon, active: url.startsWith('/registrar/payments') },
         { name: 'Guardians', href: route('registrar.guardians.index'), icon: UserGroupIcon, active: url.startsWith('/registrar/guardians') },

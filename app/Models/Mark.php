@@ -27,6 +27,7 @@ class Mark extends Model
         'is_submitted',
         'submitted_at',
         'is_locked',
+        'locked_at',
         'comment',
         'weight_percentage',
     ];
@@ -38,6 +39,7 @@ class Mark extends Model
         'component_scores' => 'array', // Cast JSON to array
         'is_submitted' => 'boolean',
         'is_locked' => 'boolean',
+        'locked_at' => 'datetime',
         'submitted_at' => 'datetime',
     ];
 
@@ -118,6 +120,16 @@ class Mark extends Model
         return $query->where('assessment_type', $type);
     }
 
+    public function scopeLocked($query)
+    {
+        return $query->where('is_locked', true);
+    }
+
+    public function scopeUnlocked($query)
+    {
+        return $query->where('is_locked', false);
+    }
+
     // Methods
     public function submit()
     {
@@ -125,6 +137,37 @@ class Mark extends Model
             'is_submitted' => true,
             'submitted_at' => now(),
             'is_locked' => true,
+            'locked_at' => now(),
         ]);
+    }
+
+    /**
+     * Lock this mark (semester closed)
+     */
+    public function lock()
+    {
+        $this->update([
+            'is_locked' => true,
+            'locked_at' => now(),
+        ]);
+    }
+
+    /**
+     * Unlock this mark (semester reopened)
+     */
+    public function unlock()
+    {
+        $this->update([
+            'is_locked' => false,
+            'locked_at' => null,
+        ]);
+    }
+
+    /**
+     * Check if this mark is locked
+     */
+    public function isLocked()
+    {
+        return $this->is_locked;
     }
 }

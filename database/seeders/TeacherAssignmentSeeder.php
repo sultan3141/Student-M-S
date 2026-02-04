@@ -9,6 +9,7 @@ use App\Models\Grade;
 use App\Models\Section;
 use App\Models\AcademicYear;
 use App\Models\TeacherAssignment;
+use Illuminate\Support\Facades\DB;
 
 class TeacherAssignmentSeeder extends Seeder
 {
@@ -18,15 +19,16 @@ class TeacherAssignmentSeeder extends Seeder
     public function run(): void
     {
         // Get or create academic year
-        $academicYear = AcademicYear::firstOrCreate(
-            ['name' => '2025-2026'],
-            [
+        $academicYear = AcademicYear::where('is_current', true)->first();
+        if (!$academicYear) {
+            $academicYear = AcademicYear::create([
+                'name' => '2025-2026',
                 'start_date' => '2025-09-01',
                 'end_date' => '2026-06-30',
                 'is_current' => true,
-                'status' => 'active', // Try lowercase
-            ]
-        );
+                'status' => 'active',
+            ]);
+        }
 
         // Get existing teacher
         $teacher = Teacher::first();
@@ -35,77 +37,75 @@ class TeacherAssignmentSeeder extends Seeder
             return;
         }
 
-        // Get or create grades first
-        $grade10 = Grade::firstOrCreate(
-            ['name' => 'Grade 10'],
-            ['level' => 10]
-        );
-
-        $grade11 = Grade::firstOrCreate(
-            ['name' => 'Grade 11'],
-            ['level' => 11]
-        );
-
-        // Get or create subjects with grade_id
-        $mathSubject = Subject::firstOrCreate(
-            ['name' => 'Mathematics', 'grade_id' => $grade10->id],
-            ['code' => 'MATH', 'description' => 'Mathematics subject']
-        );
-
-        $physicsSubject = Subject::firstOrCreate(
-            ['name' => 'Physics', 'grade_id' => $grade11->id],
-            ['code' => 'PHY', 'description' => 'Physics subject']
-        );
-
-        // Get or create sections
-        $sectionA = Section::firstOrCreate(
-            ['name' => 'Section A', 'grade_id' => $grade10->id],
-            ['capacity' => 30]
-        );
-
-        $sectionB = Section::firstOrCreate(
-            ['name' => 'Section B', 'grade_id' => $grade10->id],
-            ['capacity' => 30]
-        );
-
-        $section11A = Section::firstOrCreate(
-            ['name' => 'Section A', 'grade_id' => $grade11->id],
-            ['capacity' => 25]
-        );
-
-        // Create teacher assignments
-        $assignments = [
-            [
-                'teacher_id' => $teacher->id,
-                'subject_id' => $mathSubject->id,
-                'grade_id' => $grade10->id,
-                'section_id' => $sectionA->id,
-                'academic_year_id' => $academicYear->id,
-            ],
-            [
-                'teacher_id' => $teacher->id,
-                'subject_id' => $mathSubject->id,
-                'grade_id' => $grade10->id,
-                'section_id' => $sectionB->id,
-                'academic_year_id' => $academicYear->id,
-            ],
-            [
-                'teacher_id' => $teacher->id,
-                'subject_id' => $physicsSubject->id,
-                'grade_id' => $grade11->id,
-                'section_id' => $section11A->id,
-                'academic_year_id' => $academicYear->id,
-            ],
-        ];
-
-        foreach ($assignments as $assignmentData) {
-            TeacherAssignment::firstOrCreate($assignmentData);
+        // Get grades 9, 10, 11, 12
+        $grades = Grade::whereIn('level', [9, 10, 11, 12])->get();
+        
+        if ($grades->isEmpty()) {
+            echo "No grades found. Please run AcademicStructureSeeder first.\n";
+            return;
         }
 
-        echo "Teacher assignments created successfully!\n";
-        echo "Teacher '{$teacher->user->name}' has been assigned to:\n";
-        echo "- Mathematics: Grade 10 Section A\n";
-        echo "- Mathematics: Grade 10 Section B\n";
-        echo "- Physics: Grade 11 Section A\n";
+        $assignmentCount = 0;
+        $subjectAssignmentCount = 0;
+
+        foreach ($grades as $grade) {
+            // Get all subjects for this grade
+            $subjects = Subject::where('grade_id', $grade->id)->get();
+            
+            // Get all sections for this grade
+            $sections = Section::where('grade_id', $grade->id)->get();
+            
+            if ($sections->isEmpty()) {
+                echo "No sections found for {$grade->name}\n";
+                continue;
+            }
+
+            foreach ($subjects as $subject) {
+                // Assign subject to all sections of this grade (grade_subject pivot)
+                foreach ($sections as $section) {
+                    // Check if already exists in pivot table
+                    $exists = DB::table('grade_subject')
+                        ->where('grade_id', $grade->id)
+                        ->where('subject_id', $subject->id)
+                        ->where('section_id', $section->id)
+                        ->exists();
+                    
+                    if (!$exists) {
+                        DB::table('grade_subject')->insert([
+                            'grade_id' => $grade->id,
+                            'subject_id' => $subject->id,
+                            'section_id' => $section->id,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                        $subjectAssignmentCount++;
+                    }
+                }
+
+                // Assign teacher to first 2 subjects per grade for testing
+                if ($subject->name === 'Mathematics' || $subject->name === 'Physics') {
+                    foreach ($sections as $section) {
+                        $assignment = TeacherAssignment::firstOrCreate([
+                            'teacher_id' => $teacher->id,
+                            'subject_id' => $subject->id,
+                            'grade_id' => $grade->id,
+                            'section_id' => $section->id,
+                            'academic_year_id' => $academicYear->id,
+                        ]);
+                        
+                        if ($assignment->wasRecentlyCreated) {
+                            $assignmentCount++;
+                        }
+                    }
+                }
+            }
+        }
+
+        echo "\n=== Seeding Complete ===\n";
+        echo "Academic Year: {$academicYear->name} (Current)\n";
+        echo "Teacher: {$teacher->user->name}\n";
+        echo "Subject-Section Assignments: {$subjectAssignmentCount}\n";
+        echo "Teacher Assignments: {$assignmentCount}\n";
+        echo "\nTeacher is assigned to Mathematics and Physics for all grades (9-12) and all sections.\n";
     }
 }

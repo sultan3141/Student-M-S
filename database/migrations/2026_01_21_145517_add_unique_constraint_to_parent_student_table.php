@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('parent_student', function (Blueprint $table) {
-            // Add unique constraint to ensure one student can only be linked to one parent
-            $table->unique('student_id', 'unique_student_parent');
+            // Add unique constraint to ensure one parent-student pair is unique
+            // (prevents duplicate links, but allows multiple parents per student)
+            $table->unique(['parent_id', 'student_id'], 'unique_parent_student_pair');
         });
     }
 
@@ -23,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('parent_student', function (Blueprint $table) {
-            $table->dropUnique('unique_student_parent');
+            $table->dropUnique('unique_parent_student_pair');
         });
     }
 };

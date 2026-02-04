@@ -246,7 +246,7 @@ class ParentDashboardController extends Controller
     public function academicYearCurrent($studentId)
     {
         $year = \DB::table('academic_years')
-            ->whereRaw('is_current::boolean = TRUE')
+            ->where('is_current', true)
             ->orWhere('status', 'active')
             ->orderBy('created_at', 'desc')
             ->first();

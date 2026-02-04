@@ -33,7 +33,6 @@ const SemesterCard = memo(({ sem }) => (
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Average Score</p>
                 <div className="flex items-baseline space-x-1">
                     <p className="text-2xl font-black text-blue-700">{sem.average}</p>
-                    <span className="text-xs font-bold text-blue-400">%</span>
                 </div>
             </div>
             <div className="space-y-1">
@@ -124,7 +123,7 @@ export default function SemesterRecordIndex({ student, semesters }) {
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">No Records Found</h3>
                         <p className="text-gray-500 max-w-sm mx-auto">
-                            We couldn't find any completed semester records for your account yet. Check back later once exams are concluded.
+                            We couldn't find any academic records for your account yet. Results and assessments will appear here as soon as they are published by your teachers.
                         </p>
                     </div>
                 )}

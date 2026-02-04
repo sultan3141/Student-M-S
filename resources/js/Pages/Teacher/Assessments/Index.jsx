@@ -1,161 +1,168 @@
-import { Head, Link } from '@inertiajs/react';
 import TeacherLayout from '@/Layouts/TeacherLayout';
+import { Head, Link, router } from '@inertiajs/react';
 import PrimaryButton from '@/Components/PrimaryButton';
-import SecondaryButton from '@/Components/SecondaryButton';
-import {
-    PlusIcon,
-    EyeIcon,
-    PencilIcon,
-    TrashIcon,
-    DocumentTextIcon,
-    AcademicCapIcon,
-    ChartBarIcon
-} from '@heroicons/react/24/outline';
 
-export default function Index({ assessments }) {
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'draft':
-                return 'bg-yellow-100 text-yellow-800';
-            case 'active':
-                return 'bg-green-100 text-green-800';
-            case 'completed':
-                return 'bg-blue-100 text-blue-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
+export default function Index({ assessments, error }) {
+    const handleDelete = (id) => {
+        if (confirm('Are you sure you want to delete this assessment?')) {
+            router.delete(route('teacher.assessments-simple.destroy', id), {
+                preserveScroll: true,
+            });
         }
     };
 
+    // Deduplicate assessments by name, grade, subject, and date
+    const uniqueAssessments = assessments?.reduce((acc, assessment) => {
+        const key = `${assessment.name}-${assessment.grade?.id}-${assessment.subject?.id}-${assessment.due_date || assessment.date}`;
+        if (!acc[key]) {
+            acc[key] = assessment;
+        }
+        return acc;
+    }, {});
+
+    const deduplicatedAssessments = uniqueAssessments ? Object.values(uniqueAssessments) : [];
+
     return (
         <TeacherLayout>
-            <Head title="My Assessments" />
+            <Head title="Assessments" />
 
             {/* Header */}
             <div className="bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] shadow-lg mb-8 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-10">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-4xl font-bold text-white tracking-tight mb-2">
-                                📝 My Assessments
+                            <h1 className="text-3xl font-bold text-white mb-2">
+                                My Assessments
                             </h1>
-                            <p className="text-blue-100 text-lg">
-                                Create and manage your custom assessments
+                            <p className="text-blue-100">
+                                Manage and track all your assessments
                             </p>
                         </div>
-                        <Link href={route('teacher.custom-assessments.create')}>
-                            <PrimaryButton className="bg-white text-blue-600 hover:bg-blue-50">
-                                <PlusIcon className="w-5 h-5 mr-2" />
-                                Create Assessment
-                            </PrimaryButton>
-                        </Link>
+                        {!error && (
+                            <Link href={route('teacher.assessments-simple.create')}>
+                                <PrimaryButton>
+                                    + Create Assessment
+                                </PrimaryButton>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Assessments Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {assessments.map((assessment) => (
-                    <div key={assessment.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-                        {/* Header */}
-                        <div className="p-6 border-b border-gray-200">
-                            <div className="flex items-start justify-between mb-3">
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                                        {assessment.name}
-                                    </h3>
-                                    <p className="text-sm text-gray-600">
-                                        {assessment.subject_name} • {assessment.section_name}
-                                    </p>
-                                </div>
-                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(assessment.status)}`}>
-                                    {assessment.status}
-                                </span>
-                            </div>
-                            
-                            <div className="flex items-center text-sm text-gray-500 space-x-4">
-                                <span className="flex items-center">
-                                    <AcademicCapIcon className="w-4 h-4 mr-1" />
-                                    Semester {assessment.semester}
-                                </span>
-                                <span className="flex items-center">
-                                    <DocumentTextIcon className="w-4 h-4 mr-1" />
-                                    {assessment.components_count} Components
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Assessment Components Preview */}
-                        <div className="p-4 bg-gray-50">
-                            <h4 className="text-sm font-medium text-gray-700 mb-2">Components:</h4>
-                            <div className="space-y-1">
-                                {assessment.components.slice(0, 3).map((component, index) => (
-                                    <div key={index} className="flex justify-between text-xs text-gray-600">
-                                        <span>{component.name}</span>
-                                        <span>{component.max_weight}%</span>
-                                    </div>
-                                ))}
-                                {assessment.components.length > 3 && (
-                                    <div className="text-xs text-gray-500">
-                                        +{assessment.components.length - 3} more...
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="p-4 border-t border-gray-200">
-                            <div className="grid grid-cols-2 gap-4 text-center">
-                                <div>
-                                    <div className="text-lg font-bold text-blue-600">{assessment.students_count}</div>
-                                    <div className="text-xs text-gray-500">Students</div>
-                                </div>
-                                <div>
-                                    <div className="text-lg font-bold text-green-600">{assessment.completion_rate}%</div>
-                                    <div className="text-xs text-gray-500">Complete</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="p-4 border-t border-gray-200 bg-gray-50">
-                            <div className="flex items-center justify-between">
-                                <Link 
-                                    href={route('teacher.custom-assessments.show', assessment.id)}
-                                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700"
-                                >
-                                    <EyeIcon className="w-4 h-4 mr-1" />
-                                    View Details
-                                </Link>
-                                
-                                <div className="flex items-center space-x-2">
-                                    <Link 
-                                        href={route('teacher.custom-assessments.enter-marks', assessment.id)}
-                                        className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                                    >
-                                        <ChartBarIcon className="w-4 h-4 mr-1" />
-                                        Enter Marks
-                                    </Link>
-                                </div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                {error ? (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+                        <div className="flex items-center">
+                            <svg className="w-6 h-6 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <h3 className="text-red-800 font-semibold">Error</h3>
+                                <p className="text-red-700">{error}</p>
                             </div>
                         </div>
                     </div>
-                ))}
+                ) : assessments && assessments.length > 0 ? (
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Assessment Name
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Class
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Subject
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Date
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total Marks
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {deduplicatedAssessments.map((assessment) => (
+                                        <tr key={assessment.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">
+                                                    {assessment.name}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">
+                                                    {assessment.grade?.name}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">
+                                                    {assessment.subject?.name}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">
+                                                    {new Date(assessment.due_date || assessment.date).toLocaleDateString()}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">
+                                                    {assessment.max_score || assessment.total_marks}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${assessment.status === 'published'
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : assessment.status === 'locked'
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : 'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                    {assessment.status || 'draft'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <button
+                                                    onClick={() => handleDelete(assessment.id)}
+                                                    className="text-red-600 hover:text-red-900"
+                                                    disabled={assessment.status === 'locked'}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+                        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 className="mt-2 text-sm font-medium text-gray-900">No assessments</h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Get started by creating a new assessment.
+                        </p>
+                        <div className="mt-6">
+                            <Link href={route('teacher.assessments-simple.create')}>
+                                <PrimaryButton>
+                                    + Create Assessment
+                                </PrimaryButton>
+                            </Link>
+                        </div>
+                    </div>
+                )}
             </div>
-
-            {/* Empty State */}
-            {assessments.length === 0 && (
-                <div className="text-center py-12">
-                    <DocumentTextIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No assessments yet</h3>
-                    <p className="text-gray-500 mb-6">Create your first assessment to start managing student marks.</p>
-                    <Link href={route('teacher.custom-assessments.create')}>
-                        <PrimaryButton>
-                            <PlusIcon className="w-5 h-5 mr-2" />
-                            Create Your First Assessment
-                        </PrimaryButton>
-                    </Link>
-                </div>
-            )}
         </TeacherLayout>
     );
 }

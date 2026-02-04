@@ -23,12 +23,16 @@ class Assessment extends Model
         'due_date',
         'description',
         'status',
+        'is_editable',
+        'locked_at',
     ];
 
     protected $casts = [
         'weight_percentage' => 'decimal:2',
         'max_score' => 'decimal:2',
         'due_date' => 'date',
+        'is_editable' => 'boolean',
+        'locked_at' => 'datetime',
     ];
 
     // Relationships
@@ -95,6 +99,16 @@ class Assessment extends Model
         return $query->where('semester', $semester);
     }
 
+    public function scopeEditable($query)
+    {
+        return $query->where('is_editable', true);
+    }
+
+    public function scopeLocked($query)
+    {
+        return $query->where('is_editable', false);
+    }
+
     // Helper methods
     public function getCompletionPercentageAttribute()
     {
@@ -115,8 +129,41 @@ class Assessment extends Model
         $this->update(['status' => 'published']);
     }
 
+    /**
+     * Lock this assessment (semester closed)
+     */
     public function lock()
     {
-        $this->update(['status' => 'locked']);
+        $this->update([
+            'is_editable' => false,
+            'locked_at' => now(),
+        ]);
+    }
+
+    /**
+     * Unlock this assessment (semester reopened)
+     */
+    public function unlock()
+    {
+        $this->update([
+            'is_editable' => true,
+            'locked_at' => null,
+        ]);
+    }
+
+    /**
+     * Check if this assessment is locked
+     */
+    public function isLocked()
+    {
+        return !$this->is_editable;
+    }
+
+    /**
+     * Check if this assessment is editable
+     */
+    public function isEditable()
+    {
+        return $this->is_editable;
     }
 }

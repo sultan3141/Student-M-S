@@ -41,6 +41,11 @@ class Section extends Model
             ->withPivot(['teacher_id', 'academic_year_id']);
     }
 
+    public function stream()
+    {
+        return $this->belongsTo(Stream::class);
+    }
+
     public function assessments()
     {
         return $this->hasMany(Assessment::class);

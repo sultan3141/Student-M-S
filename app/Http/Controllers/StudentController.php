@@ -2,40 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Assessment;
-use App\Models\Mark;
-use App\Models\Student;
-use App\Models\AcademicYear;
-use App\Models\Subject;
-use App\Models\Announcement;
-use App\Models\Schedule;
-use App\Models\SemesterPeriod;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class StudentController extends Controller
 {
     public function dashboard()
     {
-        // Get the authenticated user's student profile
         $user = auth()->user();
+
         $student = $user->student()
             ->with(['grade', 'section', 'parent'])
             ->first();
 
         if (!$student) {
-            abort(403, 'User is not linked to a student profile.');
+            return redirect()->route('student.profile.edit')->with('error', 'Student record not found.');
         }
 
         // Get academic year
-        $academicYear = AcademicYear::where('is_current', true)->first() 
-            ?? AcademicYear::orderBy('id', 'desc')->first();
+        $academicYear = \App\Models\AcademicYear::where('is_current', true)->first() 
+            ?? \App\Models\AcademicYear::orderBy('id', 'desc')->first();
         
         // Get current semester information
         $currentSemester = $this->getCurrentSemesterInfoForStudent($academicYear);
         
         // Get subjects filtered by grade and stream
-        $subjectsQuery = Subject::where('grade_id', $student->grade_id);
+        $subjectsQuery = \App\Models\Subject::where('grade_id', $student->grade_id);
         if ($student->stream_id) {
             $subjectsQuery->where(function($q) use ($student) {
                 $q->where('stream_id', $student->stream_id)
@@ -45,9 +36,11 @@ class StudentController extends Controller
         $subjects = $subjectsQuery->get();
 
         // Get recent assessments (both graded and pending)
-        $recentAssessments = Assessment::where('grade_id', $student->grade_id)
+        $recentAssessments = \App\Models\Assessment::where('grade_id', $student->grade_id)
             ->where('section_id', $student->section_id)
             ->where('academic_year_id', $academicYear->id)
+            ->where('academic_year_id', $academicYear->id)
+            // Removed published check for immediate visibility
             ->with(['subject', 'marks' => function($q) use ($student) {
                 $q->where('student_id', $student->id);
             }])
@@ -56,7 +49,7 @@ class StudentController extends Controller
             ->get();
 
         // Get all marks for average calculation
-        $allMarks = Mark::where('student_id', $student->id)
+        $allMarks = \App\Models\Mark::where('student_id', $student->id)
             ->where('academic_year_id', $academicYear->id)
             ->whereHas('assessment') // Check assessment exists, ignore status
             ->get();
@@ -66,11 +59,11 @@ class StudentController extends Controller
         $average = $subjectTotals->isNotEmpty() ? $subjectTotals->avg() : 0;
         
         // Calculate rank within section based on TOTAL SCORE
-        $sectionStudentIds = Student::where('section_id', $student->section_id)->pluck('id');
-        $studentTotals = Mark::whereIn('student_id', $sectionStudentIds)
+        $sectionStudentIds = \App\Models\Student::where('section_id', $student->section_id)->pluck('id');
+        $studentTotals = \App\Models\Mark::whereIn('student_id', $sectionStudentIds)
             ->where('academic_year_id', $academicYear->id)
             ->whereHas('assessment') // Check assessment exists, ignore status
-            ->select('student_id', DB::raw('SUM(score) as total_score'))
+            ->select('student_id', \DB::raw('SUM(score) as total_score'))
             ->groupBy('student_id')
             ->orderByDesc('total_score')
             ->get();
@@ -79,15 +72,6 @@ class StudentController extends Controller
             return $item->student_id == $student->id;
         });
         $rank = $rank !== false ? $rank + 1 : 'N/A';
-
-        // Calculate average score for the quick stat (percentage-based)
-        $averageScore = $allMarks->count() > 0 
-            ? Mark::where('student_id', $student->id)
-                ->where('academic_year_id', $academicYear->id)
-                ->join('assessments', 'marks.assessment_id', '=', 'assessments.id')
-                ->selectRaw('AVG((marks.score / assessments.max_score) * 100) as average')
-                ->value('average')
-            : 0;
 
         $marksStats = [
             'average' => round($average, 1),
@@ -104,22 +88,33 @@ class StudentController extends Controller
                     'score' => $mark ? $mark->score : null,
                     'maxScore' => $assessment->max_score,
                     'percentage' => $mark ? round(($mark->score / $assessment->max_score) * 100, 1) : null,
-                    'date' => $assessment->created_at ? $assessment->created_at->format('M d') : 'N/A',
+                    'date' => $assessment->created_at->format('M d'),
                     'is_graded' => $mark ? true : false,
                 ];
             })->values()
         ];
 
-        // Get recent marks for this student
-        $recentMarks = Mark::with(['assessment.subject', 'assessment.academicYear'])
-            ->where('student_id', $student->id)
+        // Get attendance data
+        $attendanceRecords = \App\Models\Attendance::where('student_id', $student->id)
             ->where('academic_year_id', $academicYear->id)
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
             ->get();
 
+        $attendanceStats = [
+            'total' => $attendanceRecords->count(),
+            'present' => $attendanceRecords->where('status', 'Present')->count(),
+            'rate' => $attendanceRecords->count() > 0
+                ? round(($attendanceRecords->where('status', 'Present')->count() / $attendanceRecords->count()) * 100, 1)
+                : 100,
+            'recent' => $attendanceRecords->sortByDesc('date')->take(5)->map(function ($record) {
+                return [
+                    'date' => \Carbon\Carbon::parse($record->date)->format('M d, Y'),
+                    'status' => $record->status,
+                ];
+            })->values()
+        ];
+
         // Real Schedule
-        $schedule = Schedule::where('grade_id', $student->grade_id)
+        $schedule = \App\Models\Schedule::where('grade_id', $student->grade_id)
             ->where(function($q) use ($student) {
                 $q->where('section_id', $student->section_id)
                   ->orWhereNull('section_id');
@@ -129,7 +124,7 @@ class StudentController extends Controller
             ->get();
 
         // Real Notifications
-        $notifications = Announcement::where('status', 'sent')
+        $notifications = \App\Models\Announcement::where('status', 'sent')
             ->where(function($q) use ($student) {
                 $q->where('recipient_type', 'all_students')
                   ->orWhere('recipient_type', 'grade_' . $student->grade_id)
@@ -140,28 +135,10 @@ class StudentController extends Controller
             ->take(5)
             ->get();
 
-        // Upcoming assessments
-        $upcomingAssessments = Assessment::with(['subject', 'creator'])
-            ->where('grade_id', $student->grade_id)
-            ->where('status', 'published')
-            ->where('academic_year_id', $academicYear->id)
-            ->whereDoesntHave('marks', function($query) use ($student) {
-                $query->where('student_id', $student->id);
-            })
-            ->orderBy('due_date', 'asc')
-            ->limit(5)
-            ->get();
-
         return inertia('Student/Dashboard', [
-            'auth' => [
-                'user' => $user
-            ],
             'student' => $student->load('user'),
             'academicYear' => $academicYear,
-            'subjects' => $subjects,
-            'recentMarks' => $recentMarks,
-            'upcomingAssessments' => $upcomingAssessments,
-            'averageScore' => round($averageScore ?? 0, 1),
+            'attendance' => $attendanceStats,
             'marks' => $marksStats,
             'schedule' => $schedule,
             'notifications' => $notifications,
@@ -178,64 +155,431 @@ class StudentController extends Controller
             return null;
         }
 
-        $openSemester = SemesterPeriod::where('academic_year_id', $academicYear->id)
+        $openSemester = \App\Models\SemesterPeriod::where('academic_year_id', $academicYear->id)
             ->where('status', 'open')
             ->first();
 
-        $closedSemester = SemesterPeriod::where('academic_year_id', $academicYear->id)
+        $closedSemester = \App\Models\SemesterPeriod::where('academic_year_id', $academicYear->id)
             ->where('status', 'closed')
             ->orderBy('semester', 'desc')
             ->first();
 
         if ($openSemester) {
+            // Semester is open - students cannot see results yet
+            $estimatedCloseDate = $openSemester->semester == 1
+                ? $academicYear->start_date->copy()->addMonths(6)
+                : $academicYear->end_date;
+
             return [
-                'semester_label' => 'Semester ' . $openSemester->semester,
+                'academic_year' => $academicYear->name,
                 'semester' => $openSemester->semester,
                 'status' => 'in_progress',
                 'is_open' => true,
                 'can_view_results' => false,
                 'message' => 'Results will be available when semester closes',
+                'estimated_date' => $estimatedCloseDate->format('M d, Y'),
             ];
         }
 
         if ($closedSemester) {
+            // Semester is closed - students can see results
             return [
-                'semester_label' => 'Semester ' . $closedSemester->semester,
+                'academic_year' => $academicYear->name,
                 'semester' => $closedSemester->semester,
                 'status' => 'completed',
                 'is_open' => false,
                 'can_view_results' => true,
                 'message' => 'Results are available',
+                'closed_at' => $closedSemester->closed_at?->format('M d, Y'),
             ];
         }
 
         return null;
     }
 
-    public function marks()
+    private function calculateGPAFast($studentId, $academicYearId)
+    {
+        if (!$academicYearId)
+            return 0;
+
+        $cacheKey = "average_{$studentId}_{$academicYearId}";
+
+        return cache()->remember($cacheKey, 300, function () use ($studentId, $academicYearId) {
+            $average = \App\Models\Mark::where('student_id', $studentId)
+                ->where('academic_year_id', $academicYearId)
+                ->avg('score');
+
+            return $average ? round($average, 2) : 0;
+        });
+    }
+
+    private function getCurrentRankFast($studentId, $gradeId, $academicYearId)
+    {
+        if (!$academicYearId || !$gradeId)
+            return null;
+
+        $cacheKey = "rank_{$studentId}_{$academicYearId}";
+
+        return cache()->remember($cacheKey, 300, function () use ($studentId, $gradeId, $academicYearId) {
+            $semesterResult = \App\Models\SemesterResult::where('student_id', $studentId)
+                ->where('academic_year_id', $academicYearId)
+                ->where('grade_id', $gradeId)
+                ->latest()
+                ->value('rank');
+
+            return $semesterResult;
+        });
+    }
+
+    private function calculateAttendanceRateFast($studentId, $academicYearId)
+    {
+        if (!$academicYearId)
+            return 100;
+
+        $cacheKey = "attendance_{$studentId}_{$academicYearId}";
+
+        return cache()->remember($cacheKey, 300, function () use ($studentId, $academicYearId) {
+            $total = \App\Models\Attendance::where('student_id', $studentId)
+                ->where('academic_year_id', $academicYearId)
+                ->count();
+
+            if ($total === 0)
+                return 100;
+
+            $present = \App\Models\Attendance::where('student_id', $studentId)
+                ->where('academic_year_id', $academicYearId)
+                ->where('status', 'Present')
+                ->count();
+
+            return round(($present / $total) * 100, 1);
+        });
+    }
+
+    // Keep old methods for backward compatibility
+    private function calculateGPA($student, $academicYear)
+    {
+        return $this->calculateGPAFast($student->id, $academicYear?->id);
+    }
+
+    private function getCurrentRank($student, $academicYear)
+    {
+        return $this->getCurrentRankFast($student->id, $student->grade_id, $academicYear?->id);
+    }
+
+    private function calculateAttendanceRate($student, $academicYear)
+    {
+        return $this->calculateAttendanceRateFast($student->id, $academicYear?->id);
+    }
+
+    private function getPendingAssignmentsCount($student, $academicYear)
+    {
+        if (!$academicYear || !$student->grade_id)
+            return 0;
+
+        // Get all assessments for subjects in this grade
+        $assessmentIds = \App\Models\Assessment::where('academic_year_id', $academicYear->id)
+            ->whereHas('subject', function ($q) use ($student) {
+                $q->where('grade_id', $student->grade_id);
+            })
+            ->where('type', 'assignment')
+            ->pluck('id');
+
+        if ($assessmentIds->isEmpty())
+            return 0;
+
+        // Count how many have NO mark for this student
+        $submittedCount = \App\Models\Mark::where('student_id', $student->id)
+            ->whereIn('assessment_id', $assessmentIds)
+            ->count();
+
+        return $assessmentIds->count() - $submittedCount;
+    }
+
+    public function profileEdit()
+    {
+        $user = auth()->user();
+        $student = $user->student()->with(['grade', 'section'])->first();
+
+        return inertia('Student/Profile', [
+            'student' => $student,
+        ]);
+    }
+
+    public function profileUpdate(Request $request)
     {
         $user = auth()->user();
         $student = $user->student;
 
-        if (!$student) {
-            abort(403, 'User is not linked to a student profile.');
+        $validated = $request->validate([
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'profile_photo' => 'nullable|image|max:2048',
+        ]);
+
+        $student->update([
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
+        ]);
+
+        // Handle photo upload if provided
+        if ($request->hasFile('profile_photo')) {
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $student->update(['profile_photo' => $path]);
         }
 
-        $marks = Mark::with(['assessment.subject', 'assessment.academicYear'])
-            ->where('student_id', $student->id)
+        return redirect()->route('student.profile.edit')->with('success', 'Profile updated successfully.');
+    }
+
+    public function passwordUpdate(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = auth()->user();
+
+        if (!\Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        }
+
+        $user->update([
+            'password' => \Hash::make($validated['password']),
+        ]);
+
+        return redirect()->route('student.profile.edit')->with('success', 'Password changed successfully.');
+    }
+
+    public function academicRecords()
+    {
+        $user = auth()->user();
+
+        // Eager load all relationships at once
+        $student = $user->student()->with(['grade', 'section'])->first();
+
+        // Use cached academic year
+        $academicYear = cache()->remember('current_academic_year', 3600, function () {
+            return \App\Models\AcademicYear::where('is_current', true)
+                ->orWhere('status', 'active')
+                ->latest()
+                ->first();
+        });
+
+        // Get all marks with all needed relationships loaded at once
+        $marks = \App\Models\Mark::where('student_id', $student->id)
+            ->with(['subject:id,name,code', 'academicYear:id,name', 'teacher.user:id,name'])
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->get();
 
-        // Group marks by subject for better organization
-        $marksBySubject = Mark::with(['assessment.subject'])
-            ->where('student_id', $student->id)
-            ->get()
-            ->groupBy('assessment.subject.name');
+        // Group marks by subject to calculate subject-wise performance and ranks
+        $subjectPerformance = [];
+        $subjects = $marks->groupBy('subject_id');
 
-        return inertia('Student/Marks/Index', [
-            'student' => $student->load(['grade', 'section']),
+        // Get section students IDs once for all calculations
+        $sectionStudentIds = \App\Models\Student::where('section_id', $student->section_id)
+            ->pluck('id');
+
+        foreach ($subjects as $subjectId => $subjectMarks) {
+            $subject = $subjectMarks->first()->subject;
+            $averageScore = $subjectMarks->avg('score');
+
+            // Calculate rank for this subject within section based on TOTAL SCORE
+            $subjectTotals = \App\Models\Mark::where('subject_id', $subjectId)
+                ->whereIn('student_id', $sectionStudentIds)
+                ->selectRaw('student_id, SUM(score) as total_score')
+                ->groupBy('student_id')
+                ->orderByDesc('total_score')
+                ->get();
+
+            $rank = $subjectTotals->search(function ($item) use ($student) {
+                return $item->student_id == $student->id;
+            });
+            $rank = $rank !== false ? $rank + 1 : 'N/A';
+
+            // Get detailed assessment breakdown for this subject
+            $assessmentBreakdown = $subjectMarks->map(function ($mark) {
+                return [
+                    'assessment_type' => $mark->assessment_type,
+                    'semester' => $mark->semester,
+                    'score' => $mark->score,
+                    'max_score' => $mark->max_score ?? 100,
+                    'date' => $mark->created_at->format('Y-m-d'),
+                ];
+            });
+
+            // Calculate total score for this student
+            $totalScore = $subjectMarks->sum('score');
+            $maxScorePossible = $subjectMarks->sum('max_score');
+
+            $subjectPerformance[] = [
+                'subject' => $subject,
+                'total_score' => $totalScore,
+                'max_score' => $maxScorePossible,
+                'rank' => $rank,
+                'total_students' => $subjectTotals->count(),
+                'assessments' => $assessmentBreakdown,
+            ];
+        }
+
+        // Calculate trend data (average score per semester)
+        $trendData = $marks->groupBy(function ($mark) {
+            return $mark->academicYear->name . ' - ' . $mark->semester;
+        })->map(function ($periodMarks, $period) {
+            return [
+                'period' => $period,
+                'average' => round($periodMarks->avg('score'), 2),
+            ];
+        })->values();
+
+        return inertia('Student/AcademicRecords', [
+            'student' => $student,
             'marks' => $marks,
-            'marksBySubject' => $marksBySubject
+            'subjectPerformance' => $subjectPerformance,
+            'trendData' => $trendData,
+            'academicYear' => $academicYear,
+        ]);
+    }
+
+    // FR-02: Admission Application
+    public function admissionForm()
+    {
+        $grades = \App\Models\Grade::all();
+        return inertia('Student/AdmissionApplication', [
+            'grades' => $grades,
+        ]);
+    }
+
+    public function admissionStore(Request $request)
+    {
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'dob' => 'required|date',
+            'gender' => 'required|in:male,female',
+            'grade_applying' => 'required|exists:grades,id',
+            'previous_school' => 'nullable|string|max:255',
+            'parent_name' => 'required|string|max:255',
+            'parent_phone' => 'required|string|max:20',
+            'parent_email' => 'nullable|email',
+            'address' => 'required|string',
+        ]);
+
+        // Create admission record
+        \App\Models\Admission::create([
+            'full_name' => $validated['full_name'],
+            'dob' => $validated['dob'],
+            'gender' => $validated['gender'],
+            'grade_applying' => $validated['grade_applying'],
+            'previous_school' => $validated['previous_school'],
+            'parent_name' => $validated['parent_name'],
+            'parent_phone' => $validated['parent_phone'],
+            'parent_email' => $validated['parent_email'],
+            'address' => $validated['address'],
+            'status' => 'submitted',
+        ]);
+
+        return redirect()->route('student.dashboard')->with('success', 'Application submitted successfully!');
+    }
+
+    // FR-04, FR-05: Annual Registration
+    public function registrationForm()
+    {
+        $user = auth()->user();
+        $student = $user->student;
+        $academicYear = \App\Models\AcademicYear::where('status', 'active')->first();
+
+        // Check if already registered for this year
+        $existingRegistration = $student->registrations()
+            ->where('academic_year_id', $academicYear->id)
+            ->first();
+
+        $subjects = collect();
+        if ($student->grade_id) {
+            $subjects = \App\Models\Subject::where('grade_id', $student->grade_id)->get();
+        }
+
+        $streams = \App\Models\Stream::all();
+        $nextGrade = \App\Models\Grade::where('level', $student->grade->level + 1)->first();
+
+        return inertia('Student/AnnualRegistration', [
+            'student' => $student,
+            'academicYear' => $academicYear,
+            'existingRegistration' => $existingRegistration,
+            'streams' => $streams,
+            'nextGrade' => $nextGrade,
+        ]);
+    }
+
+    public function registrationStore(Request $request)
+    {
+        $user = auth()->user();
+        $student = $user->student;
+        $academicYear = \App\Models\AcademicYear::where('status', 'active')->first();
+
+        // Check if already registered
+        $existing = $student->registrations()
+            ->where('academic_year_id', $academicYear->id)
+            ->first();
+
+        if ($existing) {
+            return back()->withErrors(['error' => 'You are already registered for this academic year.']);
+        }
+
+        $validated = $request->validate([
+            'grade_id' => 'required|exists:grades,id',
+            'stream_id' => 'nullable|exists:streams,id',
+        ]);
+
+        // Create registration
+        \App\Models\Registration::create([
+            'student_id' => $student->id,
+            'academic_year_id' => $academicYear->id,
+            'grade_id' => $validated['grade_id'],
+            'section_id' => $student->section_id,
+            'stream_id' => $validated['stream_id'],
+            'registration_date' => now(),
+            'status' => 'completed',
+        ]);
+
+        return redirect()->route('student.dashboard')->with('success', 'Registration completed successfully!');
+    }
+
+    // FR-06: Grade Audit
+    public function gradeAudit()
+    {
+        $user = auth()->user();
+        $student = $user->student;
+
+        // Get all registrations with grades and results
+        $registrations = $student->registrations()
+            ->with(['grade', 'academicYear', 'section'])
+            ->orderBy('academic_year_id', 'desc')
+            ->get();
+
+        // Get semester and final results for each registration
+        $gradeHistory = [];
+        foreach ($registrations as $registration) {
+            $semesterResults = $student->semesterResults()
+                ->where('academic_year_id', $registration->academic_year_id)
+                ->where('grade_id', $registration->grade_id)
+                ->get();
+
+            $finalResult = $student->finalResults()
+                ->where('academic_year_id', $registration->academic_year_id)
+                ->where('grade_id', $registration->grade_id)
+                ->first();
+
+            $gradeHistory[] = [
+                'grade' => $registration->grade,
+                'academic_year' => $registration->academicYear,
+                'section' => $registration->section,
+                'semester_results' => $semesterResults,
+                'final_result' => $finalResult,
+            ];
+        }
+
+        return inertia('Student/GradeAudit', [
+            'student' => $student,
+            'gradeHistory' => $gradeHistory,
         ]);
     }
 }

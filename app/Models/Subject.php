@@ -9,7 +9,12 @@ class Subject extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'code', 'grade_id', 'description'];
+    protected $fillable = ['name', 'code', 'grade_id', 'stream_id', 'description'];
+
+    public function stream()
+    {
+        return $this->belongsTo(Stream::class);
+    }
 
     public function grade()
     {
@@ -30,5 +35,10 @@ class Subject extends Model
     {
         return $this->belongsToMany(Teacher::class, 'teacher_assignments')
             ->withPivot(['grade_id', 'section_id', 'academic_year_id']);
+    }
+
+    public function assessmentTypes()
+    {
+        return $this->hasMany(AssessmentType::class);
     }
 }

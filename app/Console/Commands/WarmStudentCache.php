@@ -47,7 +47,7 @@ class WarmStudentCache extends Command
 
         $student = $user->student;
         $academicYear = \DB::table('academic_years')
-            ->whereRaw('is_current::boolean = TRUE')
+            ->where('is_current', true)
             ->first();
 
         if (!$academicYear) {

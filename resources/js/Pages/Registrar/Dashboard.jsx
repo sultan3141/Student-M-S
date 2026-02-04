@@ -136,7 +136,7 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                             <h3 className="font-bold text-[#1F2937] flex items-center">
                                 <ClockIcon className="w-5 h-5 mr-2" /> RECENT REGISTRATIONS
                             </h3>
-                            <Link href={route('registrar.students.create')} className="text-xs text-[#1E40AF] font-bold hover:underline">View All History →</Link>
+                            <Link href={route('registrar.admission.index')} className="text-xs text-[#1E40AF] font-bold hover:underline">View All History →</Link>
                         </div>
                         <div className="flex-1 overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">

@@ -7,7 +7,7 @@ import {
     EllipsisVerticalIcon
 } from '@heroicons/react/24/outline';
 
-export default function ModernMarkTable({ students, data, setData, maxScore = 100 }) {
+export default function ModernMarkTable({ students, data, setData, maxScore = 100, disabled = false }) {
     const [localMarks, setLocalMarks] = useState({});
     const [focusedRow, setFocusedRow] = useState(null);
     const [savedRows, setSavedRows] = useState(new Set());
@@ -216,13 +216,15 @@ export default function ModernMarkTable({ students, data, setData, maxScore = 10
                                                 handleMarkBlur(student.id);
                                             }}
                                             onKeyDown={(e) => handleKeyDown(e, index)}
+                                            disabled={disabled}
                                             className={`
                                                 w-24 px-3 py-2 text-center text-lg font-semibold
                                                 border-2 rounded-lg transition-all duration-200
                                                 focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                                                ${focusedRow === student.id
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-300'
+                                                ${disabled ? 'bg-gray-50 text-gray-400 cursor-not-allowed border-gray-200' :
+                                                    focusedRow === student.id
+                                                        ? 'border-blue-500 bg-blue-50'
+                                                        : 'border-gray-300'
                                                 }
                                                 ${mark === '' ? 'text-gray-400' : 'text-gray-900'}
                                             `}

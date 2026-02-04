@@ -16,87 +16,247 @@ class TeacherAssessmentController extends Controller
      */
     public function index(Request $request)
     {
-        $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
+        $teacher = Teacher::where('user_id', Auth::id())->first();
         
-        // Get query parameters for class selection
-        $gradeId = $request->query('grade_id');
-        $sectionId = $request->query('section_id');
-        $subjectId = $request->query('subject_id');
-        $semester = $request->query('semester', '1');
-        
-        // Get teacher's assignments for dropdowns
-        $assignments = $teacher->assignments()
-            ->with(['grade', 'section', 'subject'])
-            ->get();
-        
-        $assessments = collect();
-        $totalWeight = 0;
-        $studentCount = 0;
-        
-        if ($gradeId && $sectionId && $subjectId) {
-            // Fetch assessments for the selected class
-            $assessments = Assessment::forClass($gradeId, $sectionId, $subjectId)
-                ->bySemester($semester)
-                ->with(['assessmentType', 'marks'])
-                ->orderBy('due_date')
-                ->get()
-                ->map(function ($assessment) {
-                    return [
-                        'id' => $assessment->id,
-                        'name' => $assessment->name,
-                        'type' => $assessment->assessmentType->name,
-                        'weight' => $assessment->weight_percentage,
-                        'due_date' => $assessment->due_date?->format('Y-m-d'),
-                        'status' => $assessment->status,
-                        'completion' => $assessment->completion_percentage,
-                        'average' => round($assessment->average_score ?? 0, 2),
-                    ];
-                });
-            
-            $totalWeight = $assessments->sum('weight');
-            $studentCount = Student::where('section_id', $sectionId)->count();
+        if (!$teacher) {
+            return Inertia::render('Teacher/Assessments/Index', [
+                'assessments' => [],
+                'error' => 'Teacher profile not found. Please contact the administrator.'
+            ]);
         }
         
+        // Get all assessments created by this teacher
+        $assessments = Assessment::with(['grade', 'section', 'subject', 'assessmentType'])
+            ->where('teacher_id', $teacher->id)
+            ->orderBy('due_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
         return Inertia::render('Teacher/Assessments/Index', [
-            'assignments' => $assignments,
-            'assessments' => $assessments,
-            'totalWeight' => $totalWeight,
-            'studentCount' => $studentCount,
-            'semester' => $semester,
-            'selectedClass' => [
-                'grade_id' => $gradeId,
-                'section_id' => $sectionId,
-                'subject_id' => $subjectId,
-            ],
+            'assessments' => $assessments
         ]);
     }
 
     /**
-     * Store a new assessment
+     * Show create form with fixed grades (9, 10, 11, 12)
+     */
+    public function create()
+    {
+        $teacher = Teacher::where('user_id', Auth::id())->first();
+        
+        if (!$teacher) {
+            return redirect()->route('teacher.dashboard')
+                ->with('error', 'Teacher profile not found. Please contact the administrator.');
+        }
+        
+        $academicYear = \App\Models\AcademicYear::where('is_current', true)->first();
+        
+        if (!$academicYear) {
+            return redirect()->route('teacher.dashboard')
+                ->with('error', 'No active academic year found. Please contact the administrator.');
+        }
+        
+        // Get fixed grades 9, 10, 11, 12 regardless of assignments
+        $grades = \App\Models\Grade::whereIn('level', [9, 10, 11, 12])
+            ->orderBy('level')
+            ->get()
+            ->map(function ($grade) use ($teacher, $academicYear) {
+                // Get sections for this grade assigned to the teacher
+                $sections = \App\Models\TeacherAssignment::with(['section.stream'])
+                    ->where('teacher_id', $teacher->id)
+                    ->where('grade_id', $grade->id)
+                    ->where('academic_year_id', $academicYear->id)
+                    ->get()
+                    ->map(function ($assignment) {
+                        return [
+                            'id' => $assignment->section_id,
+                            'name' => $assignment->section->name,
+                            'stream_name' => $assignment->section->stream->name ?? $assignment->grade->stream->name ?? null,
+                        ];
+                    })
+                    ->unique('id')
+                    ->values();
+
+                return [
+                    'id' => $grade->id,
+                    'name' => $grade->name,
+                    'level' => $grade->level,
+                    'sections' => $sections,
+                ];
+            });
+            
+        return Inertia::render('Teacher/Assessments/CreateSimple', [
+            'grades' => $grades,
+            'academicYear' => $academicYear
+        ]);
+    }
+
+    /**
+     * Get subjects for selected grade (across all sections)
+     */
+    public function getSubjectsForClass(Request $request)
+    {
+        $request->validate([
+            'grade_id' => 'required|exists:grades,id',
+        ]);
+        
+        $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
+        $gradeId = $request->grade_id;
+        
+        // Get subjects this teacher teaches in this grade (across all sections)
+        $subjects = \App\Models\TeacherAssignment::with('subject')
+            ->where('teacher_id', $teacher->id)
+            ->where('grade_id', $gradeId)
+            ->get()
+            ->pluck('subject')
+            ->unique('id')
+            ->map(function($subject) {
+                return [
+                    'id' => $subject->id,
+                    'name' => $subject->name,
+                    'code' => $subject->code,
+                ];
+            })
+            ->values();
+            
+        return response()->json([
+            'subjects' => $subjects
+        ]);
+    }
+
+    /**
+     * Get subjects for selected grade (all sections)
+     */
+    public function getSubjects(Request $request)
+    {
+        $request->validate([
+            'grade_id' => 'required|exists:grades,id',
+        ]);
+        
+        $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
+        $gradeId = $request->grade_id;
+        
+        // Get subjects this teacher teaches in this grade (across all sections)
+        $subjects = \App\Models\TeacherAssignment::with('subject')
+            ->where('teacher_id', $teacher->id)
+            ->where('grade_id', $gradeId)
+            ->get()
+            ->pluck('subject')
+            ->unique('id')
+            ->map(function($subject) {
+                return [
+                    'id' => $subject->id,
+                    'name' => $subject->name,
+                    'code' => $subject->code,
+                ];
+            })
+            ->values();
+            
+        return response()->json($subjects);
+    }
+
+    /**
+     * Get assessment types for selected subject
+     */
+    public function getAssessmentTypes(Request $request)
+    {
+        $types = \App\Models\AssessmentType::where('grade_id', $request->grade_id)
+            ->where('section_id', $request->section_id)
+            ->where('subject_id', $request->subject_id)
+            ->get();
+            
+        return response()->json($types);
+    }
+
+    /**
+     * Get assessment types for selected grade and subject (ignoring section specific ones)
+     */
+    public function getAssessmentTypesForClass(Request $request)
+    {
+        $request->validate([
+            'grade_id' => 'required',
+            'subject_id' => 'required',
+        ]);
+
+        $types = \App\Models\AssessmentType::where('grade_id', $request->grade_id)
+            ->where('subject_id', $request->subject_id)
+            ->whereNull('section_id') // Only get types applicable to the whole grade/class
+            ->orWhere(function($q) use ($request) {
+                // Also get global types if any (where grade, subject, section are null)
+                $q->whereNull('grade_id')->whereNull('subject_id')->whereNull('section_id');
+            })
+            // Or types that match grade but no subject/section
+            ->orWhere(function($q) use ($request) {
+                $q->where('grade_id', $request->grade_id)->whereNull('subject_id')->whereNull('section_id');
+            })
+            ->get();
+            
+        return response()->json($types);
+    }
+
+    /**
+     * Store assessment for ALL sections in the grade
      */
     public function store(Request $request)
     {
         $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
+        $academicYear = \App\Models\AcademicYear::where('is_current', true)->first();
         
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
             'grade_id' => 'required|exists:grades,id',
-            'section_id' => 'required|exists:sections,id',
             'subject_id' => 'required|exists:subjects,id',
-            'assessment_type_id' => 'required|exists:assessment_types,id',
-            'weight_percentage' => 'required|numeric|min:0|max:100',
-            'max_score' => 'nullable|numeric|min:0',
-            'semester' => 'required|in:1,2',
-            'due_date' => 'nullable|date',
-            'description' => 'nullable|string',
+            'assessments' => 'required|array|min:1',
+            'assessments.*.name' => 'required|string|max:255',
+            'assessments.*.total_marks' => 'required|numeric|min:0',
+            'assessments.*.assessment_type_id' => 'nullable|exists:assessment_types,id', // Added validation
         ]);
         
-        $assessment = Assessment::create(array_merge($validated, [
-            'teacher_id' => $teacher->id,
-            'status' => 'draft',
-        ]));
+        // Get all sections in this grade that the teacher teaches this subject
+        $sections = \App\Models\TeacherAssignment::where('teacher_id', $teacher->id)
+            ->where('grade_id', $validated['grade_id'])
+            ->where('subject_id', $validated['subject_id'])
+            ->distinct()
+            ->pluck('section_id');
+            
+        if ($sections->isEmpty()) {
+            return back()->withErrors(['error' => 'You are not assigned to teach this subject in this grade.']);
+        }
         
-        return redirect()->back()->with('success', 'Assessment created successfully.');
+        // Create assessments for each section
+        $totalCreated = 0;
+        
+        foreach ($validated['assessments'] as $assessmentData) {
+            // Determine weight - use type default if not specified, else 0 (teacher can update later)
+            $weight = 0;
+            if (!empty($assessmentData['assessment_type_id'])) {
+                $type = \App\Models\AssessmentType::find($assessmentData['assessment_type_id']);
+                if ($type) {
+                     $weight = $type->weight ?? $type->weight_percentage ?? 0;
+                }
+            }
+
+            foreach ($sections as $sectionId) {
+                Assessment::create([
+                    'name' => $assessmentData['name'],
+                    'teacher_id' => $teacher->id,
+                    'grade_id' => $validated['grade_id'],
+                    'section_id' => $sectionId,
+                    'subject_id' => $validated['subject_id'],
+                    'assessment_type_id' => $assessmentData['assessment_type_id'] ?? null,
+                    'due_date' => now()->addDays(7), // Default to one week from now
+                    'max_score' => $assessmentData['total_marks'],
+                    'description' => null,
+                    'academic_year_id' => $academicYear->id,
+                    'weight_percentage' => $weight,
+                    'semester' => '1',
+                    'status' => 'published',
+                ]);
+                $totalCreated++;
+            }
+        }
+        
+        return redirect()->route('teacher.assessments-simple.index')
+            ->with('success', count($validated['assessments']) . " assessment(s) created successfully for " . $sections->count() . " section(s)!");
     }
 
     /**

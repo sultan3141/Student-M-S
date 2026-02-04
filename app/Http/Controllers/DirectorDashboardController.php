@@ -16,10 +16,12 @@ class DirectorDashboardController extends Controller
     {
         $statistics = $this->getStatistics();
         $recentData = $this->getRecentData();
+        $semesterStatus = $this->getSemesterStatus();
 
         return Inertia::render('Director/Dashboard', [
             'statistics' => $statistics,
             'recentData' => $recentData,
+            'semesterStatus' => $semesterStatus,
         ]);
     }
 
@@ -68,6 +70,34 @@ class DirectorDashboardController extends Controller
                 ->latest()
                 ->take(5)
                 ->get(),
+        ];
+    }
+
+    /**
+     * Get semester status for current academic year.
+     */
+    private function getSemesterStatus()
+    {
+        $currentAcademicYear = \App\Models\AcademicYear::where('is_current', true)->first();
+        
+        if (!$currentAcademicYear) {
+            return null;
+        }
+
+        $semesters = \App\Models\SemesterPeriod::where('academic_year_id', $currentAcademicYear->id)
+            ->get()
+            ->map(function ($semester) {
+                return [
+                    'semester' => $semester->semester,
+                    'status' => $semester->status,
+                    'is_open' => $semester->isOpen(),
+                    'is_closed' => $semester->isClosed(),
+                ];
+            });
+
+        return [
+            'academicYear' => $currentAcademicYear->name,
+            'semesters' => $semesters,
         ];
     }
 

@@ -12,11 +12,11 @@ class MarkChangeLog extends Model
     protected $fillable = [
         'mark_id',
         'teacher_id',
-        'action',
+        'action', // 'created', 'updated'
         'old_value',
         'new_value',
         'ip_address',
-        'user_agent',
+        'user_agent'
     ];
 
     public function mark()

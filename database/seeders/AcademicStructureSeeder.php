@@ -25,26 +25,34 @@ class AcademicStructureSeeder extends Seeder
                 ['name' => "Grade $level"]
             );
 
+            // Determine stream for Grade 11 & 12
+            $streamId = null;
+            if ($level >= 11) {
+                // Assign Section A to Natural Science, B to Social Science (for simplicity)
+            }
+
             // Create Sections A (Female) and B (Male)
             // Section A
+            $streamIdA = ($level >= 11) ? $natural->id : null;
             \App\Models\Section::updateOrCreate(
                 ['grade_id' => $grade->id, 'name' => 'A'],
                 [
                     'gender' => 'Female',
                     'capacity' => 50,
+                    'stream_id' => $streamIdA,
                 ]
             );
 
             // Section B
+            $streamIdB = ($level >= 11) ? $social->id : null;
             \App\Models\Section::updateOrCreate(
                 ['grade_id' => $grade->id, 'name' => 'B'],
                 [
                     'gender' => 'Male',
                     'capacity' => 50,
+                    'stream_id' => $streamIdB,
                 ]
             );
-            
-            // For G11/12, we might link streams, but keeping it simple for now as generic sections
         }
         
         // Active Academic Year
@@ -54,6 +62,7 @@ class AcademicStructureSeeder extends Seeder
                 'start_date' => '2025-09-01',
                 'end_date' => '2026-06-30',
                 'status' => 'active',
+                'is_current' => true,
             ]
         );
     }

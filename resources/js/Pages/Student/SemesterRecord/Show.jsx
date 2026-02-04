@@ -155,10 +155,21 @@ export default function SemesterRecordShow({ student, semester, academic_year, s
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-bold text-gray-900">{record.subject.name}</span>
                                                     <span className="text-xs text-gray-500 font-mono">{record.subject.code}</span>
+                                                    {record.graded_assessments < record.total_assessments && (
+                                                        <span className="text-xs text-yellow-600 mt-1">
+                                                            {record.graded_assessments}/{record.total_assessments} graded
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <span className="text-lg font-bold text-blue-600">{record.average}</span>
+                                                {record.graded_assessments > 0 ? (
+                                                    <span className="text-lg font-bold text-blue-600">
+                                                        {record.total_score} / {record.total_max_score}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-sm text-gray-400 italic">Not Graded</span>
+                                                )}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 <span className="text-sm text-gray-600 font-medium">
@@ -246,8 +257,7 @@ export default function SemesterRecordShow({ student, semester, academic_year, s
                                                 <thead>
                                                     <tr className="bg-gray-50">
                                                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Assessment</th>
-                                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Type</th>
-                                                        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Weight</th>
+                                                        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Max Score</th>
                                                         <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Score</th>
                                                     </tr>
                                                 </thead>
@@ -257,26 +267,27 @@ export default function SemesterRecordShow({ student, semester, academic_year, s
                                                             <tr key={mIndex} className="hover:bg-gray-50/50">
                                                                 <td className="px-4 py-3 text-sm font-medium text-gray-900">
                                                                     {mark.assessment_name}
-                                                                </td>
-                                                                <td className="px-4 py-3 text-sm text-gray-500">
-                                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
-                                                                        {mark.type}
-                                                                    </span>
+
                                                                 </td>
                                                                 <td className="px-4 py-3 text-sm text-gray-500 text-center">
-                                                                    {Number(mark.weight) > 0 ? `${mark.weight}%` : '-'}
+                                                                    {mark.max_score}
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
-                                                                    <div className="inline-flex items-baseline space-x-1 justify-end">
-                                                                        <span className={`font-bold ${mark.score >= mark.max_score * 0.9 ? 'text-green-600' : 'text-gray-900'}`}>{mark.score}</span>
-                                                                        <span className="text-xs text-gray-400 font-medium">/ {mark.max_score}</span>
-                                                                    </div>
+                                                                    {mark.is_submitted ? (
+                                                                        <span className={`font-bold ${mark.score >= mark.max_score * 0.9 ? 'text-green-600' : 'text-gray-900'}`}>
+                                                                            {mark.score}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-gray-900 font-bold">
+                                                                            0
+                                                                        </span>
+                                                                    )}
                                                                 </td>
                                                             </tr>
                                                         ))
                                                     ) : (
                                                         <tr>
-                                                            <td colSpan="4" className="px-4 py-8 text-center text-gray-500 text-sm italic">
+                                                            <td colSpan="3" className="px-4 py-8 text-center text-gray-500 text-sm italic">
                                                                 No assessments recorded yet.
                                                             </td>
                                                         </tr>

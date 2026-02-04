@@ -97,8 +97,8 @@ return [
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
             'options' => [
-                \PDO::ATTR_PERSISTENT => true, // Enable persistent connections
-                \PDO::ATTR_TIMEOUT => 5, // 5 second timeout
+                \PDO::ATTR_PERSISTENT => false, // Disable persistent for Neon
+                \PDO::ATTR_TIMEOUT => 30, // Increase timeout to 30 seconds
                 \PDO::ATTR_EMULATE_PREPARES => true,
             ],
         ],

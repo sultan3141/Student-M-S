@@ -1,5 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import TeacherLayout from '@/Layouts/TeacherLayout';
+import SemesterWidget from '@/Components/SemesterWidget';
+import SemesterStatusGrid from '@/Components/SemesterStatusGrid';
 import {
     UserGroupIcon,
     AcademicCapIcon,
@@ -11,7 +13,7 @@ import {
     ClockIcon
 } from '@heroicons/react/24/outline';
 
-export default function Dashboard({ stats, recentActivity, deadlines, teacher }) {
+export default function Dashboard({ stats, recentActivity, deadlines, teacher, currentSemester }) {
     return (
         <TeacherLayout>
             <Head title="Teacher Dashboard" />
@@ -23,6 +25,20 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher })
                     Teacher
                 </span>
             </div>
+
+            {/* Semester Widget - Full Width */}
+            {currentSemester && (
+                <div className="mb-8 space-y-6">
+                    {/* Main Active Context */}
+                    <SemesterWidget semester={currentSemester} userType="teacher" />
+
+                    {/* Specific Status Indicators */}
+                    <div>
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Semester Access Control</h3>
+                        <SemesterStatusGrid currentSemester={currentSemester} />
+                    </div>
+                </div>
+            )}
 
             {/* Stats Grid - 4 Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

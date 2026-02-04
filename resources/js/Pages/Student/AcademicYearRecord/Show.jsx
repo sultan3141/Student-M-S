@@ -88,7 +88,7 @@ export default function AcademicYearRecordShow({
                             <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-2 relative z-10">Semester 1</p>
                             <div className="flex items-baseline space-x-2 relative z-10">
                                 <h2 className="text-4xl font-black text-blue-800">
-                                    {semester1_average ? `${semester1_average}%` : 'N/A'}
+                                    {semester1_average ? semester1_average : 'N/A'}
                                 </h2>
                             </div>
                             <div className="mt-4 flex items-center text-xs font-bold text-blue-500 bg-white/50 px-2 py-1 rounded-lg w-fit relative z-10">
@@ -103,7 +103,7 @@ export default function AcademicYearRecordShow({
                             <p className="text-indigo-600 text-xs font-bold uppercase tracking-widest mb-2 relative z-10">Semester 2</p>
                             <div className="flex items-baseline space-x-2 relative z-10">
                                 <h2 className="text-4xl font-black text-indigo-800">
-                                    {semester2_average ? `${semester2_average}%` : 'N/A'}
+                                    {semester2_average ? semester2_average : 'N/A'}
                                 </h2>
                             </div>
                             <div className="mt-4 flex items-center text-xs font-bold text-indigo-500 bg-white/50 px-2 py-1 rounded-lg w-fit relative z-10">
@@ -117,9 +117,9 @@ export default function AcademicYearRecordShow({
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <ChartBarIcon className="w-20 h-20 text-white" />
                         </div>
-                        <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-2 relative z-10">Final Average</p>
+                        <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-2 relative z-10">Final Yearly Average</p>
                         <div className="flex items-baseline space-x-2 relative z-10">
-                            <h2 className="text-5xl font-black text-white">{final_average ? final_average : '--'}%</h2>
+                            <h2 className="text-5xl font-black text-white">{final_average ? final_average : '--'}</h2>
                         </div>
                         {final_average && (
                             <div className="mt-4 relative z-10">
@@ -135,7 +135,7 @@ export default function AcademicYearRecordShow({
                         <div className="absolute top-0 right-0 p-4 opacity-10 font-black">
                             {final_rank && <span className="text-8xl text-white">#</span>}
                         </div>
-                        <p className="text-amber-100 text-xs font-bold uppercase tracking-widest mb-2 relative z-10">Final Rank</p>
+                        <p className="text-amber-100 text-xs font-bold uppercase tracking-widest mb-2 relative z-10">Final Year Rank</p>
                         <h2 className="text-5xl font-black text-white relative z-10">{final_rank ? `#${final_rank}` : 'N/A'}</h2>
                         {total_students && (
                             <p className="mt-4 text-amber-100/80 text-xs font-bold relative z-10">
@@ -167,7 +167,6 @@ export default function AcademicYearRecordShow({
                                     <th className="px-6 py-4 text-center text-xs font-bold text-blue-600 uppercase tracking-wider">Semester 1</th>
                                     <th className="px-6 py-4 text-center text-xs font-bold text-indigo-600 uppercase tracking-wider">Semester 2</th>
                                     <th className="px-6 py-4 text-center text-xs font-bold text-gray-900 uppercase tracking-wider">Annual Final</th>
-                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Grade</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-50">
@@ -186,34 +185,29 @@ export default function AcademicYearRecordShow({
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <span className={`text-sm font-bold ${subject.semester1_average ? 'text-blue-600' : 'text-gray-300'}`}>
-                                                    {subject.semester1_average ? `${subject.semester1_average}%` : '-'}
+                                                <span className={`text-sm font-bold ${subject.semester1_average !== null ? 'text-blue-600' : 'text-gray-300'}`}>
+                                                    {subject.semester1_average !== null ? subject.semester1_average : '-'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <span className={`text-sm font-bold ${subject.semester2_average ? 'text-indigo-600' : 'text-gray-300'}`}>
-                                                    {subject.semester2_average ? `${subject.semester2_average}%` : '-'}
+                                                <span className={`text-sm font-bold ${subject.semester2_average !== null ? 'text-indigo-600' : 'text-gray-300'}`}>
+                                                    {subject.semester2_average !== null ? subject.semester2_average : '-'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 {subject.final_average ? (
                                                     <span className="text-base font-black text-gray-900">
-                                                        {subject.final_average}%
+                                                        {subject.final_average}
                                                     </span>
                                                 ) : (
                                                     <span className="text-gray-300">-</span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black border tracking-wider outline outline-1 outline-offset-1 outline-transparent group-hover:outline-current transition-all ${getGradeColor(subject.final_average)}`}>
-                                                    {getLetterGrade(subject.final_average)}
-                                                </span>
-                                            </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" className="px-6 py-16 text-center">
+                                        <td colSpan="4" className="px-6 py-16 text-center">
                                             <div className="flex flex-col items-center">
                                                 <ScaleIcon className="w-12 h-12 text-gray-200 mb-2" />
                                                 <p className="text-gray-400 font-bold">No academic data available for this year</p>

@@ -13,7 +13,7 @@ import {
     BookmarkIcon
 } from '@heroicons/react/24/outline';
 
-export default function Entry({ assessment, students, subject, semester }) {
+export default function Entry({ assessment, students, subject, semester, is_locked }) {
     const [showBulkOps, setShowBulkOps] = useState(false);
     const [showPerformance, setShowPerformance] = useState(true);
 
@@ -21,6 +21,22 @@ export default function Entry({ assessment, students, subject, semester }) {
         assessment_id: assessment.id,
         marks: [],
     });
+
+    // Initialize marks from props if not already set
+    if (data.marks.length === 0 && students.length > 0) {
+        /* 
+           We can likely rely on ModernMarkTable to handle local state, 
+           but if we need to initialize form data here:
+        */
+        const initialMarks = students.map(s => ({
+            student_id: s.id,
+            marks_obtained: s.mark, // Map 'score' to 'marks_obtained' if consistent
+            student_name: s.name,
+            student_code: s.student_id
+        }));
+        // Note: useForm might warn if we set data during render. 
+        // Better to use useEffect or initialize in useForm argument.
+    }
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -73,11 +89,27 @@ export default function Entry({ assessment, students, subject, semester }) {
             </div>
 
             {/* Quick Actions Toolbar */}
+            {is_locked && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 mx-4 sm:mx-0 rounded-r-lg shadow-sm">
+                    <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                            <Cog6ToothIcon className="h-5 w-5 text-red-500" aria-hidden="true" />
+                        </div>
+                        <div className="ml-3">
+                            <p className="text-sm text-red-700">
+                                <span className="font-bold">Read Only Mode:</span> Result entry for Semester {semester} is currently <span className="font-bold">CLOSED</span> by the Director. You cannot edit marks.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex flex-wrap items-center gap-3 mb-6">
                 <button
                     onClick={() => setShowBulkOps(!showBulkOps)}
+                    disabled={is_locked}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition-colors ${showBulkOps ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border-2 border-blue-200 hover:bg-blue-50'
-                        }`}
+                        } ${is_locked ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                     <ArrowUpTrayIcon className="w-5 h-5" />
                     <span>Import CSV</span>
@@ -85,7 +117,8 @@ export default function Entry({ assessment, students, subject, semester }) {
 
                 <button
                     onClick={() => setShowBulkOps(!showBulkOps)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-white text-green-600 border-2 border-green-200 rounded-lg font-semibold hover:bg-green-50 transition-colors"
+                    disabled={is_locked}
+                    className={`flex items-center space-x-2 px-4 py-2 bg-white text-green-600 border-2 border-green-200 rounded-lg font-semibold hover:bg-green-50 transition-colors ${is_locked ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                     <ClipboardDocumentIcon className="w-5 h-5" />
                     <span>Paste Data</span>
@@ -131,6 +164,7 @@ export default function Entry({ assessment, students, subject, semester }) {
                     data={data}
                     setData={setData}
                     maxScore={assessment.max_score || 100}
+                    disabled={is_locked}
                 />
 
                 {/* Bottom Stats Bar */}
@@ -139,15 +173,15 @@ export default function Entry({ assessment, students, subject, semester }) {
                         <div className="flex items-center space-x-6">
                             <div>
                                 <p className="text-blue-100 text-sm">Entered</p>
-                                <p className="text-2xl font-bold">{enteredCount}/{totalCount}</p>
+                                <p className="text-2xl font-bold text-white">{enteredCount}/{totalCount}</p>
                             </div>
                             <div>
                                 <p className="text-blue-100 text-sm">Average</p>
-                                <p className="text-2xl font-bold">{average}%</p>
+                                <p className="text-2xl font-bold text-white">{average}%</p>
                             </div>
                             <div>
                                 <p className="text-blue-100 text-sm">Progress</p>
-                                <p className="text-2xl font-bold">{completionPercentage}%</p>
+                                <p className="text-2xl font-bold text-white">{completionPercentage}%</p>
                             </div>
                         </div>
 
@@ -161,10 +195,19 @@ export default function Entry({ assessment, students, subject, semester }) {
                             </button>
                             <button
                                 type="submit"
-                                disabled={processing}
-                                className="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg"
+                                disabled={processing || is_locked}
+                                className="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg flex items-center space-x-2"
                             >
-                                {processing ? 'Saving...' : 'Submit All Marks →'}
+                                {processing ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                        <span>Saving...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        {is_locked ? 'Locked' : 'Submit All Marks →'}
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>

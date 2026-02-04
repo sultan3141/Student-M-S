@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\Mark;
 use App\Models\AcademicYear;
+use App\Models\SemesterStatus;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -14,61 +15,82 @@ class SemesterRecordController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $student = $user->student()->select('id', 'student_id', 'grade_id', 'section_id')->first();
+        $student = $user->student()->with(['grade', 'section'])->first();
         
         if (!$student) {
             return redirect()->route('student.dashboard')->with('error', 'Student profile not found');
         }
 
-        // Get semesters with marks - simple query
-        $semesters = \DB::table('marks')
-            ->join('academic_years', 'marks.academic_year_id', '=', 'academic_years.id')
-            ->where('marks.student_id', $student->id)
-            ->select(
-                'marks.semester',
-                'marks.academic_year_id',
-                'academic_years.name as year_name',
-                \DB::raw('ROUND(AVG(marks.score), 2) as average')
-            )
-            ->groupBy('marks.semester', 'marks.academic_year_id', 'academic_years.name')
-            ->orderBy('marks.academic_year_id', 'desc')
-            ->orderBy('marks.semester', 'desc')
-            ->get()
-            ->map(function($sem) use ($student) {
-                // Get rank separately
-                $rank = \DB::table('semester_results')
-                    ->where('student_id', $student->id)
-                    ->where('academic_year_id', $sem->academic_year_id)
-                    ->where('semester', $sem->semester)
-                    ->value('rank') ?? 'N/A';
+        // Get semesters where marks exist for PUBLISHED assessments
+        $markSemesters = \App\Models\Mark::where('student_id', $student->id)
+            ->whereHas('assessment', function($q) {
+                $q->where('status', 'published');
+            })
+            ->select('academic_year_id', 'semester')
+            ->distinct()
+            ->get();
+
+        // Also get semesters where published assessments exist for this student's class
+        $assessmentSemesters = \App\Models\Assessment::where('grade_id', $student->grade_id)
+            ->where('section_id', $student->section_id)
+            ->where('status', 'published')
+            ->select('academic_year_id', 'semester')
+            ->distinct()
+            ->get();
+
+        // Combine and get detailed data - ONLY SHOW CLOSED SEMESTERS
+        $semesters = $markSemesters->concat($assessmentSemesters)
+            ->unique(function($item) {
+                return $item->academic_year_id . '-' . $item->semester;
+            })
+            ->map(function($item) use ($student) {
+                $academicYearId = $item->academic_year_id;
+                $semester = $item->semester;
+                $academicYear = \App\Models\AcademicYear::find($academicYearId);
+                
+                // Check semester status - ONLY INCLUDE CLOSED SEMESTERS
+                $semesterPeriod = \App\Models\SemesterPeriod::where('academic_year_id', $academicYearId)
+                    ->where('semester', $semester)
+                    ->first();
+                
+                // Skip if semester is not closed
+                if (!$semesterPeriod || $semesterPeriod->status !== 'closed') {
+                    return null;
+                }
+                
+                $rankData = $this->calculateSemesterRank($student, $semester, $academicYearId);
+                
+                // Fetch marks for this specific semester to calculate average - with assessment eager loaded
+                $group = \App\Models\Mark::where('student_id', $student->id)
+                    ->where('academic_year_id', $academicYearId)
+                    ->where('semester', $semester)
+                    ->with('assessment')
+                    ->whereHas('assessment') // Just check if assessment exists
+                    ->get();
+
+                // Calculate average based on SUBJECT TOTALS - Include ALL marks with an assessment
+                $publishedMarks = $group->filter(fn($m) => $m->assessment);
+                
+                $subjectTotals = $publishedMarks->groupBy('subject_id')
+                    ->map(function($marks) {
+                        return $marks->sum('score');
+                    });
                 
                 return [
-                    'semester' => $sem->semester,
-                    'academic_year_id' => $sem->academic_year_id,
-                    'academic_year' => ['id' => $sem->academic_year_id, 'name' => $sem->year_name],
-                    'average' => $sem->average,
-                    'rank' => $rank,
-                    'total_students' => cache()->remember("section_{$student->section_id}_count", 3600, function() use ($student) {
-                        return \DB::table('students')->where('section_id', $student->section_id)->count();
-                    }),
+                    'semester' => $semester,
+                    'academic_year_id' => $academicYearId,
+                    'academic_year' => $academicYear,
+                    'average' => round($subjectTotals->avg(), 2),
+                    'rank' => $rankData['rank'] ?? '-',
+                    'total_students' => $rankData['total'] ?? 0,
+                    'status' => 'closed',
                 ];
-            });
-
-        // Get grade and section info
-        $studentInfo = \DB::table('students')
-            ->join('grades', 'students.grade_id', '=', 'grades.id')
-            ->join('sections', 'students.section_id', '=', 'sections.id')
-            ->where('students.id', $student->id)
-            ->select('students.id', 'students.student_id', 'grades.name as grade_name', 'sections.name as section_name')
-            ->first();
+            })
+            ->filter() // Remove null values (open semesters)
+            ->values();
 
         return Inertia::render('Student/SemesterRecord/Index', [
-            'student' => [
-                'id' => $student->id,
-                'student_id' => $student->student_id,
-                'grade' => ['name' => $studentInfo->grade_name],
-                'section' => ['name' => $studentInfo->section_name],
-            ],
+            'student' => $student,
             'semesters' => $semesters,
         ]);
     }
@@ -76,121 +98,125 @@ class SemesterRecordController extends Controller
     public function show($semester, $academicYearId)
     {
         $user = auth()->user();
-        $student = $user->student()->select('id', 'student_id', 'grade_id', 'section_id')->first();
+        $student = $user->student()->with(['grade', 'section'])->first();
         
         if (!$student) {
             return redirect()->route('student.dashboard')->with('error', 'Student profile not found');
         }
 
-        // Get academic year
-        $academicYear = cache()->remember("academic_year_{$academicYearId}", 3600, function() use ($academicYearId) {
-            return \DB::table('academic_years')->where('id', $academicYearId)->select('id', 'name')->first();
-        });
+        $academicYear = \App\Models\AcademicYear::findOrFail($academicYearId);
         
-        // Single query to get all marks with subject info
-        $marks = \DB::table('marks')
-            ->join('subjects', 'marks.subject_id', '=', 'subjects.id')
-            ->where('marks.student_id', $student->id)
-            ->where('marks.semester', $semester)
-            ->where('marks.academic_year_id', $academicYearId)
-            ->select('marks.id', 'marks.score', 'marks.assessment_id', 'marks.is_submitted', 'subjects.id as subject_id', 'subjects.name as subject_name', 'subjects.code as subject_code')
+        // Get semester status to display to student (but don't block access)
+        $semesterStatus = SemesterStatus::where('academic_year_id', $academicYearId)
+            ->where('grade_id', $student->grade_id)
+            ->where('semester', $semester)
+            ->first();
+        
+        $status = $semesterStatus ? $semesterStatus->status : 'open';
+        
+        // Get all subjects for this grade/stream
+        $subjectsQuery = \App\Models\Subject::where('grade_id', $student->grade_id);
+        if ($student->stream_id) {
+            $subjectsQuery->where(function($q) use ($student) {
+                $q->where('stream_id', $student->stream_id)
+                  ->orWhereNull('stream_id');
+            });
+        }
+        $assignedSubjects = $subjectsQuery->get();
+
+        // Get ALL assessments for this semester (Published AND Draft)
+        // This allows students to see pending assessments in their dashboard
+        $assessments = \App\Models\Assessment::where('grade_id', $student->grade_id)
+            ->where('section_id', $student->section_id)
+            ->where('semester', $semester)
+            ->where('academic_year_id', $academicYearId)
+            ->with(['subject', 'assessmentType'])
             ->get();
 
-        // Get teacher assignments for this section and academic year
-        $teacherAssignments = \DB::table('teacher_assignments')
-            ->join('teachers', 'teacher_assignments.teacher_id', '=', 'teachers.id')
-            ->join('users', 'teachers.user_id', '=', 'users.id')
-            ->where('teacher_assignments.section_id', $student->section_id)
-            ->where('teacher_assignments.academic_year_id', $academicYearId)
-            ->select('teacher_assignments.subject_id', 'users.name as teacher_name')
+        // Get marks for PUBLISHED assessments
+        $marks = \App\Models\Mark::where('student_id', $student->id)
+            ->where('semester', $semester)
+            ->where('academic_year_id', $academicYearId)
+            ->whereHas('assessment') // Check assessment exists, ignore status
+            ->with(['subject', 'assessment.assessmentType'])
+            ->get()
+            ->keyBy('assessment_id');
+
+        // Get teacher names for these subjects in this section
+        $teacherAssignments = \App\Models\TeacherAssignment::with('teacher.user')
+            ->where('section_id', $student->section_id)
+            ->where('academic_year_id', $academicYearId)
             ->get()
             ->keyBy('subject_id');
 
-        // Group by subject and calculate averages
-        $subjectRecords = $marks->groupBy('subject_id')->map(function ($subjectMarks) use ($teacherAssignments) {
-            $firstMark = $subjectMarks->first();
+        // Group assessments by subject
+        $subjectRecords = $assessments->groupBy('subject_id')->map(function ($subjectAssessments) use ($marks, $teacherAssignments) {
+            $subject = $subjectAssessments->first()->subject;
             
-            // Transform marks to include assessment details
-            $detailedMarks = $subjectMarks->map(function($mark) {
-                // Fetch assessment details if available, otherwise fallback
-                $assessmentName = 'Unknown Assessment';
-                $maxScore = 100;
-                $weight = 0;
-                $typeName = 'General';
-                
-                if ($mark->assessment_id) {
-                    $assessment = \DB::table('assessments')
-                        ->join('assessment_types', 'assessments.assessment_type_id', '=', 'assessment_types.id')
-                        ->where('assessments.id', $mark->assessment_id)
-                        ->select('assessments.name', 'assessments.max_score', 'assessments.weight_percentage', 'assessment_types.name as type_name')
-                        ->first();
-                        
-                    if ($assessment) {
-                        $assessmentName = $assessment->name;
-                        $maxScore = $assessment->max_score;
-                        $weight = $assessment->weight_percentage;
-                        $typeName = $assessment->type_name;
-                    }
-                }
+            $detailedMarks = $subjectAssessments->map(function($assessment) use ($marks) {
+                $mark = $marks->get($assessment->id);
                 
                 return [
-                    'id' => $mark->id,
-                    'score' => $mark->score,
-                    'assessment_name' => $assessmentName,
-                    'max_score' => $maxScore,
-                    'weight' => $weight,
-                    'type' => $typeName,
-                    'is_submitted' => $mark->is_submitted ?? true, // Assume mostly true for legacy data
+                    'id' => $mark->id ?? null,
+                    'assessment_id' => $assessment->id,
+                    'score' => $mark->score ?? null,
+                    'assessment_name' => $assessment->name,
+                    'max_score' => $assessment->max_score,
+                    'weight' => $assessment->weight_percentage ?? 0,
+                    'type' => $assessment->assessmentType->name ?? 'General',
+                    'is_submitted' => $mark ? true : false,
+                    'status' => $mark ? 'graded' : 'pending',
                 ];
             });
 
+            // Calculate average only from graded assessments
+            $gradedMarks = $detailedMarks->filter(fn($m) => $m['is_submitted']);
+            
+            // Calculate total sum of scores
+            $totalScore = 0;
+            $totalMaxScore = 0;
+            
+            foreach ($gradedMarks as $mark) {
+                $totalScore += $mark['score'];
+                $totalMaxScore += $mark['max_score'];
+            }
+
             return [
                 'subject' => [
-                    'id' => $firstMark->subject_id,
-                    'name' => $firstMark->subject_name,
-                    'code' => $firstMark->subject_code,
-                    'credit_hours' => $firstMark->subject_credit_hours ?? 3, // Default if not selected yet
-                    'teacher_name' => $teacherAssignments->get($firstMark->subject_id)->teacher_name ?? 'Not Assigned',
+                    'id' => $subject->id,
+                    'name' => $subject->name,
+                    'code' => $subject->code,
+                    'credit_hours' => $subject->credit_hours ?? 3,
+                    'teacher_name' => $teacherAssignments->get($subject->id)?->teacher?->user?->name ?? 'Not Assigned',
                 ],
-                'marks' => $detailedMarks,
-                'average' => round($subjectMarks->avg('score'), 2),
+                'marks' => $detailedMarks->values(),
+                'total_score' => $totalScore,
+                'total_max_score' => $totalMaxScore,
+                'average' => $totalMaxScore > 0 ? round(($totalScore / $totalMaxScore) * 100, 2) : 0,
+                'total_assessments' => $subjectAssessments->count(),
+                'graded_assessments' => $gradedMarks->count(),
             ];
         })->values();
 
-        // Get semester average and rank
-        $semesterAverage = round($marks->avg('score'), 2);
-        
-        $rank = \DB::table('semester_results')
-            ->where('student_id', $student->id)
-            ->where('academic_year_id', $academicYearId)
-            ->where('semester', $semester)
-            ->value('rank') ?? 'N/A';
-        
-        $totalStudents = cache()->remember("section_{$student->section_id}_count", 3600, function() use ($student) {
-            return \DB::table('students')->where('section_id', $student->section_id)->count();
+        // Get overall stats - Calculate average of SUBJECT TOTALS
+        $subjectMeans = $assessments->groupBy('subject_id')->map(function ($subjectAssessments) use ($marks) {
+            $subjMarks = $marks->whereIn('assessment_id', $subjectAssessments->pluck('id'));
+            return $subjMarks->sum('score');
         });
-
-        // Get student info
-        $studentInfo = \DB::table('students')
-            ->join('grades', 'students.grade_id', '=', 'grades.id')
-            ->join('sections', 'students.section_id', '=', 'sections.id')
-            ->where('students.id', $student->id)
-            ->select('students.id', 'students.student_id', 'grades.name as grade_name', 'sections.name as section_name')
-            ->first();
-
+        
+        $semesterAverage = $subjectMeans->isNotEmpty() ? round($subjectMeans->avg(), 2) : 0;
+        
+        $rankData = $this->calculateSemesterRank($student, $semester, $academicYearId);
+        
         return Inertia::render('Student/SemesterRecord/Show', [
-            'student' => [
-                'id' => $student->id,
-                'student_id' => $student->student_id,
-                'grade' => ['name' => $studentInfo->grade_name],
-                'section' => ['name' => $studentInfo->section_name],
-            ],
+            'student' => $student,
             'semester' => $semester,
             'academic_year' => $academicYear,
             'subject_records' => $subjectRecords,
             'semester_average' => $semesterAverage,
-            'rank' => $rank,
-            'total_students' => $totalStudents,
+            'rank' => $rankData['rank'] ?? '-',
+            'total_students' => $rankData['total'] ?? 0,
+            'semester_status' => $status, // 'open' or 'closed'
         ]);
     }
 
@@ -206,13 +232,14 @@ class SemesterRecordController extends Controller
             $sectionStudents = Student::where('section_id', $sectionId)
                 ->pluck('id');
 
-            // Calculate semester averages for all students in the section
+            // Calculate TOTAL SCORES for all students in the section - only PUBLISHED
             $rankings = Mark::whereIn('student_id', $sectionStudents)
                 ->where('semester', $semester)
                 ->where('academic_year_id', $academicYearId)
-                ->select('student_id', DB::raw('AVG(score) as avg_score'))
+                ->whereHas('assessment') // Ignore status
+                ->select('student_id', DB::raw('SUM(score) as total_score'))
                 ->groupBy('student_id')
-                ->orderByDesc('avg_score')
+                ->orderByDesc('total_score')
                 ->get();
 
             // Find this student's rank
@@ -222,7 +249,7 @@ class SemesterRecordController extends Controller
 
             return [
                 'rank' => $rank !== false ? $rank + 1 : null,
-                'total' => $rankings->count(),
+                'total' => $sectionStudents->count(),
             ];
         });
     }

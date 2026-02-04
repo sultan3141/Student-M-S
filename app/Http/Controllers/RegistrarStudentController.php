@@ -79,8 +79,7 @@ class RegistrarStudentController extends Controller
     {
         return inertia('Registrar/CreateStudent', [
             'grades' => Grade::select('id', 'name', 'level')->orderBy('level')->get(),
-            // Pass any other necessary data like available streams or sections if needed 
-            // though sections usually depend on grade selection (can fetch via API or load all if small)
+            'streams' => \App\Models\Stream::select('id', 'name')->get(),
         ]);
     }
 
@@ -93,6 +92,17 @@ class RegistrarStudentController extends Controller
             'dob' => 'nullable|date',
             'grade_id' => 'required|exists:grades,id',
             'previous_school' => 'nullable|string|max:255',
+            'stream_id' => [
+                'nullable',
+                function ($attribute, $value, $fail) use ($request) {
+                    $grade = Grade::find($request->grade_id);
+                    $isGrade11or12 = $grade && (str_contains($grade->name, '11') || str_contains($grade->name, '12'));
+                    
+                    if ($isGrade11or12 && !$value) {
+                        $fail('Stream selection is required for Grade 11 and 12 students.');
+                    }
+                }
+            ],
 
             // Parent Details (Mixed logic: Select Existing OR Create New)
             'parent_mode' => 'required|in:existing,new',
@@ -106,68 +116,70 @@ class RegistrarStudentController extends Controller
             'parent_id' => 'required_if:parent_mode,existing|nullable|exists:parent_profiles,id',
         ]);
 
-        return DB::transaction(function () use ($validated) {
+        try {
+            return DB::transaction(function () use ($validated) {
+                // 1. Resolve Parent
+                $parentId = null;
+                $parentProfile = null;
 
-            // 1. Resolve Parent
-            $parentId = null;
-            $parentProfile = null;
+                if ($validated['parent_mode'] === 'existing') {
+                    $parentProfile = ParentProfile::findOrFail($validated['parent_id']);
+                    $parentId = $parentProfile->id;
+                } else {
+                    // Create New Parent User
+                    $parentUser = User::create([
+                        'name' => $validated['parent_name'],
+                        'email' => $validated['parent_email'],
+                        'password' => Hash::make('password'), // Default password, should be emailed or set
+                        'username' => $this->generateUsername($validated['parent_name'], 'parent'),
+                    ]);
+                    $parentUser->assignRole('parent');
 
-            if ($validated['parent_mode'] === 'existing') {
-                $parentProfile = ParentProfile::findOrFail($validated['parent_id']);
-                $parentId = $parentProfile->id;
-            } else {
-                // Create New Parent User
-                $parentUser = User::create([
-                    'name' => $validated['parent_name'],
-                    'email' => $validated['parent_email'],
-                    'password' => Hash::make('password'), // Default password, should be emailed or set
-                    'username' => $this->generateUsername($validated['parent_name'], 'parent'),
+                    $parentProfile = ParentProfile::create([
+                        'user_id' => $parentUser->id,
+                        'phone' => $validated['parent_phone'],
+                    ]);
+                    $parentId = $parentProfile->id;
+                }
+
+                // 2. Create Student User
+                $studentBaseUsername = $this->generateUsername($validated['name'], 'student');
+                $studentUser = User::create([
+                    'name' => $validated['name'],
+                    'email' => $studentBaseUsername . '@student.ipsms.edu', // Clean email gen
+                    'username' => $studentBaseUsername,
+                    'password' => Hash::make('password'),
                 ]);
-                $parentUser->assignRole('parent');
+                $studentUser->assignRole('student');
 
-                $parentProfile = ParentProfile::create([
-                    'user_id' => $parentUser->id,
-                    'phone' => $validated['parent_phone'],
+                // 3. Resolve Section (Auto-balance or Default)
+                $section = $this->assignSection($validated['grade_id'], $validated['gender'], $validated['stream_id'] ?? null);
+
+                // 4. Generate Student ID
+                $studentId = $this->generateStudentId();
+
+                // 5. Create Student Record
+                $student = Student::create([
+                    'user_id' => $studentUser->id,
+                    'student_id' => $studentId,
+                    'gender' => $validated['gender'],
+                    'dob' => $validated['dob'],
+                    'grade_id' => $validated['grade_id'],
+                    'section_id' => $section->id,
+                    'stream_id' => $validated['stream_id'] ?? null,
                 ]);
-                $parentId = $parentProfile->id;
-            }
 
-            // 2. Create Student User
-            $studentBaseUsername = $this->generateUsername($validated['name'], 'student');
-            $studentUser = User::create([
-                'name' => $validated['name'],
-                'email' => $studentBaseUsername . '@student.ipsms.edu', // Clean email gen
-                'username' => $studentBaseUsername,
-                'password' => Hash::make('password'),
-            ]);
-            $studentUser->assignRole('student');
+                // 6. Link Student to Parent via pivot table
+                if ($parentProfile) {
+                    $parentProfile->students()->attach($student->id);
+                }
 
-            // 3. Resolve Section (Auto-balance or Default)
-            // Logic: Find sections for this grade. Use one with least students or specific logic.
-            // For now, simple round-robin or first available.
-            $section = $this->assignSection($validated['grade_id'], $validated['gender']);
-
-            // 4. Generate Student ID
-            $studentId = $this->generateStudentId();
-
-            // 5. Create Student Record
-            $student = Student::create([
-                'user_id' => $studentUser->id,
-                'student_id' => $studentId,
-                'gender' => $validated['gender'],
-                'dob' => $validated['dob'],
-                'grade_id' => $validated['grade_id'],
-                'section_id' => $section->id,
-                // 'previous_school' => $validated['previous_school'], // If column exists
-            ]);
-
-            // 6. Link Student to Parent via pivot table
-            if ($parentProfile) {
-                $parentProfile->students()->attach($student->id);
-            }
-
-            return redirect()->route('registrar.dashboard')->with('success', "Student $studentId registered successfully and linked to guardian.");
-        });
+                return redirect()->route('registrar.dashboard')->with('success', "Student $studentId registered successfully and linked to guardian.");
+            });
+        } catch (\Exception $e) {
+            \Log::error('Student registration error: ' . $e->getMessage());
+            return back()->withInput()->withErrors(['general' => 'Failed to register student: ' . $e->getMessage()]);
+        }
     }
 
     // API Endpoint to search parents
@@ -209,25 +221,48 @@ class RegistrarStudentController extends Controller
         return $count > 0 ? "$base" . ($count + 1) : $base;
     }
 
-    private function assignSection($gradeId, $gender)
+    private function assignSection($gradeId, $gender, $streamId = null)
     {
-        // Try to find section with gender preference first if any, or just any section
-        // In a real app, check capacity.
-        $section = Section::where('grade_id', $gradeId)
-            ->where('gender', $gender) // If sections are gendered
-            ->first();
-
-        if (!$section) {
-            $section = Section::where('grade_id', $gradeId)->first();
+        // Smart auto-assignment algorithm with random selection:
+        // 1. Find sections matching grade (and stream for Grade 11/12)
+        // 2. Prefer gender-specific sections (Male/Female) over Mixed
+        // 3. Check capacity limits
+        // 4. Randomly select from available sections
+        
+        // Get all sections for this grade with current student count
+        $query = Section::where('grade_id', $gradeId);
+        
+        // For Grade 11/12, filter by stream
+        if ($streamId) {
+            $query->where('stream_id', $streamId);
         }
+        
+        $sections = $query->withCount('students')->get();
 
-        if (!$section) {
-            // Fallback: This is critical. Should probably fail or create a "Pending" section.
-            // For now, fail hard or assume seeded.
+        if ($sections->isEmpty()) {
             throw new \Exception("No sections available for this grade.");
         }
 
-        return $section;
+        // Priority 1: Gender-specific sections (Male/Female) that match student gender
+        $genderSpecificSections = $sections->filter(function($section) use ($gender) {
+            return $section->gender === $gender && $section->students_count < $section->capacity;
+        });
+
+        if ($genderSpecificSections->isNotEmpty()) {
+            return $genderSpecificSections->random(); // Random selection
+        }
+
+        // Priority 2: Mixed sections with available capacity
+        $mixedSections = $sections->filter(function($section) {
+            return $section->gender === 'Mixed' && $section->students_count < $section->capacity;
+        });
+
+        if ($mixedSections->isNotEmpty()) {
+            return $mixedSections->random(); // Random selection
+        }
+
+        // If we reach here, no suitable sections are available
+        throw new \Exception("No available sections found. All compatible sections (" . ($gender ?? 'Any') . " or Mixed) for this grade/stream are at full capacity.");
     }
 
     private function generateStudentId()
