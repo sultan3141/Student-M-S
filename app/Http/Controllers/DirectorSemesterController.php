@@ -162,8 +162,42 @@ class DirectorSemesterController extends Controller
                     'locked_at' => now(),
                 ]);
 
-            // If this is Semester 2, mark academic year as completed and create next year
-            if ($semesterPeriod->semester == 2) {
+            $message = "Semester {$semesterPeriod->semester} has been closed. Results are now visible to students.";
+
+            // AUTOMATED PROGRESSION LOGIC
+            if ($semesterPeriod->semester == 1) {
+                // When Semester 1 closes: Automatically OPEN Semester 2
+                $semester2 = SemesterPeriod::where('academic_year_id', $semesterPeriod->academic_year_id)
+                    ->where('semester', 2)
+                    ->first();
+                
+                if ($semester2) {
+                    $semester2->update([
+                        'status' => 'open',
+                        'opened_at' => now(),
+                        'opened_by' => auth()->id(),
+                    ]);
+                    
+                    // Unlock Semester 2 assessments and marks
+                    Assessment::where('academic_year_id', $semesterPeriod->academic_year_id)
+                        ->where('semester', 2)
+                        ->update([
+                            'is_editable' => true,
+                            'locked_at' => null,
+                        ]);
+
+                    Mark::where('academic_year_id', $semesterPeriod->academic_year_id)
+                        ->where('semester', 2)
+                        ->update([
+                            'is_locked' => false,
+                            'locked_at' => null,
+                        ]);
+                    
+                    $message .= " Semester 2 has been automatically OPENED for result entry.";
+                }
+            } 
+            elseif ($semesterPeriod->semester == 2) {
+                // When Semester 2 closes: Mark year as completed and create next year
                 $currentYear = AcademicYear::find($semesterPeriod->academic_year_id);
                 
                 // Mark current year as completed
@@ -172,17 +206,13 @@ class DirectorSemesterController extends Controller
                     'status' => 'completed',
                 ]);
 
-                // Automatically create next academic year
-                $this->createNextAcademicYear($currentYear);
+                // Automatically create next academic year with Semester 1 OPEN
+                $nextYear = $this->createNextAcademicYear($currentYear);
+                
+                $message .= " Academic year completed. Next year ({$nextYear->name}) has been automatically created with Semester 1 OPEN.";
             }
 
             DB::commit();
-
-            $message = "Semester {$semesterPeriod->semester} has been closed. Results are now visible to students.";
-            
-            if ($semesterPeriod->semester == 2) {
-                $message .= " Academic year completed. Next year has been automatically created.";
-            }
 
             return redirect()->route('director.semesters.index')
                 ->with('success', $message);
@@ -195,6 +225,7 @@ class DirectorSemesterController extends Controller
 
     /**
      * Automatically create next academic year when S2 closes
+     * Returns the newly created year
      */
     private function createNextAcademicYear($currentYear)
     {
@@ -208,17 +239,16 @@ class DirectorSemesterController extends Controller
         $startDate = \Carbon\Carbon::create($nextStartYear, 7, 1);
         $endDate = \Carbon\Carbon::create($nextEndYear, 6, 30);
 
-        // Create new academic year
+        // Create new academic year and set as current
         $newYear = AcademicYear::create([
             'name' => $nextYearName,
             'start_date' => $startDate,
             'end_date' => $endDate,
-            'is_current' => true,
+            'is_current' => true,  // Automatically set as current
             'status' => 'active',
         ]);
 
-        // Automatically create 2 semesters for the new year
-        // Semester 1: OPEN (ready for immediate use)
+        // Create Semester 1: OPEN (ready for immediate use)
         SemesterPeriod::create([
             'academic_year_id' => $newYear->id,
             'semester' => 1,
@@ -227,7 +257,7 @@ class DirectorSemesterController extends Controller
             'opened_by' => auth()->id(),
         ]);
 
-        // Semester 2: CLOSED (waiting for S1 to complete)
+        // Create Semester 2: CLOSED (waiting for S1 to complete)
         SemesterPeriod::create([
             'academic_year_id' => $newYear->id,
             'semester' => 2,

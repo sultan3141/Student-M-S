@@ -186,23 +186,21 @@ export default function SemesterManagement({ academicYear, semesters }) {
                                         {processing ? 'Processing...' : `Close Semester ${semester.semester}`}
                                     </button>
                                 ) : (
-                                    <button
-                                        onClick={() => handleReopen(semester.id, semester.semester)}
-                                        disabled={processing}
-                                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
-                                    >
-                                        {processing ? 'Processing...' : `Reopen Semester ${semester.semester}`}
-                                    </button>
-                                )}
-                                
-                                {semester.status === 'closed' && (
-                                    <button
-                                        onClick={() => handleOpen(semester.id)}
-                                        disabled={processing}
-                                        className="w-full mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
-                                    >
-                                        {processing ? 'Processing...' : `Open Semester ${semester.semester}`}
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={() => handleReopen(semester.id, semester.semester)}
+                                            disabled={processing}
+                                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+                                        >
+                                            {processing ? 'Processing...' : `Reopen Semester ${semester.semester}`}
+                                        </button>
+                                        
+                                        {semester.semester === 2 && (
+                                            <p className="mt-2 text-xs text-gray-500 text-center">
+                                                Semester 2 opens automatically when Semester 1 closes
+                                            </p>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -210,7 +208,31 @@ export default function SemesterManagement({ academicYear, semesters }) {
                 </div>
 
                 {/* Rules Section */}
-                <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-indigo-200 rounded-lg p-6">
+                    <div className="flex items-start">
+                        <svg className="h-6 w-6 text-indigo-600 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-indigo-900 mb-3">Automated Academic Progression</h3>
+                            <div className="space-y-3 text-sm text-indigo-800">
+                                <div className="bg-white bg-opacity-60 rounded-lg p-3">
+                                    <p className="font-semibold mb-1">When Semester 1 Closes:</p>
+                                    <p>✓ Semester 2 automatically OPENS for result entry</p>
+                                </div>
+                                <div className="bg-white bg-opacity-60 rounded-lg p-3">
+                                    <p className="font-semibold mb-1">When Semester 2 Closes:</p>
+                                    <p>✓ Current academic year is marked as completed</p>
+                                    <p>✓ Next academic year is automatically created</p>
+                                    <p>✓ New year's Semester 1 automatically OPENS</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Additional Rules */}
+                <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
                     <h3 className="text-lg font-semibold text-yellow-900 mb-3">Important Rules</h3>
                     <ul className="space-y-2 text-sm text-yellow-800">
                         <li className="flex items-start">
@@ -219,7 +241,7 @@ export default function SemesterManagement({ academicYear, semesters }) {
                         </li>
                         <li className="flex items-start">
                             <span className="mr-2">•</span>
-                            <span>Semester 2 cannot be opened until Semester 1 is closed</span>
+                            <span>Semester 2 cannot be manually opened (it opens automatically when S1 closes)</span>
                         </li>
                         <li className="flex items-start">
                             <span className="mr-2">•</span>
@@ -227,7 +249,7 @@ export default function SemesterManagement({ academicYear, semesters }) {
                         </li>
                         <li className="flex items-start">
                             <span className="mr-2">•</span>
-                            <span>You can reopen any closed semester at any time</span>
+                            <span>You can reopen any closed semester if corrections are needed</span>
                         </li>
                     </ul>
                 </div>
