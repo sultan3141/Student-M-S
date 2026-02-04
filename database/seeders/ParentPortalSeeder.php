@@ -41,21 +41,8 @@ class ParentPortalSeeder extends Seeder
         $grade = Grade::firstOrCreate(['name' => 'Grade 10'], ['level' => 10]);
         $section = Section::firstOrCreate(['name' => 'A', 'grade_id' => $grade->id]);
         
-        // Create Subjects
-        $subjects = [
-            'Mathematics' => 'MTH101',
-            'Physics' => 'PHY101',
-            'Chemistry' => 'CHM101',
-            'Biology' => 'BIO101',
-            'English' => 'ENG101',
-            'Amharic' => 'AMH101',
-            'Civics' => 'CIV101'
-        ];
-        
-        $subjectModels = [];
-        foreach ($subjects as $name => $code) {
-            $subjectModels[$name] = Subject::firstOrCreate(['code' => $code], ['name' => $name, 'grade_id' => $grade->id]);
-        }
+        // Fetch existing subjects for Grade 10 (no longer creating duplicates)
+        $subjectModels = Subject::where('grade_id', $grade->id)->get()->keyBy('name');
 
         // 3. Create Parent User & Role
         if (!\Spatie\Permission\Models\Role::where('name', 'parent')->exists()) {
