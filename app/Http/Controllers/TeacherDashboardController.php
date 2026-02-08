@@ -113,7 +113,7 @@ class TeacherDashboardController extends Controller
      */
     private function getCurrentSemesterInfo()
     {
-        $academicYear = \App\Models\AcademicYear::where('is_current', true)->first();
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
         
         if (!$academicYear) {
             return null;

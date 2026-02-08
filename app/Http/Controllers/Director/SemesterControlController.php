@@ -18,7 +18,7 @@ class SemesterControlController extends Controller
 {
     public function index()
     {
-        $currentYear = AcademicYear::where('is_current', true)->first();
+        $currentYear = AcademicYear::whereRaw('is_current = true')->first();
         
         if (!$currentYear) {
             return Inertia::render('Director/SemesterControl/Index', [
@@ -108,7 +108,7 @@ class SemesterControlController extends Controller
             'status' => 'required|in:open,closed',
         ]);
 
-        $currentYear = AcademicYear::where('is_current', true)->first();
+        $currentYear = AcademicYear::whereRaw('is_current = true')->first();
 
         DB::transaction(function () use ($request, $currentYear) {
             // Update semester status

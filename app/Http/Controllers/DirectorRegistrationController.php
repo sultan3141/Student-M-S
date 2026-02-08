@@ -17,7 +17,7 @@ class DirectorRegistrationController extends Controller
      */
     public function getStatus()
     {
-        $currentYear = AcademicYear::where('is_current', true)->first();
+        $currentYear = AcademicYear::whereRaw('is_current = true')->first();
         $period = RegistrationPeriod::where('academic_year_id', $currentYear->id ?? 1)->first();
 
         $totalCapacity = 1500; // Mock - should be from settings or calculation
@@ -87,7 +87,7 @@ class DirectorRegistrationController extends Controller
             'status' => 'required|in:open,closed',
         ]);
 
-        $currentYear = AcademicYear::where('is_current', true)->firstOrFail();
+        $currentYear = AcademicYear::whereRaw('is_current = true')->firstOrFail();
         
         // Prevent closing if pending applications exist
         if ($validated['status'] === 'closed') {
@@ -159,7 +159,7 @@ class DirectorRegistrationController extends Controller
     public function exportExcel()
     {
         try {
-            $currentYear = AcademicYear::where('is_current', true)->first();
+            $currentYear = AcademicYear::whereRaw('is_current = true')->first();
             
             $registrations = \App\Models\Registration::with(['student.user', 'student.grade', 'academicYear'])
                 ->where('academic_year_id', $currentYear->id ?? 1)
@@ -188,7 +188,7 @@ class DirectorRegistrationController extends Controller
     public function exportPdf()
     {
         try {
-            $currentYear = AcademicYear::where('is_current', true)->first();
+            $currentYear = AcademicYear::whereRaw('is_current = true')->first();
             
             $registrations = \App\Models\Registration::with(['student.user', 'student.grade', 'academicYear'])
                 ->where('academic_year_id', $currentYear->id ?? 1)

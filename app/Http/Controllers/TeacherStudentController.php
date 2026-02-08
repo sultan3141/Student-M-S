@@ -54,7 +54,7 @@ class TeacherStudentController extends Controller
 
     public function show($studentId)
     {
-        $academicYear = \App\Models\AcademicYear::where('is_current', true)->first();
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
         if (!$academicYear) $academicYear = \App\Models\AcademicYear::orderBy('id', 'desc')->first();
         
         $student = \App\Models\Student::with(['user', 'grade', 'section'])->findOrFail($studentId);
@@ -174,7 +174,7 @@ class TeacherStudentController extends Controller
     public function manageResults(Request $request)
     {
         $teacher = auth()->user()->teacher;
-        $academicYear = \App\Models\AcademicYear::where('is_current', true)->first();
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
 
         if (!$teacher || !$academicYear) {
             return redirect()->back()->with('error', 'Teacher profile or academic year not found.');
@@ -349,7 +349,7 @@ class TeacherStudentController extends Controller
         // Security check: Ensure teacher has access to this student/subject
         // (Simplified check for now, can be expanded to check actual assignments)
         
-        $currentAcademicYear = \App\Models\AcademicYear::where('is_current', true)->first();
+        $currentAcademicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
         
         if (!$currentAcademicYear) {
             return redirect()->back()->with('error', 'No active academic year.');
@@ -404,7 +404,7 @@ class TeacherStudentController extends Controller
 
         $teacher = auth()->user()->teacher;
         $student = \App\Models\Student::findOrFail($studentId);
-        $currentAcademicYear = \App\Models\AcademicYear::where('is_current', true)->first();
+        $currentAcademicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
         
         if (!$currentAcademicYear) {
             return back()->withErrors(['error' => 'No active academic year.']);

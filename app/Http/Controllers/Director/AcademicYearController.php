@@ -18,11 +18,11 @@ class AcademicYearController extends Controller
      */
     public function index()
     {
-        $currentYear = AcademicYear::where('is_current', true)
+        $currentYear = AcademicYear::whereRaw('is_current = true')
             ->with('semesterStatuses.grade')
             ->first();
 
-        $pastYears = AcademicYear::where('is_current', false)
+        $pastYears = AcademicYear::whereRaw('is_current = false')
             ->orderBy('start_date', 'desc')
             ->with('semesterStatuses')
             ->get()
@@ -99,10 +99,12 @@ class AcademicYearController extends Controller
         try {
             DB::beginTransaction();
 
+            $setAsCurrent = $request->boolean('set_as_current');
+
             // If setting as current, unset other current years
-            if ($request->set_as_current) {
-                AcademicYear::where('is_current', true)
-                    ->update(['is_current' => false]);
+            if ($setAsCurrent) {
+                AcademicYear::whereRaw('is_current = true')
+                    ->update(['is_current' => DB::raw('false')]);
             }
 
             // Create the academic year
@@ -110,7 +112,7 @@ class AcademicYearController extends Controller
                 'name' => $request->name,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
-                'is_current' => $request->set_as_current ?? false,
+                'is_current' => DB::raw($setAsCurrent ? 'true' : 'false'),
                 'status' => 'planned',
             ]);
 
@@ -142,12 +144,12 @@ class AcademicYearController extends Controller
             DB::beginTransaction();
 
             // Unset all current years
-            AcademicYear::where('is_current', true)
-                ->update(['is_current' => false]);
+            AcademicYear::whereRaw('is_current = true')
+                ->update(['is_current' => DB::raw('false')]);
 
             // Set the specified year as current
             $year = AcademicYear::findOrFail($id);
-            $year->update(['is_current' => true]);
+            $year->update(['is_current' => DB::raw('true')]);
 
             DB::commit();
 
@@ -216,7 +218,7 @@ class AcademicYearController extends Controller
         if ($yearId) {
             $year = AcademicYear::findOrFail($yearId);
         } else {
-            $year = AcademicYear::where('is_current', true)->first();
+            $year = AcademicYear::whereRaw('is_current = true')->first();
         }
 
         if (!$year) {
@@ -346,13 +348,13 @@ class AcademicYearController extends Controller
                 $newEndDate = $currentYear->end_date->copy()->addYear();
 
                 // Deactivate the previous academic year
-                $currentYear->update(['is_current' => false]);
+                $currentYear->update(['is_current' => DB::raw('false')]);
                 
                 $nextYear = AcademicYear::create([
                     'name' => $nextName,
                     'start_date' => $newStartDate,
                     'end_date' => $newEndDate,
-                    'is_current' => true, // Make the new year current
+                    'is_current' => DB::raw('true'), // Make the new year current
                     'status' => 'active',  // It's starting now
                 ]);
                 

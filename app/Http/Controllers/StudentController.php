@@ -20,7 +20,7 @@ class StudentController extends Controller
 
         // Get current academic year
         $academicYear = cache()->remember('current_academic_year', 3600, function() {
-            return \App\Models\AcademicYear::where('is_current', true)->first() 
+            return \App\Models\AcademicYear::whereRaw('is_current = true')->first() 
                 ?? \App\Models\AcademicYear::orderBy('id', 'desc')->first();
         });
         
@@ -349,7 +349,7 @@ class StudentController extends Controller
 
         // Use cached academic year
         $academicYear = cache()->remember('current_academic_year', 3600, function () {
-            return \App\Models\AcademicYear::where('is_current', true)
+            return \App\Models\AcademicYear::whereRaw('is_current = true')
                 ->orWhere('status', 'active')
                 ->latest()
                 ->first();

@@ -41,7 +41,7 @@ class SemesterStatus extends Model
         }
 
         // Get current academic year
-        $year = AcademicYear::where('is_current', true)->first();
+        $year = AcademicYear::whereRaw('is_current = true')->first();
         if (!$year) return true; // Fail safe
 
         $status = self::where('academic_year_id', $year->id)

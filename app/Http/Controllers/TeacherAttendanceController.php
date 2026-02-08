@@ -121,7 +121,7 @@ class TeacherAttendanceController extends Controller
         // Ideally verify if teacher is assigned to this section, skipping for v1 speed
 
         // Get current academic year (assuming logic or fetch active)
-        $academicYear = \App\Models\AcademicYear::where('is_current', true)->first()
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first()
             ?? \App\Models\AcademicYear::first();
 
         foreach ($request->students as $record) {

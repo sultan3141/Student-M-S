@@ -27,7 +27,7 @@ class CheckSemesterOpen
 
         $academicYearId = $request->input('academic_year_id') 
             ?? $request->route('academic_year_id')
-            ?? \App\Models\AcademicYear::where('is_current', true)->value('id');
+            ?? \App\Models\AcademicYear::whereRaw('is_current = true')->value('id');
         
         // Try to get semester from multiple sources
         $semester = $request->input('semester') 

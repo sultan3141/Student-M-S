@@ -17,7 +17,7 @@ class AcademicYearRecordController extends Controller
     public function current()
     {
         // Get current academic year using Eloquent (respects model casts)
-        $year = \App\Models\AcademicYear::where('is_current', true)
+        $year = \App\Models\AcademicYear::whereRaw('is_current = true')
             ->orWhere('status', 'active')
             ->orderBy('created_at', 'desc')
             ->first();

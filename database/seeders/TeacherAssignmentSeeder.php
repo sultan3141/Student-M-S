@@ -19,13 +19,13 @@ class TeacherAssignmentSeeder extends Seeder
     public function run(): void
     {
         // Get or create academic year
-        $academicYear = AcademicYear::where('is_current', true)->first();
+        $academicYear = AcademicYear::whereRaw('is_current = true')->first();
         if (!$academicYear) {
             $academicYear = AcademicYear::create([
                 'name' => '2025-2026',
                 'start_date' => '2025-09-01',
                 'end_date' => '2026-06-30',
-                'is_current' => true,
+                'is_current' => DB::raw('true'),
                 'status' => 'active',
             ]);
         }

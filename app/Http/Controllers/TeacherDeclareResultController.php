@@ -19,7 +19,7 @@ class TeacherDeclareResultController extends Controller
     {
         $grades = Grade::with('sections')->orderBy('level')->get();
         $assessmentTypes = AssessmentType::all();
-        $currentAcademicYear = AcademicYear::where('is_current', true)->first();
+        $currentAcademicYear = AcademicYear::whereRaw('is_current = true')->first();
         $currentSemester = $currentAcademicYear ? $currentAcademicYear->current_semester : 1;
 
         return Inertia::render('Teacher/DeclareResult', [
@@ -82,7 +82,7 @@ class TeacherDeclareResultController extends Controller
             'subject_id' => 'required|exists:subjects,id',
         ]);
 
-        $academicYear = AcademicYear::where('is_current', true)->first();
+        $academicYear = AcademicYear::whereRaw('is_current = true')->first();
 
         if (!$academicYear) {
             return response()->json([]);
@@ -178,7 +178,7 @@ class TeacherDeclareResultController extends Controller
 
         DB::beginTransaction();
         try {
-            $currentAcademicYear = AcademicYear::where('is_current', true)->first();
+            $currentAcademicYear = AcademicYear::whereRaw('is_current = true')->first();
             
             if (!$currentAcademicYear) {
                 throw new \Exception('No active academic year found.');

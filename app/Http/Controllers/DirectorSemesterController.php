@@ -14,7 +14,7 @@ class DirectorSemesterController extends Controller
 {
     public function index()
     {
-        $currentAcademicYear = AcademicYear::where('is_current', true)->first();
+        $currentAcademicYear = AcademicYear::whereRaw('is_current = true')->first();
         
         if (!$currentAcademicYear) {
             return redirect()->route('director.dashboard')
@@ -202,7 +202,7 @@ class DirectorSemesterController extends Controller
                 
                 // Mark current year as completed
                 $currentYear->update([
-                    'is_current' => false,
+                    'is_current' => DB::raw('false'),
                     'status' => 'completed',
                 ]);
 
@@ -244,7 +244,7 @@ class DirectorSemesterController extends Controller
             'name' => $nextYearName,
             'start_date' => $startDate,
             'end_date' => $endDate,
-            'is_current' => true,  // Automatically set as current
+            'is_current' => DB::raw('true'),  // Automatically set as current
             'status' => 'active',
         ]);
 
@@ -326,7 +326,7 @@ class DirectorSemesterController extends Controller
 
     public function status()
     {
-        $currentAcademicYear = AcademicYear::where('is_current', true)->first();
+        $currentAcademicYear = AcademicYear::whereRaw('is_current = true')->first();
         
         if (!$currentAcademicYear) {
             return response()->json(['error' => 'No active academic year'], 404);

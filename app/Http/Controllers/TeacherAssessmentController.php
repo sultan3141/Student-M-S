@@ -61,7 +61,7 @@ class TeacherAssessmentController extends Controller
                 ->with('error', 'Teacher profile not found. Please contact the administrator.');
         }
         
-        $academicYear = \App\Models\AcademicYear::where('is_current', true)->first();
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
         
         if (!$academicYear) {
             return redirect()->route('teacher.dashboard')
@@ -213,7 +213,7 @@ class TeacherAssessmentController extends Controller
     public function store(Request $request)
     {
         $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
-        $academicYear = \App\Models\AcademicYear::where('is_current', true)->first();
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
         
         $validated = $request->validate([
             'grade_id' => 'required|exists:grades,id',

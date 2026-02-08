@@ -381,7 +381,7 @@ class RegistrarAdmissionController extends Controller
     {
         $grades = Grade::all();
         $streams = Stream::all();
-        $academicYear = AcademicYear::where('is_current', true)->first();
+        $academicYear = AcademicYear::whereRaw('is_current = true')->first();
         
         return Inertia::render('Registrar/Admission/CreateSubject', [
             'grades' => $grades,
