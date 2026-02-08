@@ -53,11 +53,28 @@ class StudentController extends Controller
                     'score' => $mark->score,
                     'maxScore' => $mark->max_score ?? 100,
                     'percentage' => $mark->max_score > 0 ? round(($mark->score / $mark->max_score) * 100, 1) . '%' : 'N/A',
+                    'percentage_value' => $mark->max_score > 0 ? round(($mark->score / $mark->max_score) * 100, 1) : 0,
                     'date' => $mark->created_at->format('M d'),
                     'is_graded' => true,
                 ];
             })->values()
         ];
+
+        // Trend Data for Charts
+        $allMarks = \App\Models\Mark::where('student_id', $student->id)
+            ->with(['academicYear:id,name'])
+            ->get();
+            
+        $trendData = $allMarks->groupBy(function ($mark) {
+            return $mark->academicYear->name ?? 'Unknown';
+        })->map(function ($yearMarks, $yearName) {
+            return [
+                'year' => $yearName,
+                'average' => round($yearMarks->avg('score'), 1),
+            ];
+        })->values();
+
+        $pendingAssignments = $this->getPendingAssignmentsCount($student, $academicYear);
 
         $attendanceStats = [
             'rate' => $attendanceRate,
@@ -74,6 +91,16 @@ class StudentController extends Controller
                 })->values()
         ];
 
+        // Assessment Distribution for Donut Chart
+        $assessmentCounts = $allMarks->groupBy('assessment_type')->map(fn($group) => $group->count());
+        $totalAssessments = $assessmentCounts->sum();
+        $assessmentDistribution = [
+            'labels' => $assessmentCounts->keys()->toArray(),
+            'values' => $assessmentCounts->values()->toArray(),
+            'total' => $totalAssessments,
+            'percentages' => $assessmentCounts->map(fn($count) => $totalAssessments > 0 ? round(($count / $totalAssessments) * 100) : 0)->toArray()
+        ];
+
         // Today's Schedule - Use day of week
         $today = now()->format('l');
         $schedule = \App\Models\Schedule::where('grade_id', $student->grade_id)
@@ -82,7 +109,7 @@ class StudentController extends Controller
                   ->orWhereNull('section_id');
             })
             ->where('day_of_week', $today)
-            ->where('is_active', true)
+            ->whereRaw('is_active = true')
             ->orderBy('start_time')
             ->get()
             ->map(function($item) {
@@ -124,6 +151,9 @@ class StudentController extends Controller
             'schedule' => $schedule,
             'notifications' => $notifications,
             'currentSemester' => $currentSemester,
+            'trendData' => $trendData,
+            'pendingAssignments' => $pendingAssignments,
+            'assessmentDistribution' => $assessmentDistribution,
         ]);
     }
 
@@ -267,11 +297,12 @@ class StudentController extends Controller
             return 0;
 
         // Get all assessments for subjects in this grade
+        // Note: Removed type filter as assessments table doesn't have a 'type' column
+        // Assessment types are managed through assessment_type_id relationship
         $assessmentIds = \App\Models\Assessment::where('academic_year_id', $academicYear->id)
             ->whereHas('subject', function ($q) use ($student) {
                 $q->where('grade_id', $student->grade_id);
             })
-            ->where('type', 'assignment')
             ->pluck('id');
 
         if ($assessmentIds->isEmpty())
@@ -570,6 +601,80 @@ class StudentController extends Controller
         return inertia('Student/GradeAudit', [
             'student' => $student,
             'gradeHistory' => $gradeHistory,
+        ]);
+    }
+
+    public function attendance()
+    {
+        $user = auth()->user();
+        $student = $user->student()->with(['grade:id,name', 'section:id,name'])->first();
+
+        if (!$student) {
+            return redirect()->route('student.dashboard')->with('error', 'Student record not found.');
+        }
+
+        // Get current academic year
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first() 
+            ?? \App\Models\AcademicYear::orderBy('id', 'desc')->first();
+
+        // Get all attendance records for the student
+        $attendanceRecords = \App\Models\Attendance::where('student_id', $student->id)
+            ->where('academic_year_id', $academicYear->id)
+            ->with(['subject:id,name'])
+            ->orderBy('date', 'desc')
+            ->get();
+
+        // Calculate statistics
+        $totalRecords = $attendanceRecords->count();
+        $presentCount = $attendanceRecords->where('status', 'Present')->count();
+        $absentCount = $attendanceRecords->where('status', 'Absent')->count();
+        $lateCount = $attendanceRecords->where('status', 'Late')->count();
+        $excusedCount = $attendanceRecords->where('status', 'Excused')->count();
+        
+        $attendanceRate = $totalRecords > 0 ? round(($presentCount / $totalRecords) * 100, 1) : 100;
+
+        // Group by month for better visualization
+        $recordsByMonth = $attendanceRecords->groupBy(function ($record) {
+            return \Carbon\Carbon::parse($record->date)->format('F Y');
+        })->map(function ($monthRecords, $month) {
+            return [
+                'month' => $month,
+                'total' => $monthRecords->count(),
+                'present' => $monthRecords->where('status', 'Present')->count(),
+                'absent' => $monthRecords->where('status', 'Absent')->count(),
+                'late' => $monthRecords->where('status', 'Late')->count(),
+                'excused' => $monthRecords->where('status', 'Excused')->count(),
+                'rate' => $monthRecords->count() > 0 
+                    ? round(($monthRecords->where('status', 'Present')->count() / $monthRecords->count()) * 100, 1) 
+                    : 100,
+            ];
+        })->values();
+
+        // Format records for display
+        $formattedRecords = $attendanceRecords->map(function ($record) {
+            return [
+                'id' => $record->id,
+                'date' => \Carbon\Carbon::parse($record->date)->format('M d, Y'),
+                'day' => \Carbon\Carbon::parse($record->date)->format('l'),
+                'subject' => $record->subject->name ?? 'General',
+                'status' => $record->status,
+                'remarks' => $record->remarks,
+            ];
+        });
+
+        return inertia('Student/Attendance/Index', [
+            'student' => $student,
+            'academicYear' => $academicYear,
+            'statistics' => [
+                'total' => $totalRecords,
+                'present' => $presentCount,
+                'absent' => $absentCount,
+                'late' => $lateCount,
+                'excused' => $excusedCount,
+                'rate' => $attendanceRate,
+            ],
+            'recordsByMonth' => $recordsByMonth,
+            'records' => $formattedRecords,
         ]);
     }
 }

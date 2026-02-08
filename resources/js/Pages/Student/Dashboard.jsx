@@ -1,160 +1,205 @@
+import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import StudentLayout from '@/Layouts/StudentLayout';
-import SemesterWidget from '@/Components/SemesterWidget';
+import StudentPerformanceChart from '@/Components/Charts/StudentPerformanceChart';
+import StudentAttendanceChart from '@/Components/Charts/StudentAttendanceChart';
 import {
     AcademicCapIcon,
     CalendarDaysIcon,
-    ClipboardDocumentCheckIcon,
     ChartBarIcon,
-    UserIcon,
-    BellIcon,
-    ClockIcon
+    UserGroupIcon,
+    TrophyIcon,
 } from '@heroicons/react/24/outline';
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 
-export default function StudentDashboard({ auth, student, academicYear, attendance, marks, schedule, notifications, currentSemester }) {
+export default function Dashboard({ student, attendance, marks, currentSemester }) {
+    // Calculate real stats from data
+    const currentAverage = marks?.average || 0;
+    const currentRank = marks?.rank || '-';
+    const totalStudents = marks?.totalStudents || 0;
+    const attendanceRate = attendance?.rate || 100;
+    const recentMarks = marks?.recent || [];
+    const recentAttendance = attendance?.recent || [];
+    const totalSubjects = marks?.totalSubjects || 0;
+
+    // Format marks data for charts
+    const formattedMarks = recentMarks.map(mark => ({
+        subject: mark.subject,
+        percentage: mark.percentage_value || parseFloat(mark.percentage) || 0,
+        score: mark.score,
+        maxScore: mark.maxScore,
+        assessment: mark.assessment
+    }));
+
     return (
         <StudentLayout>
-            <Head title="Student Dashboard" />
+            <Head title="Dashboard" />
 
-            {/* Header with Badge */}
-            <div className="flex items-center space-x-4 mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
-                <span className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full uppercase tracking-wide">
-                    Student
-                </span>
+            {/* Compact Page Header - Same as Director */}
+            <div className="mb-4">
+                <h1 className="text-2xl font-bold text-navy-900" style={{ color: '#0F172A' }}>
+                    📊 Student Dashboard
+                </h1>
+                <p className="mt-1 text-xs text-gray-600">
+                    Academic performance and attendance overview
+                </p>
             </div>
 
-            {/* Semester Widget - Full Width */}
+            {/* Semester Status Banner - Same as Director */}
             {currentSemester && (
-                <div className="mb-8">
-                    <SemesterWidget semester={currentSemester} userType="student" />
+                <div className="mb-4 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                            <div className="p-3 bg-white/20 rounded-lg">
+                                <CalendarDaysIcon className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-white font-semibold text-lg">
+                                    Semester {currentSemester.semester || 1}
+                                </h3>
+                                <div className="flex items-center space-x-4 mt-1">
+                                    <span className="text-white text-sm">
+                                        Status: <span className="ml-1 font-semibold text-green-300">
+                                            {currentSemester.status?.toUpperCase() || 'ACTIVE'}
+                                        </span>
+                                    </span>
+                                    <span className="text-white text-sm">
+                                        {student?.grade?.name || 'Grade 10'} - Section {student?.section?.name || 'A'}
+                                    </span>
+                                </div>
+                                {currentSemester.message && (
+                                    <p className="text-white/90 text-xs mt-1">{currentSemester.message}</p>
+                                )}
+                            </div>
+                        </div>
+                        <Link
+                            href={route('student.academic.semesters')}
+                            className="px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-medium text-sm"
+                        >
+                            View Records
+                        </Link>
+                    </div>
                 </div>
             )}
 
-            {/* Student Info Card */}
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 mb-8 text-white">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <p className="text-blue-100 text-sm">Student ID</p>
-                        <p className="text-2xl font-bold">{student?.student_id || 'N/A'}</p>
+            {/* Compact Summary Cards - 5 columns - Same as Director */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-1">
+                        <div className="p-2 bg-blue-500 rounded">
+                            <ChartBarIcon className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="text-right">
+                            <div className="text-2xl font-bold text-blue-700">{currentAverage.toFixed(1)}</div>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-blue-100 text-sm">Grade</p>
-                        <p className="text-2xl font-bold">{student?.grade?.name || 'N/A'}</p>
+                    <div className="text-xs text-blue-600 font-medium">Current Average</div>
+                    <div className="text-xs text-blue-500">Percentage</div>
+                </div>
+
+                <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-1">
+                        <div className="p-2 bg-amber-500 rounded">
+                            <TrophyIcon className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="text-right">
+                            <div className="text-2xl font-bold text-amber-700">#{currentRank}</div>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-blue-100 text-sm">Section</p>
-                        <p className="text-2xl font-bold">{student?.section?.name || 'N/A'}</p>
+                    <div className="text-xs text-amber-600 font-medium">Class Rank</div>
+                    <div className="text-xs text-amber-500">Position</div>
+                </div>
+
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-1">
+                        <div className="p-2 bg-emerald-500 rounded">
+                            <CalendarDaysIcon className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="text-right">
+                            <div className="text-2xl font-bold text-emerald-700">{attendanceRate}%</div>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-blue-100 text-sm">Academic Year</p>
-                        <p className="text-2xl font-bold">{academicYear?.name || '2025-2026'}</p>
+                    <div className="text-xs text-emerald-600 font-medium">Attendance</div>
+                    <div className="text-xs text-emerald-500">Rate</div>
+                </div>
+
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-1">
+                        <div className="p-2 bg-purple-500 rounded">
+                            <AcademicCapIcon className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="text-right">
+                            <div className="text-2xl font-bold text-purple-700">{totalSubjects}</div>
+                        </div>
                     </div>
+                    <div className="text-xs text-purple-600 font-medium">Total Subjects</div>
+                    <div className="text-xs text-purple-500">Enrolled</div>
+                </div>
+
+                <div className="bg-gradient-to-br from-pink-50 to-pink-100 border border-pink-200 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-1">
+                        <div className="p-2 bg-pink-500 rounded">
+                            <UserGroupIcon className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="text-right">
+                            <div className="text-2xl font-bold text-pink-700">{totalStudents}</div>
+                        </div>
+                    </div>
+                    <div className="text-xs text-pink-600 font-medium">Classmates</div>
+                    <div className="text-xs text-pink-500">Total</div>
                 </div>
             </div>
 
-            {/* Stats Grid - 4 Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
-                    <span className="text-4xl font-bold text-blue-600 mb-1">{attendance?.rate || 0}%</span>
-                    <span className="text-sm font-medium text-gray-600">Attendance Rate</span>
-                </div>
+            {/* Analysis Section with Charts - Same as Director */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                {/* Performance Chart */}
+                <StudentPerformanceChart 
+                    marks={formattedMarks}
+                    currentAverage={currentAverage}
+                    currentRank={currentRank}
+                />
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
-                    <span className="text-4xl font-bold text-blue-600 mb-1">{marks?.average?.toFixed(1) || '0.0'}</span>
-                    <span className="text-sm font-medium text-gray-600">Current Average</span>
-                </div>
-
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
-                    <span className="text-4xl font-bold text-blue-600 mb-1">#{marks?.rank || 'N/A'}</span>
-                    <span className="text-sm font-medium text-gray-600">Class Rank</span>
-                </div>
-
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
-                    <span className="text-4xl font-bold text-blue-600 mb-1">{marks?.totalSubjects || 0}</span>
-                    <span className="text-sm font-medium text-gray-600">Total Subjects</span>
-                </div>
+                {/* Attendance Chart */}
+                <StudentAttendanceChart 
+                    attendanceRate={attendanceRate}
+                    recentAttendance={recentAttendance}
+                />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Recent Activity (Left 2/3) */}
-                <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h2 className="text-lg font-bold text-gray-900 mb-6">Recent Marks</h2>
-                    <div className="space-y-4">
-                        {marks?.recent && marks.recent.length > 0 ? (
-                            marks.recent.map((mark, index) => (
-                                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                            <span className="text-blue-700 font-bold text-xs">{mark.subject.substring(0, 3).toUpperCase()}</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-gray-900">{mark.subject}</p>
-                                            <p className="text-xs text-gray-500">{mark.assessment}</p>
-                                        </div>
+            {/* Performance Analysis - Same as Director */}
+            {recentMarks && recentMarks.length > 0 && (
+                <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3">📊 Subject Performance Analysis</h3>
+                    <div className="space-y-2">
+                        {recentMarks.slice(0, 5).map((mark, index) => {
+                            const percentage = mark.percentage_value || parseFloat(mark.percentage) || 0;
+                            return (
+                                <div key={index}>
+                                    <div className="flex justify-between text-xs text-gray-600 mb-1">
+                                        <span>{mark.subject}</span>
+                                        <span className="font-semibold">{percentage.toFixed(1)}% ({mark.score}/{mark.maxScore})</span>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-lg font-bold text-blue-600">{mark.score}/{mark.maxScore}</p>
-                                        <span className="text-xs text-gray-400">{mark.date}</span>
+                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                        <div 
+                                            className={`h-2 rounded-full transition-all ${
+                                                percentage >= 90 ? 'bg-green-500' :
+                                                percentage >= 75 ? 'bg-blue-500' :
+                                                percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                                            }`}
+                                            style={{ width: `${percentage}%` }}
+                                        ></div>
                                     </div>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="text-center py-12">
-                                <ClipboardDocumentCheckIcon className="mx-auto h-12 w-12 text-gray-300" />
-                                <h3 className="mt-2 text-sm font-medium text-gray-900">No marks yet</h3>
-                                <p className="mt-1 text-xs text-gray-500">Your marks will appear here once graded</p>
+                            );
+                        })}
+                        <div className="pt-2 border-t border-gray-100">
+                            <div className="flex justify-between text-xs text-gray-700">
+                                <span className="font-semibold">Overall Average</span>
+                                <span className="font-bold text-emerald-600">{currentAverage.toFixed(1)}%</span>
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
-
-                {/* Right Sidebar (1/3) */}
-                <div className="space-y-6">
-                    {/* Today's Schedule */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <ClockIcon className="w-5 h-5 text-blue-500" />
-                            Today's Schedule
-                        </h3>
-                        {schedule && schedule.length > 0 ? (
-                            <div className="space-y-3">
-                                {schedule.slice(0, 4).map((item) => (
-                                    <div key={item.id} className="relative pl-6 pb-3 last:pb-0 border-l-2 border-gray-100 last:border-0">
-                                        <div className={`absolute -left-[5px] top-0 w-2 h-2 rounded-full ${item.type === 'break' ? 'bg-yellow-400' : 'bg-blue-500'}`}></div>
-                                        <p className="text-sm font-bold text-gray-900">{item.activity}</p>
-                                        <p className="text-xs text-gray-500">{item.time}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-center text-gray-500 text-sm py-4">No classes today</p>
-                        )}
-                    </div>
-
-                    {/* Announcements */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <BellIcon className="w-5 h-5 text-blue-500" />
-                            Announcements
-                        </h3>
-                        {notifications && notifications.length > 0 ? (
-                            <div className="space-y-3">
-                                {notifications.slice(0, 3).map((note) => (
-                                    <div key={note.id} className="p-3 bg-blue-50 rounded-lg">
-                                        <h4 className="text-sm font-bold text-gray-900 mb-1">{note.title}</h4>
-                                        <p className="text-xs text-gray-600 line-clamp-2">{note.message}</p>
-                                        <span className="text-xs text-blue-600 mt-1 block">{note.date}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-center text-gray-500 text-sm py-4">No announcements</p>
-                        )}
-                    </div>
-                </div>
-            </div>
+            )}
         </StudentLayout>
     );
 }

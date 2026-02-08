@@ -187,7 +187,6 @@ export default function AcademicYearRecordShow({
                                             <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Semester 1</th>
                                             <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Semester 2</th>
                                             <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Final</th>
-                                            <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Grade</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -218,15 +217,6 @@ export default function AcademicYearRecordShow({
                                                     <span className={`font-bold text-lg ${subject.final_average ? 'text-gray-900' : 'text-gray-400'}`}>
                                                         {subject.final_average ? `${subject.final_average}%` : '-'}
                                                     </span>
-                                                </td>
-                                                <td className="px-4 py-4 text-center">
-                                                    {subject.final_average ? (
-                                                        <span className={`inline-block px-3 py-1 rounded-md font-bold text-sm ${getGradeColor(subject.final_average)}`}>
-                                                            {getLetterGrade(subject.final_average)}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-gray-400">-</span>
-                                                    )}
                                                 </td>
                                             </tr>
                                         ))}

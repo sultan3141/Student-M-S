@@ -237,7 +237,9 @@
    LEFT SIDEBAR NAVIGATION
    ============================================ */
 
-.director-sidebar {
+.director-sidebar,
+.registrar-sidebar,
+.teacher-sidebar {
     background: linear-gradient(180deg, #1e3a8a 0%, #0F172A 100%);
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
 }

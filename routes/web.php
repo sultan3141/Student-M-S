@@ -150,6 +150,8 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/password', [\App\Http\Controllers\StudentProfileController::class, 'editPassword'])->name('password.edit');
     Route::patch('/password', [\App\Http\Controllers\StudentProfileController::class, 'updatePassword'])->name('password.update');
 
+    // Attendance
+    Route::get('/attendance', [\App\Http\Controllers\StudentController::class, 'attendance'])->name('attendance');
 
     // Semester Academic Records
     Route::get('/academic/semesters', [\App\Http\Controllers\SemesterRecordController::class, 'index'])->name('academic.semesters');
@@ -225,7 +227,10 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     // Attendance Management (NEW)
     Route::prefix('attendance')->name('attendance.')->group(function () {
         Route::get('/', [\App\Http\Controllers\TeacherAttendanceController::class, 'index'])->name('index');
-        Route::get('/create/{section}', [\App\Http\Controllers\TeacherAttendanceController::class, 'create'])->name('create');
+        Route::get('/grades', [\App\Http\Controllers\TeacherAttendanceController::class, 'getGrades'])->name('grades');
+        Route::get('/sections', [\App\Http\Controllers\TeacherAttendanceController::class, 'getSections'])->name('sections');
+        Route::get('/subjects', [\App\Http\Controllers\TeacherAttendanceController::class, 'getSubjects'])->name('subjects');
+        Route::get('/create', [\App\Http\Controllers\TeacherAttendanceController::class, 'create'])->name('create');
         Route::post('/store', [\App\Http\Controllers\TeacherAttendanceController::class, 'store'])->name('store');
         Route::get('/history', [\App\Http\Controllers\TeacherAttendanceController::class, 'history'])->name('history');
     });
