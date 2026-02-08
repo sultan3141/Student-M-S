@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('subjects', function (Blueprint $table) {
-            $table->foreignId('stream_id')->nullable()->after('grade_id')->constrained()->nullOnDelete();
+            $table->foreignId('stream_id')->nullable()->constrained()->nullOnDelete();
         });
     }
 

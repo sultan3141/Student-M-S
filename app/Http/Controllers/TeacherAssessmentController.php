@@ -25,15 +25,27 @@ class TeacherAssessmentController extends Controller
             ]);
         }
         
+        // Get current academic year and open semester
+        $academicYear = \App\Models\AcademicYear::current();
+        $currentSemester = $academicYear ? $academicYear->getCurrentSemester() : 1;
+
         // Get all assessments created by this teacher
-        $assessments = Assessment::with(['grade', 'section', 'subject', 'assessmentType'])
-            ->where('teacher_id', $teacher->id)
-            ->orderBy('due_date', 'desc')
+        $assessmentsQuery = Assessment::with(['grade', 'section', 'subject', 'assessmentType'])
+            ->where('teacher_id', $teacher->id);
+
+        $assessments = $assessmentsQuery->orderBy('due_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
+
+        // Filter out assessments from closed semesters to "clear" the view for the new semester
+        $filteredAssessments = $assessments->filter(function ($assessment) {
+            return \App\Models\SemesterStatus::isOpen($assessment->grade_id, $assessment->semester);
+        })->values();
         
         return Inertia::render('Teacher/Assessments/Index', [
-            'assessments' => $assessments
+            'assessments' => $filteredAssessments,
+            'all_assessments_count' => $assessments->count(),
+            'current_semester' => $currentSemester,
         ]);
     }
 
@@ -87,7 +99,8 @@ class TeacherAssessmentController extends Controller
             
         return Inertia::render('Teacher/Assessments/CreateSimple', [
             'grades' => $grades,
-            'academicYear' => $academicYear
+            'academicYear' => $academicYear,
+            'currentSemester' => $academicYear->getCurrentSemester() ?? 1,
         ]);
     }
 
@@ -248,7 +261,7 @@ class TeacherAssessmentController extends Controller
                     'description' => null,
                     'academic_year_id' => $academicYear->id,
                     'weight_percentage' => $weight,
-                    'semester' => '1',
+                    'semester' => $academicYear->getCurrentSemester() ?? '1',
                     'status' => 'published',
                 ]);
                 $totalCreated++;

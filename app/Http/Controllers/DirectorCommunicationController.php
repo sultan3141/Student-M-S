@@ -32,6 +32,14 @@ class DirectorCommunicationController extends Controller
     }
 
     /**
+     * Show create announcement form.
+     */
+    public function create()
+    {
+        return Inertia::render('Director/Communication/Compose');
+    }
+
+    /**
      * Send announcement.
      */
     public function send(Request $request)

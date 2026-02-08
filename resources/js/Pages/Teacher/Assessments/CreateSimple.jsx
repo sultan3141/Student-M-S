@@ -4,7 +4,7 @@ import { Head, router } from '@inertiajs/react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import axios from 'axios';
 
-export default function CreateSimple({ grades, academicYear }) {
+export default function CreateSimple({ grades, academicYear, currentSemester }) {
     // Get URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const initialGradeId = urlParams.get('grade_id');
@@ -279,6 +279,9 @@ export default function CreateSimple({ grades, academicYear }) {
                                     </p>
                                     <p className="text-blue-900 mt-1">
                                         <span className="font-semibold">Subject:</span> {subjects.find(s => s.id === formData.subject_id)?.name}
+                                    </p>
+                                    <p className="text-blue-900 mt-1">
+                                        <span className="font-semibold">Semester:</span> {currentSemester}
                                     </p>
                                 </div>
                                 <div className="bg-blue-100 px-3 py-1 rounded-full">

@@ -28,15 +28,8 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher, c
 
             {/* Semester Widget - Full Width */}
             {currentSemester && (
-                <div className="mb-8 space-y-6">
-                    {/* Main Active Context */}
+                <div className="mb-8">
                     <SemesterWidget semester={currentSemester} userType="teacher" />
-
-                    {/* Specific Status Indicators */}
-                    <div>
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Semester Access Control</h3>
-                        <SemesterStatusGrid currentSemester={currentSemester} />
-                    </div>
                 </div>
             )}
 

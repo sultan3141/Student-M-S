@@ -27,7 +27,6 @@ export default function DirectorLayout({ children }) {
         { name: 'Dashboard', href: '/director/dashboard', icon: HomeIcon },
         // Revised "Semester Management" Section
         { name: 'Academic Years', href: '/director/academic-years', icon: CalendarIcon },
-        { name: 'Semester Management', href: '/director/semesters', icon: LockClosedIcon },
         { name: 'Students', href: '/director/students', icon: UserCircleIcon },
         { name: 'Parents', href: '/director/parents', icon: UsersIcon },
         { name: 'Teachers', href: '/director/teachers', icon: UsersIcon },

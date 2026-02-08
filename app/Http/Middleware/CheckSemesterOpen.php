@@ -15,20 +15,35 @@ class CheckSemesterOpen
      */
     public function handle(Request $request, Closure $next): Response
     {
+        \Log::debug("CheckSemesterOpen middleware hit: " . $request->fullUrl(), [
+            'method' => $request->method(),
+            'inputs' => $request->all()
+        ]);
+
+        // Allow viewing even if closed
+        if ($request->isMethod('GET')) {
+            return $next($request);
+        }
+
         $academicYearId = $request->input('academic_year_id') 
             ?? $request->route('academic_year_id')
-            ?? AcademicYear::where('is_current', true)->value('id');
+            ?? \App\Models\AcademicYear::where('is_current', true)->value('id');
         
+        // Try to get semester from multiple sources
         $semester = $request->input('semester') 
             ?? $request->route('semester')
+            ?? ($request->has('marks') ? collect($request->input('marks'))->first()['semester'] ?? null : null)
             ?? 1;
 
         if ($academicYearId && $semester) {
-            $semesterPeriod = SemesterPeriod::where('academic_year_id', $academicYearId)
-                ->where('semester', $semester)
-                ->first();
+            // Use Grade-specific semester status if grade_id is available
+            $gradeId = $request->input('grade_id') ?? $request->route('grade_id');
+            
+            $isOpen = $gradeId 
+                ? \App\Models\SemesterStatus::isOpen($gradeId, $semester, $academicYearId)
+                : \App\Models\SemesterPeriod::isSemesterOpen($academicYearId, $semester);
 
-            if (!$semesterPeriod || $semesterPeriod->status !== 'open') {
+            if (!$isOpen) {
                 return back()->withErrors([
                     'error' => "Semester {$semester} is closed. You cannot edit results for closed semesters."
                 ]);

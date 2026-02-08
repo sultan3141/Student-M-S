@@ -56,8 +56,14 @@ class DirectorDocumentsController extends Controller
         ]);
 
         // Ensure proper boolean types
-        $validated['is_default'] = $request->boolean('is_default');
-        $validated['is_active'] = $request->boolean('is_active');
+        $validated['is_default'] = $request->boolean('is_default', false);
+        $validated['is_active'] = $request->boolean('is_active', true);
+        
+        // Extract placeholders from template content if not provided
+        if (!isset($validated['placeholders']) || empty($validated['placeholders'])) {
+            preg_match_all('/\{\{(\w+)\}\}/', $validated['template_content'], $matches);
+            $validated['placeholders'] = !empty($matches[1]) ? array_unique($matches[1]) : [];
+        }
 
         DocumentTemplate::create($validated);
 
@@ -102,8 +108,14 @@ class DirectorDocumentsController extends Controller
         ]);
 
         // Ensure proper boolean types
-        $validated['is_default'] = $request->boolean('is_default');
-        $validated['is_active'] = $request->boolean('is_active');
+        $validated['is_default'] = $request->boolean('is_default', false);
+        $validated['is_active'] = $request->boolean('is_active', true);
+        
+        // Extract placeholders from template content if not provided
+        if (!isset($validated['placeholders']) || empty($validated['placeholders'])) {
+            preg_match_all('/\{\{(\w+)\}\}/', $validated['template_content'], $matches);
+            $validated['placeholders'] = !empty($matches[1]) ? array_unique($matches[1]) : [];
+        }
 
         $document->update($validated);
 

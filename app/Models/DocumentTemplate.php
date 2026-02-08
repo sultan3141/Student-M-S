@@ -78,16 +78,17 @@ class DocumentTemplate extends Model
 
     /**
      * Replace placeholders in template with actual data.
+     * Use regex to handle optional spacing in placeholders: {{ name }} or {{name}}
      */
     public function render(array $data): string
     {
         $content = $this->template_content;
 
-        foreach ($data as $key => $value) {
-            $content = str_replace('{{' . $key . '}}', $value, $content);
-        }
-
-        return $content;
+        // Use regex for replacement to be robust to spacing in the template
+        return preg_replace_callback('/\{\{\s*(.*?)\s*\}\}/', function($matches) use ($data) {
+            $key = $matches[1];
+            return array_key_exists($key, $data) ? $data[$key] : $matches[0];
+        }, $content);
     }
 
     /**
@@ -96,8 +97,8 @@ class DocumentTemplate extends Model
     public static function getDefault(string $type)
     {
         return self::where('type', $type)
-            ->whereRaw('is_default::boolean = TRUE')
-            ->whereRaw('is_active::boolean = TRUE')
+            ->where('is_default', true)
+            ->where('is_active', true)
             ->first();
     }
 }

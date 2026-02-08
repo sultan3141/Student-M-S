@@ -135,7 +135,6 @@ export default function SemesterRecordShow({ student, semester, academic_year, s
                                 <tr className="bg-gray-50/30">
                                     <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Subject</th>
                                     <th scope="col" className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Mark out of 100</th>
-                                    <th scope="col" className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Teacher Name</th>
                                     <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
@@ -152,11 +151,6 @@ export default function SemesterRecordShow({ student, semester, academic_year, s
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 <span className="text-lg font-bold text-indigo-600">{record.average}</span>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <span className="text-sm text-gray-600 font-medium">
-                                                    {record.subject.teacher_name}
-                                                </span>
-                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <button
                                                     onClick={() => openModal(record)}
@@ -169,7 +163,7 @@ export default function SemesterRecordShow({ student, semester, academic_year, s
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-12 text-center">
+                                        <td colSpan="3" className="px-6 py-12 text-center">
                                             <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
                                                 <BeakerIcon className="w-6 h-6 text-gray-400" />
                                             </div>

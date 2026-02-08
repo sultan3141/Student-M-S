@@ -30,28 +30,30 @@ class DirectorDashboardController extends Controller
      */
     private function getStatistics()
     {
-        // Total student counts
-        $totalStudents = Student::count();
-        $maleStudents = Student::where('gender', 'Male')->count();
-        $femaleStudents = Student::where('gender', 'Female')->count();
+        return cache()->remember('director_stats', 600, function() {
+            // Total student counts
+            $totalStudents = Student::count();
+            $maleStudents = Student::where('gender', 'Male')->count();
+            $femaleStudents = Student::where('gender', 'Female')->count();
 
-        // Total teacher/instructor count
-        $totalInstructors = Teacher::count();
+            // Total teacher/instructor count
+            $totalInstructors = Teacher::count();
 
-        // Total parents
-        $totalParents = \App\Models\ParentProfile::count();
+            // Total parents
+            $totalParents = \App\Models\ParentProfile::count();
 
-        return [
-            'students' => [
-                'male' => $maleStudents,
-                'female' => $femaleStudents,
-                'total' => $totalStudents,
-                'malePercent' => $totalStudents > 0 ? round(($maleStudents / $totalStudents) * 100, 1) : 0,
-                'femalePercent' => $totalStudents > 0 ? round(($femaleStudents / $totalStudents) * 100, 1) : 0,
-            ],
-            'instructors' => $totalInstructors,
-            'parents' => $totalParents,
-        ];
+            return [
+                'students' => [
+                    'male' => $maleStudents,
+                    'female' => $femaleStudents,
+                    'total' => $totalStudents,
+                    'malePercent' => $totalStudents > 0 ? round(($maleStudents / $totalStudents) * 100, 1) : 0,
+                    'femalePercent' => $totalStudents > 0 ? round(($femaleStudents / $totalStudents) * 100, 1) : 0,
+                ],
+                'instructors' => $totalInstructors,
+                'parents' => $totalParents,
+            ];
+        });
     }
 
     /**
@@ -60,13 +62,19 @@ class DirectorDashboardController extends Controller
     private function getRecentData()
     {
         return [
-            'recentStudents' => Student::with(['user', 'grade', 'section', 'parents.user'])
-                ->latest()
-                ->take(50) // Limit to 50 most recent students for performance
-                ->get()
-                ->sortBy(fn($student) => $student->user->name ?? '')
-                ->values(),
-            'recentParents' => \App\Models\ParentProfile::with(['user', 'students'])
+            'recentStudents' => Student::query()
+                ->select(['students.id', 'students.user_id', 'students.grade_id', 'students.section_id', 'students.student_id', 'students.created_at'])
+                ->with([
+                    'user:id,name', 
+                    'grade:id,name', 
+                    'section:id,name', 
+                    'parents:id'
+                ])
+                ->join('users', 'students.user_id', '=', 'users.id')
+                ->orderBy('users.name', 'asc')
+                ->take(50)
+                ->get(),
+            'recentParents' => \App\Models\ParentProfile::with(['user:id,name', 'students:id'])
                 ->latest()
                 ->take(5)
                 ->get(),
@@ -78,7 +86,8 @@ class DirectorDashboardController extends Controller
      */
     private function getSemesterStatus()
     {
-        $currentAcademicYear = \App\Models\AcademicYear::where('is_current', true)->first();
+        // PostgreSQL-compatible boolean query
+        $currentAcademicYear = \App\Models\AcademicYear::whereRaw("is_current = true")->first();
         
         if (!$currentAcademicYear) {
             return null;

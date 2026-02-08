@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('audit_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('action'); // e.g., 'TEACHER_CREATED', 'REGISTRATION_CLOSED'
-            $table->string('module')->nullable(); // e.g., 'TEACHER', 'ACADEMIC'
-            $table->text('description')->nullable();
-            $table->json('details')->nullable(); // For storing changes (old/new values)
-            $table->string('ip_address')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('audit_logs')) {
+            Schema::create('audit_logs', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+                $table->string('action'); // e.g., 'TEACHER_CREATED', 'REGISTRATION_CLOSED'
+                $table->string('module')->nullable(); // e.g., 'TEACHER', 'ACADEMIC'
+                $table->text('description')->nullable();
+                $table->json('details')->nullable(); // For storing changes (old/new values)
+                $table->string('ip_address')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

@@ -283,6 +283,8 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     // Student Tracking
     Route::get('/students', [\App\Http\Controllers\TeacherStudentController::class, 'index'])->name('students.index');
     Route::get('/students/manage-results', [\App\Http\Controllers\TeacherStudentController::class, 'manageResults'])->name('students.manage-results');
+    Route::get('/students/{student}/results/{subject}/edit', [\App\Http\Controllers\TeacherStudentController::class, 'editStudentResult'])->name('students.edit-result');
+    Route::post('/students/{student}/results/{subject}/update', [\App\Http\Controllers\TeacherStudentController::class, 'updateStudentResult'])->name('students.update-result');
     Route::get('/students/{id}', [\App\Http\Controllers\TeacherStudentController::class, 'show'])->name('students.show');
 
 
@@ -378,12 +380,19 @@ Route::middleware(['auth', 'role:school_director|admin', 'audit'])->prefix('dire
     Route::resource('announcements', \App\Http\Controllers\DirectorCommunicationController::class);
     Route::get('/announcements/{id}/analytics', [\App\Http\Controllers\DirectorCommunicationController::class, 'getAnalytics'])->name('announcements.analytics');
 
-    // Documents Management - Specific routes BEFORE resource routes
-    Route::post('/documents/generate-batch', [\App\Http\Controllers\DirectorDocumentsController::class, 'generateBatch'])->name('documents.generate-batch');
-    Route::get('/documents/export-data', [\App\Http\Controllers\DirectorDocumentsController::class, 'exportData'])->name('documents.export-data');
-    Route::post('/documents/{document}/generate', [\App\Http\Controllers\DirectorDocumentsController::class, 'generate'])->name('documents.generate');
-    Route::get('/documents/{document}/preview', [\App\Http\Controllers\DirectorDocumentsController::class, 'preview'])->name('documents.preview');
-    Route::resource('documents', \App\Http\Controllers\DirectorDocumentsController::class);
+    // Documents Management
+    Route::resource('documents', \App\Http\Controllers\DocumentTemplateController::class);
+
+    // Reports & Exports
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\DirectorReportController::class, 'index'])->name('index');
+        Route::get('/export/students', [\App\Http\Controllers\DirectorReportController::class, 'exportStudents'])->name('export.students');
+        Route::get('/export/ranks', [\App\Http\Controllers\DirectorReportController::class, 'exportRanks'])->name('export.ranks');
+        Route::get('/export/payments', [\App\Http\Controllers\DirectorReportController::class, 'exportPayments'])->name('export.payments');
+        Route::get('/export/transcript', [\App\Http\Controllers\DirectorReportController::class, 'exportTranscript'])->name('export.transcript');
+    });
+
+    // Communication Center
 
     // Audit Logging - Specific routes BEFORE parameterized routes
     Route::get('/audit', [\App\Http\Controllers\DirectorAuditController::class, 'index'])->name('audit.index');

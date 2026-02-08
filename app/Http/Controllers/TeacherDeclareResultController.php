@@ -19,15 +19,19 @@ class TeacherDeclareResultController extends Controller
     {
         $grades = Grade::with('sections')->orderBy('level')->get();
         $assessmentTypes = AssessmentType::all();
+        $currentAcademicYear = AcademicYear::where('is_current', true)->first();
+        $currentSemester = $currentAcademicYear ? $currentAcademicYear->current_semester : 1;
 
         return Inertia::render('Teacher/DeclareResult', [
             'grades' => $grades,
             'assessmentTypes' => $assessmentTypes,
+            'currentSemester' => $currentSemester,
             'initialStep' => (int) $request->input('step', 1),
             'initialGradeId' => (int) $request->input('grade_id'),
             'initialSectionId' => (int) $request->input('section_id'),
             'initialSubjectId' => (int) $request->input('subject_id'),
             'initialStudentId' => (int) $request->input('student_id'),
+            'initialShowClosed' => (bool) $request->input('show_closed', false),
         ]);
     }
 
@@ -44,14 +48,28 @@ class TeacherDeclareResultController extends Controller
 
     public function getSubjects(Request $request)
     {
-        // Get subjects assigned to this grade/section from grade_subject pivot table
-        $subjects = DB::table('grade_subject')
-            ->join('subjects', 'grade_subject.subject_id', '=', 'subjects.id')
-            ->where('grade_subject.grade_id', $request->grade_id)
-            ->where('grade_subject.section_id', $request->section_id)
-            ->select('subjects.id', 'subjects.name', 'subjects.code')
-            ->distinct()
-            ->get();
+        $teacher = auth()->user()->teacher;
+        
+        if (!$teacher) {
+            return response()->json([]);
+        }
+
+        // Get subjects assigned to this teacher for this grade/section
+        $subjects = \App\Models\TeacherAssignment::with('subject')
+            ->where('teacher_id', $teacher->id)
+            ->where('grade_id', $request->grade_id)
+            ->where('section_id', $request->section_id)
+            ->get()
+            ->pluck('subject')
+            ->unique('id')
+            ->map(function($subject) {
+                return [
+                    'id' => $subject->id,
+                    'name' => $subject->name,
+                    'code' => $subject->code,
+                ];
+            })
+            ->values();
 
         return response()->json($subjects);
     }
@@ -66,29 +84,42 @@ class TeacherDeclareResultController extends Controller
 
         $academicYear = AcademicYear::where('is_current', true)->first();
 
-        // Get assessments for the SPECIFIC section only
-        $assessments = \App\Models\Assessment::where('grade_id', $request->grade_id)
-            ->where('section_id', $request->section_id) // Only this section
-            ->where('subject_id', $request->subject_id)
-            ->where('academic_year_id', $academicYear->id)
-            ->with('assessmentType')
-            ->get()
-            ->map(function ($assessment) {
-                return [
-                    'id' => $assessment->id,
-                    'name' => $assessment->name,
-                    'type_name' => $assessment->assessmentType ? $assessment->assessmentType->name : 'Custom',
-                    'total_marks' => $assessment->max_score, // Map max_score to total_marks for frontend
-                    'max_score' => $assessment->max_score,
-                    'due_date' => $assessment->due_date,
-                    'max_score' => $assessment->max_score,
-                    'due_date' => $assessment->due_date,
-                    'status' => $assessment->status,
-                    'semester' => $assessment->semester,
-                ];
-            });
+        if (!$academicYear) {
+            return response()->json([]);
+        }
 
-        return response()->json($assessments);
+        $showClosed = $request->query('show_closed', false);
+
+        // Get assessments for the SPECIFIC section
+        $assessmentsQuery = \App\Models\Assessment::where('grade_id', $request->grade_id)
+            ->where('section_id', $request->section_id)
+            ->where('subject_id', $request->subject_id)
+            ->where('academic_year_id', $academicYear->id);
+
+        $assessments = $assessmentsQuery->with('assessmentType')->get();
+
+        // Filter out closed semesters unless explicitly requested
+        if (!$showClosed) {
+            $gradeId = $request->grade_id;
+            $assessments = $assessments->filter(function ($assessment) use ($gradeId) {
+                return \App\Models\SemesterStatus::isOpen($gradeId, $assessment->semester);
+            });
+        }
+
+        $formattedAssessments = $assessments->map(function ($assessment) {
+            return [
+                'id' => $assessment->id,
+                'name' => $assessment->name,
+                'type_name' => $assessment->assessmentType ? $assessment->assessmentType->name : 'Custom',
+                'total_marks' => $assessment->max_score,
+                'max_score' => $assessment->max_score,
+                'due_date' => $assessment->due_date ? $assessment->due_date->format('Y-m-d') : null,
+                'status' => $assessment->status,
+                'semester' => $assessment->semester,
+            ];
+        });
+
+        return response()->json($formattedAssessments->values());
     }
 
     public function getExistingMarks(Request $request)
@@ -174,9 +205,6 @@ class TeacherDeclareResultController extends Controller
                     if (!$assessment) continue;
 
                     // Check if semester is open
-                    // Note: We check per assessment's semester. 
-                    // Optimization: Could check once if all assessments share semester.
-                    // But safe to check always.
                     if (!\App\Models\SemesterStatus::isOpen($validated['grade_id'], $assessment->semester)) {
                         throw new \Exception("Result entry for Semester {$assessment->semester} is CLOSED.");
                     }
@@ -192,29 +220,22 @@ class TeacherDeclareResultController extends Controller
                         ->first();
 
                     if ($existingMark) {
-                        $oldScore = $existingMark->score;
-                        // Update existing mark
-                        $existingMark->update([
-                            'score' => $markValue,
-                            'max_score' => $assessment->max_score,
-                            'teacher_id' => $teacher->id,
-                            'subject_id' => $validated['subject_id'],
-                            'grade_id' => $validated['grade_id'],
-                            'section_id' => $validated['section_id'],
-                            'academic_year_id' => $currentAcademicYear->id,
-                            'semester' => $assessment->semester,
-                            'is_submitted' => true,
-                            'submitted_at' => now(),
-                        ]);
-                        $updatedCount++;
+                        // Allow updates if the score has changed
+                        if ($existingMark->score != $markValue) {
+                            $oldValue = $existingMark->score;
+                            $existingMark->update([
+                                'score' => $markValue,
+                                'teacher_id' => $teacher->id,
+                                'submitted_at' => now(),
+                            ]);
+                            $updatedCount++;
 
-                        // Log Change
-                        if ($oldScore != $markValue) {
+                            // Log Update
                             \App\Models\MarkChangeLog::create([
                                 'mark_id' => $existingMark->id,
                                 'teacher_id' => $teacher->id,
                                 'action' => 'updated',
-                                'old_value' => (string)$oldScore,
+                                'old_value' => (string)$oldValue,
                                 'new_value' => (string)$markValue,
                                 'ip_address' => $request->ip(),
                                 'user_agent' => $request->userAgent()
@@ -253,6 +274,28 @@ class TeacherDeclareResultController extends Controller
             }
             
             DB::commit();
+            
+            // Invalidate semester rankings cache for affected semesters
+            // Get unique semester values from the assessments processed
+            $processedSemesters = collect();
+            foreach ($validated['marks'] as $studentId => $studentMarks) {
+                foreach ($studentMarks as $assessmentId => $markValue) {
+                    if ($markValue === null || $markValue === '') continue;
+                    $assessment = \App\Models\Assessment::find($assessmentId);
+                    if ($assessment) {
+                        $processedSemesters->push($assessment->semester);
+                    }
+                }
+            }
+            
+            // Invalidate cache for each unique semester
+            foreach ($processedSemesters->unique() as $semester) {
+                \App\Http\Controllers\SemesterRecordController::invalidateSemesterRankings(
+                    $validated['section_id'],
+                    $semester,
+                    $currentAcademicYear->id
+                );
+            }
             
             $message = "Results saved successfully! ";
             if ($savedCount > 0) $message .= "{$savedCount} new marks saved. ";

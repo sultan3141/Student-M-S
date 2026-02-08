@@ -204,6 +204,14 @@ class TeacherMarkController extends Controller
                 \Cache::forget("student_{$studentId}_semester_{$assessment->semester}_year_{$assessment->academic_year_id}");
                 \Cache::forget("student_{$studentId}_academic_year_{$assessment->academic_year_id}");
             }
+            
+            // Invalidate semester rankings for this section
+            // This ensures all students see updated rankings immediately
+            \App\Http\Controllers\SemesterRecordController::invalidateSemesterRankings(
+                $assessment->section_id,
+                $assessment->semester,
+                $assessment->academic_year_id
+            );
         });
 
         return redirect()->back()->with('success', 'Marks saved successfully.');

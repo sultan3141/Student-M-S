@@ -8,29 +8,31 @@ class RegistrarController extends Controller
 {
     public function dashboard()
     {
-        // Calculate stats
-        $newStudentsToday = \App\Models\Student::whereDate('created_at', today())->count();
-        $totalStudents = \App\Models\Student::count();
-        $pendingPayments = \App\Models\Payment::where('status', 'Pending')->count();
-        $pendingAmount = \App\Models\Payment::where('status', 'Pending')->sum('amount');
-        $totalGuardians = \App\Models\ParentProfile::count();
+        $stats = cache()->remember('registrar_dashboard_stats', 300, function() {
+            return [
+                'newToday' => \App\Models\Student::whereDate('created_at', today())->count(),
+                'totalActive' => \App\Models\Student::count(),
+                'pendingPayments' => \App\Models\Payment::where('status', 'Pending')->count(),
+                'pendingAmount' => \App\Models\Payment::where('status', 'Pending')->sum('amount'),
+                'totalGuardians' => \App\Models\ParentProfile::count(),
+            ];
+        });
 
-        // Fetch recent students
-        $recentStudents = \App\Models\Student::with(['user', 'grade', 'section'])
+        // Fetch recent students - Optimized
+        $recentStudents = \App\Models\Student::select(['id', 'user_id', 'grade_id', 'section_id', 'student_id', 'created_at'])
+            ->with([
+                'user:id,name', 
+                'grade:id,name', 
+                'section:id,name'
+            ])
             ->latest()
             ->take(5)
             ->get();
 
         return inertia('Registrar/Dashboard', [
-            'stats' => [
-                'newToday' => $newStudentsToday,
-                'totalActive' => $totalStudents,
-                'pendingPayments' => $pendingPayments,
-                'pendingAmount' => $pendingAmount,
-                'totalGuardians' => $totalGuardians,
-            ],
+            'stats' => $stats,
             'recentStudents' => $recentStudents,
-            'grades' => \App\Models\Grade::all(['id', 'name', 'level']),
+            'grades' => cache()->remember('grades_list', 3600, fn() => \App\Models\Grade::all(['id', 'name', 'level'])),
         ]);
     }
 

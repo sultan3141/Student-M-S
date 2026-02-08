@@ -40,7 +40,6 @@ export default function Results({ auth, marks, student, subjectPerformance, tren
                                 <tr className="bg-gray-100 text-gray-700 text-sm">
                                     <th className="border-b-2 border-gray-300 px-4 py-3 text-left">Subject</th>
                                     <th className="border-b-2 border-gray-300 px-4 py-3 text-center">Mark</th>
-                                    <th className="border-b-2 border-gray-300 px-4 py-3 text-center">Teacher</th>
                                     <th className="border-b-2 border-gray-300 px-4 py-3 text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -55,9 +54,6 @@ export default function Results({ auth, marks, student, subjectPerformance, tren
                                             <td className="border-b border-gray-200 px-4 py-3 text-center">
                                                 <span className="font-bold text-lg text-blue-600">{performance.average_score}</span>
                                             </td>
-                                            <td className="border-b border-gray-200 px-4 py-3 text-center text-gray-600">
-                                                {performance.subject.teacher || 'N/A'}
-                                            </td>
                                             <td className="border-b border-gray-200 px-4 py-3 text-center">
                                                 <button
                                                     onClick={() => setExpandedSubject(expandedSubject === performance.subject.id ? null : performance.subject.id)}
@@ -69,7 +65,7 @@ export default function Results({ auth, marks, student, subjectPerformance, tren
                                         </tr>
                                         {expandedSubject === performance.subject.id && (
                                             <tr>
-                                                <td colSpan="4" className="bg-gray-50 px-4 py-6">
+                                                <td colSpan="3" className="bg-gray-50 px-4 py-6">
                                                     <div className="max-w-4xl mx-auto">
                                                         <h4 className="font-bold text-gray-800 mb-4">Assessment Breakdown - {performance.subject.name}</h4>
                                                         <div className="overflow-x-auto">
@@ -209,7 +205,6 @@ export default function Results({ auth, marks, student, subjectPerformance, tren
                                 <th className="border border-blue-500 px-4 py-3 text-center">CREDITS</th>
                                 <th className="border border-blue-500 px-4 py-3 text-center">MARK/100</th>
                                 <th className="border border-blue-500 px-4 py-3 text-center">ACTION</th>
-                                <th className="border border-blue-500 px-4 py-3 text-left">INSTRUCTOR</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -242,7 +237,7 @@ export default function Results({ auth, marks, student, subjectPerformance, tren
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="7" className="border border-gray-300 px-4 py-12 text-center text-gray-500">
+                                    <td colSpan="6" className="border border-gray-300 px-4 py-12 text-center text-gray-500">
                                         <div className="text-5xl mb-4">📄</div>
                                         <p className="text-lg">No academic records found</p>
                                     </td>

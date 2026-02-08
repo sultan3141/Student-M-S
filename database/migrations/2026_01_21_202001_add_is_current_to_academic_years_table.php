@@ -11,11 +11,27 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('academic_years', function (Blueprint $table) {
-            $table->boolean('is_current')->default(false)->after('status');
+            if (!Schema::hasColumn('academic_years', 'is_current')) {
+                $table->boolean('is_current')->default(false)->after('status');
+            }
         });
 
         // Set the most recent academic year as current
-        DB::statement("UPDATE academic_years SET is_current = 1 WHERE id = (SELECT id FROM academic_years ORDER BY created_at DESC LIMIT 1)");
+        $driver = Schema::getConnection()->getDriverName();
+        
+        if ($driver === 'pgsql') {
+            // PostgreSQL-compatible version using WITH clause
+            DB::statement("
+                WITH latest AS (
+                    SELECT id FROM academic_years ORDER BY created_at DESC LIMIT 1
+                )
+                UPDATE academic_years SET is_current = true 
+                WHERE id = (SELECT id FROM latest)
+            ");
+        } else {
+            // SQLite version
+            DB::statement("UPDATE academic_years SET is_current = 1 WHERE id = (SELECT id FROM academic_years ORDER BY created_at DESC LIMIT 1)");
+        }
     }
 
     /**

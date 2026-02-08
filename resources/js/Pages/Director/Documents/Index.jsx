@@ -1,215 +1,243 @@
-import { useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
-import DirectorLayout from '@/Layouts/DirectorLayout';
-import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PencilSquareIcon, TrashIcon, PlusIcon, DocumentDuplicateIcon, ChartBarIcon, DocumentTextIcon, CheckBadgeIcon, MagnifyingGlassIcon, UserIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import ReportsDashboard from '@/Components/Director/ReportsDashboard';
 
-export default function DocumentsIndex({ templates }) {
+// Simple debounce implementation
+const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+};
+
+export default function Index({ auth, templates, grades, academic_years, students, filters }) {
     const { flash } = usePage().props;
-    const [deleteId, setDeleteId] = useState(null);
 
-    const handleDelete = (id) => {
-        if (confirm('Are you sure you want to delete this template?')) {
-            router.delete(route('director.documents.destroy', id));
+    // Parse URL param for initial tab state
+    const getInitialTab = () => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('tab') === 'reports' ? 'reports' : 'transcripts';
+    };
+
+    const [activeTab, setActiveTab] = useState(getInitialTab());
+    const [search, setSearch] = useState(filters.search || '');
+    const [selectedGrade, setSelectedGrade] = useState(filters.grade_id || '');
+
+    // Update URL without reloading when tab changes
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tab);
+        window.history.pushState({}, '', url);
+    };
+
+    // Handle search with debounce
+    const handleSearch = useCallback(
+        debounce((value, grade) => {
+            router.get(route('director.documents.index'),
+                { search: value, grade_id: grade, tab: 'transcripts' },
+                { preserveState: true, preserveScroll: true, replace: true }
+            );
+        }, 300),
+        []
+    );
+
+    useEffect(() => {
+        if (activeTab === 'transcripts') {
+            handleSearch(search, selectedGrade);
         }
+    }, [search, selectedGrade]);
+
+    const handleDownloadTranscript = (studentId) => {
+        window.location.href = route('director.reports.export.transcript', { student_id: studentId });
     };
 
     return (
-        <DirectorLayout>
-            <div className="space-y-6">
-                {/* Header */}
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Documents Management</h1>
-                        <p className="text-gray-600 mt-1">Create and manage document templates</p>
-                    </div>
-                    <div className="flex space-x-3">
-                        <button
-                            onClick={() => document.getElementById('exportModal').showModal()}
-                            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                        >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Export Data
-                        </button>
-                        <button
-                            onClick={() => document.getElementById('batchModal').showModal()}
-                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                        >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                            </svg>
-                            Generate Batch
-                        </button>
-                        <Link
-                            href={route('director.documents.create')}
-                            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                        >
-                            <PlusIcon className="h-5 w-5 mr-2" />
-                            New Template
-                        </Link>
-                    </div>
-                </div>
+        <AuthenticatedLayout
+            user={auth.user}
+            header={null}
+        >
+            <Head title="Director Workspace" />
 
-                {/* Success Message */}
-                {flash?.success && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800">
-                        {flash.success}
-                    </div>
-                )}
+            <div className="min-h-screen bg-gray-50/50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-                {/* Templates Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {templates.length > 0 ? (
-                        templates.map((template) => (
-                            <div
-                                key={template.id}
-                                className="bg-white rounded-lg shadow-md hover:shadow-lg transition p-6"
-                            >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-900">
-                                            {template.name}
-                                        </h3>
-                                        <p className="text-sm text-gray-500 mt-1">
-                                            Type: {template.type}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        {template.is_default && (
-                                            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                                Default
-                                            </span>
-                                        )}
-                                        {template.is_active && (
-                                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                                                Active
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {template.description && (
-                                    <p className="text-gray-600 text-sm mb-4">
-                                        {template.description}
-                                    </p>
-                                )}
-
-                                <div className="flex space-x-2">
-                                    <Link
-                                        href={route('director.documents.preview', template.id)}
-                                        className="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition text-sm"
-                                    >
-                                        <EyeIcon className="h-4 w-4 mr-1" />
-                                        Preview
-                                    </Link>
-                                    <Link
-                                        href={route('director.documents.edit', template.id)}
-                                        className="flex-1 inline-flex items-center justify-center px-3 py-2 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition text-sm"
-                                    >
-                                        <PencilIcon className="h-4 w-4 mr-1" />
-                                        Edit
-                                    </Link>
-                                    <button
-                                        onClick={() => handleDelete(template.id)}
-                                        className="flex-1 inline-flex items-center justify-center px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm"
-                                    >
-                                        <TrashIcon className="h-4 w-4 mr-1" />
-                                        Delete
-                                    </button>
-                                </div>
+                    {/* Modern Custom Header */}
+                    <div className="mb-10">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Director Workspace</h1>
+                                <p className="text-gray-500 mt-2 text-lg">Manage student transcripts and generate administrative reports.</p>
                             </div>
-                        ))
-                    ) : (
-                        <div className="col-span-full text-center py-12">
-                            <p className="text-gray-500 mb-4">No document templates yet</p>
-                            <Link
-                                href={route('director.documents.create')}
-                                className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                            >
-                                <PlusIcon className="h-5 w-5 mr-2" />
-                                Create First Template
-                            </Link>
+
+                            {activeTab === 'transcripts' && (
+                                <Link
+                                    href={route('director.documents.create')}
+                                    className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-all shadow-lg hover:shadow-xl"
+                                >
+                                    <PlusIcon className="w-5 h-5 mr-2" />
+                                    Manage Layouts
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Segmented Control Tabs */}
+                    <div className="mb-8">
+                        <div className="border-b border-gray-200">
+                            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                                <button
+                                    onClick={() => handleTabChange('transcripts')}
+                                    className={`${activeTab === 'transcripts'
+                                        ? 'border-black text-black'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        } whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm flex items-center transition-all duration-200`}
+                                >
+                                    <DocumentTextIcon className={`w-5 h-5 mr-2 ${activeTab === 'transcripts' ? 'text-black' : 'text-gray-400'}`} />
+                                    Official Transcripts
+                                </button>
+
+                                <button
+                                    onClick={() => handleTabChange('reports')}
+                                    className={`${activeTab === 'reports'
+                                        ? 'border-black text-black'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        } whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm flex items-center transition-all duration-200`}
+                                >
+                                    <ChartBarIcon className={`w-5 h-5 mr-2 ${activeTab === 'reports' ? 'text-black' : 'text-gray-400'}`} />
+                                    Analytics & Reports
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+
+                    {/* Flash Message */}
+                    {flash.success && (
+                        <div className="mb-8 bg-green-50 border border-green-100 text-green-800 px-4 py-4 rounded-xl flex items-center shadow-sm" role="alert">
+                            <CheckBadgeIcon className="w-6 h-6 mr-3 text-green-600" />
+                            <span className="font-medium">{flash.success}</span>
                         </div>
                     )}
+
+                    {/* Tab Content */}
+                    <div className="min-h-[400px]">
+                        {activeTab === 'transcripts' ? (
+                            <div className="animate-fade-in-up">
+                                {/* Search & Filters */}
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 flex flex-col md:flex-row gap-4 items-end">
+                                    <div className="flex-grow">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Search Student</label>
+                                        <div className="relative">
+                                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                            <input
+                                                type="text"
+                                                placeholder="Name or Student ID..."
+                                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                                                value={search}
+                                                onChange={(e) => setSearch(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="w-full md:w-64">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Grade Level</label>
+                                        <select
+                                            className="w-full px-4 py-2.5 bg-gray-50 border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                                            value={selectedGrade}
+                                            onChange={(e) => setSelectedGrade(e.target.value)}
+                                        >
+                                            <option value="">All Grades</option>
+                                            {grades.map(grade => (
+                                                <option key={grade.id} value={grade.id}>{grade.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Student List */}
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="bg-gray-50 border-b border-gray-100">
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Student</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">ID</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Grade</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-50">
+                                            {students.data.length > 0 ? (
+                                                students.data.map((student) => (
+                                                    <tr key={student.id} className="hover:bg-gray-50/50 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center">
+                                                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
+                                                                    <UserIcon className="w-6 h-6 text-gray-400" />
+                                                                </div>
+                                                                <div className="font-bold text-gray-900">{student.user.name}</div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm text-gray-500">{student.student_id}</td>
+                                                        <td className="px-6 py-4">
+                                                            <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold">
+                                                                {student.grade?.name}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <button
+                                                                onClick={() => handleDownloadTranscript(student.id)}
+                                                                className="inline-flex items-center px-4 py-2 bg-black text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg"
+                                                            >
+                                                                <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
+                                                                Download Transcript
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan="4" className="px-6 py-20 text-center">
+                                                        <div className="text-gray-400 italic">No students found matching your search.</div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Pagination */}
+                                <div className="mt-8">
+                                    {students.links && students.links.length > 3 && (
+                                        <div className="flex justify-center">
+                                            {students.links.map((link, i) => (
+                                                <Link
+                                                    key={i}
+                                                    href={link.url}
+                                                    className={`px-4 py-2 mx-1 rounded-xl text-sm font-bold transition-all ${link.active
+                                                        ? 'bg-black text-white shadow-lg'
+                                                        : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-100'
+                                                        } ${!link.url && 'opacity-50 cursor-not-allowed'}`}
+                                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="animate-fade-in-up">
+                                <ReportsDashboard grades={grades} academic_years={academic_years} />
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-
-            {/* Batch Generation Modal */}
-            <dialog id="batchModal" className="modal p-0 rounded-lg shadow-xl w-full max-w-lg">
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Batch Document Generation</h3>
-                    <form method="post" action={route('director.documents.generate-batch')} className="space-y-4">
-                        <input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')} />
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Select Template</label>
-                            <select name="template_id" required className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Select Grade</label>
-                            <select name="grade_id" required className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                {/* Ideally fetch grades, hardcoding for now or need to pass as prop */}
-                                <option value="1">Grade 9</option>
-                                <option value="2">Grade 10</option>
-                                <option value="3">Grade 11</option>
-                                <option value="4">Grade 12</option>
-                            </select>
-                        </div>
-
-                        <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                            <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:col-start-2 sm:text-sm">
-                                Generate Zip
-                            </button>
-                            <button type="button" onClick={() => document.getElementById('batchModal').close()} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm">
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </dialog>
-
-            {/* Export Data Modal */}
-            <dialog id="exportModal" className="modal p-0 rounded-lg shadow-xl w-full max-w-lg">
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Export Data</h3>
-                    <form method="get" action={route('director.documents.export-data')} className="space-y-4">
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Export Type</label>
-                            <select name="type" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="students">Students List</option>
-                                <option value="teachers">Teachers List</option>
-                                <option value="marks">Academic Marks</option>
-                                <option value="fees">Fee Payments</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Filter by Grade (Optional)</label>
-                            <select name="grade_id" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="">All Grades</option>
-                                <option value="1">Grade 9</option>
-                                <option value="2">Grade 10</option>
-                                <option value="3">Grade 11</option>
-                                <option value="4">Grade 12</option>
-                            </select>
-                        </div>
-
-                        <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                            <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:col-start-2 sm:text-sm">
-                                Download CSV
-                            </button>
-                            <button type="button" onClick={() => document.getElementById('exportModal').close()} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm">
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </dialog>
-        </DirectorLayout >
+        </AuthenticatedLayout>
     );
 }

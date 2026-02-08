@@ -13,7 +13,7 @@ class AcademicYear extends Model
         'start_date',
         'end_date',
         'is_current',
-        'status', // active, completed, upcoming
+        'status', // active, inactive, planned
     ];
 
     protected $casts = [
@@ -27,7 +27,8 @@ class AcademicYear extends Model
      */
     public static function current()
     {
-        return static::where('is_current', true)->first();
+        // PostgreSQL-compatible boolean query
+        return static::whereRaw("is_current = true")->first();
     }
 
     /**
@@ -111,7 +112,7 @@ class AcademicYear extends Model
         $semesterStatuses = $this->semesterStatuses;
 
         if ($semesterStatuses->isEmpty()) {
-            return 'upcoming';
+            return 'planned';
         }
 
         $allClosed = $semesterStatuses->every(function ($status) {
@@ -127,10 +128,10 @@ class AcademicYear extends Model
         }
 
         if ($allClosed) {
-            return 'completed';
+            return 'inactive';
         }
 
-        return 'upcoming';
+        return 'planned';
     }
 
     // Relationships

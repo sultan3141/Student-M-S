@@ -2,7 +2,7 @@ import TeacherLayout from '@/Layouts/TeacherLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 
-export default function DeclareResult({ grades, initialStep = 1, initialGradeId = null, initialSectionId = null, initialSubjectId = null, initialStudentId = null }) {
+export default function DeclareResult({ grades, currentSemester = 1, initialStep = 1, initialGradeId = null, initialSectionId = null, initialSubjectId = null, initialStudentId = null, initialShowClosed = false }) {
     console.log('DeclareResult Props:', { initialStep, initialGradeId, initialSectionId, initialSubjectId });
 
     const [step, setStep] = useState(initialStep);
@@ -22,17 +22,20 @@ export default function DeclareResult({ grades, initialStep = 1, initialGradeId 
     const [fetchedStudents, setFetchedStudents] = useState([]);
     const [fetchedAssessments, setFetchedAssessments] = useState([]);
     const [semesterStatuses, setSemesterStatuses] = useState({}); // { semester: isOpen }
+    const [showClosed, setShowClosed] = useState(initialShowClosed);
 
     // Form Data
     const { data, setData, post, processing, errors } = useForm({
         grade_id: initialGradeId || '',
         section_id: initialSectionId || '',
         subject_id: initialSubjectId || '',
+        semester: currentSemester || 1,
         student_ids: initialStudentId ? [parseInt(initialStudentId)] : [],
         marks: {}, // Structure: { studentId: { assessmentId: mark } }
     });
 
     const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+    const [savedMarks, setSavedMarks] = useState({});
 
     // Initialize with URL parameters if step is 5
     useEffect(() => {
@@ -70,7 +73,7 @@ export default function DeclareResult({ grades, initialStep = 1, initialGradeId 
                     }
 
                     // Then fetch assessments with students data
-                    await fetchAssessments(initialGradeId, initialSectionId, initialSubjectId, studentsData);
+                    await fetchAssessments(initialGradeId, initialSectionId, initialSubjectId, studentsData, initialShowClosed);
                     console.log('Step 5 initialization complete');
                 }
             }
@@ -122,10 +125,10 @@ export default function DeclareResult({ grades, initialStep = 1, initialGradeId 
         }
     };
 
-    const fetchAssessments = async (gradeId, sectionId, subjectId, studentsList = null) => {
+    const fetchAssessments = async (gradeId, sectionId, subjectId, studentsList = null, isShowClosed = showClosed) => {
         setLoading(true);
         try {
-            const response = await fetch(`/teacher/declare-result/assessments?grade_id=${gradeId}&section_id=${sectionId}&subject_id=${subjectId}`);
+            const response = await fetch(`/teacher/declare-result/assessments?grade_id=${gradeId}&section_id=${sectionId}&subject_id=${subjectId}&show_closed=${isShowClosed ? 1 : 0}`);
             const assessmentsData = await response.json();
             setFetchedAssessments(assessmentsData);
 
@@ -146,10 +149,8 @@ export default function DeclareResult({ grades, initialStep = 1, initialGradeId 
             }
             setSemesterStatuses(statusMap); // Need to add this state
 
-            // Use provided students list or fallback to state
+            // Set the selected subject and students
             const studentsToUse = studentsList || fetchedStudents;
-
-            // For step 5 initialization, select based on initialStudentId or select all
             if (studentsToUse.length > 0) {
                 const idsToSelect = (initialStep === 5 && initialStudentId)
                     ? [parseInt(initialStudentId)]
@@ -164,16 +165,23 @@ export default function DeclareResult({ grades, initialStep = 1, initialGradeId 
 
                 if (existingMarks && Object.keys(existingMarks).length > 0) {
                     setData('marks', existingMarks);
+                    setSavedMarks(existingMarks);
                 }
             }
 
-            // Set the selected subject from subjects state
-            setTimeout(() => {
-                setSelectedSubject(prev => {
-                    const subject = subjects.find(s => s.id === parseInt(subjectId));
-                    return subject || prev;
-                });
-            }, 100);
+            // More robust subject selection
+            const findAndSetSubject = () => {
+                const subject = (subjects.length > 0 ? subjects : (studentsList ? [] : subjects)).find(s => s.id === parseInt(subjectId));
+                if (subject) {
+                    setSelectedSubject(subject);
+                    return true;
+                }
+                return false;
+            };
+
+            if (!findAndSetSubject()) {
+                setTimeout(findAndSetSubject, 200);
+            }
         } catch (error) {
             console.error(error);
         } finally {
@@ -216,7 +224,7 @@ export default function DeclareResult({ grades, initialStep = 1, initialGradeId 
         // Fetch Assessments
         setLoading(true);
         try {
-            const response = await fetch(`/teacher/declare-result/assessments?grade_id=${selectedGrade.id}&section_id=${selectedSection.id}&subject_id=${subject.id}`);
+            const response = await fetch(`/teacher/declare-result/assessments?grade_id=${selectedGrade.id}&section_id=${selectedSection.id}&subject_id=${subject.id}&show_closed=${showClosed ? 1 : 0}`);
             const assessmentsData = await response.json();
             setFetchedAssessments(assessmentsData);
 
@@ -227,6 +235,9 @@ export default function DeclareResult({ grades, initialStep = 1, initialGradeId 
             // Pre-fill marks if they exist
             if (existingMarks && Object.keys(existingMarks).length > 0) {
                 setData('marks', existingMarks);
+                setSavedMarks(existingMarks);
+            } else {
+                setSavedMarks({});
             }
 
             setStep(5);
@@ -241,9 +252,10 @@ export default function DeclareResult({ grades, initialStep = 1, initialGradeId 
     const handleMarkChange = (studentId, assessmentId, value) => {
         // Validation: Check Max Mark
         const assessment = fetchedAssessments.find(a => a.id === assessmentId);
-        if (assessment && Number(value) > assessment.max_marks) {
-            // value = assessment.max_marks; // Strict clamping or just text? 
-            // Let's just allow it but show error or rely on text input min/max
+        const maxScore = assessment ? (assessment.total_marks || assessment.max_score || 0) : 100;
+
+        if (assessment && Number(value) > maxScore) {
+            // Optional: Clamp or show UI hint
         }
 
         setData('marks', {
@@ -257,11 +269,15 @@ export default function DeclareResult({ grades, initialStep = 1, initialGradeId 
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Pass the additional fields as part of the post data
         post(route('teacher.declare-result.store'), {
             onSuccess: () => {
-                alert('Results declared successfully!');
-                // Reset or Redirect? Controller redirects to index.
-            }
+                setSavedMarks(data.marks);
+            },
+            // Note: In Inertia useForm, the data is already tracked. 
+            // If we need extra fields not in useForm, we should use transform() or setData.
+            // But here we can just update the data before posting if they are missing.
         });
     };
 
@@ -453,7 +469,7 @@ export default function DeclareResult({ grades, initialStep = 1, initialGradeId 
                                 <p className="text-gray-500 mb-4">No assessments found for this subject.</p>
                                 <button
                                     onClick={() => {
-                                        const url = `/teacher/assessments-simple/create?grade_id=${selectedGrade.id}&subject_id=${selectedSubject.id}`;
+                                        const url = `/teacher/assessments-simple/create?grade_id=${selectedGrade?.id}&subject_id=${selectedSubject?.id}&section_id=${selectedSection?.id}`;
                                         window.location.href = url;
                                     }}
                                     className="text-blue-600 hover:underline"
@@ -488,17 +504,25 @@ export default function DeclareResult({ grades, initialStep = 1, initialGradeId 
                                                     </td>
                                                     {fetchedAssessments.map(assessment => (
                                                         <td key={assessment.id} className="px-6 py-4">
-                                                            <input
-                                                                type="number"
-                                                                min="0"
-                                                                max={assessment.total_marks}
-                                                                step="0.5"
-                                                                value={data.marks[student.id]?.[assessment.id] || ''}
-                                                                onChange={(e) => handleMarkChange(student.id, assessment.id, e.target.value)}
-                                                                className={`w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm ${semesterStatuses[assessment.semester] === false ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                                                placeholder={`/${assessment.total_marks}`}
-                                                                disabled={semesterStatuses[assessment.semester] === false}
-                                                            />
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    max={assessment.total_marks}
+                                                                    step="0.5"
+                                                                    value={data.marks[student.id]?.[assessment.id] || ''}
+                                                                    onChange={(e) => handleMarkChange(student.id, assessment.id, e.target.value)}
+                                                                    className={`w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm ${(semesterStatuses[assessment.semester] === false || savedMarks[student.id]?.[assessment.id] !== undefined) ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`}
+                                                                    placeholder={`/${assessment.total_marks}`}
+                                                                    disabled={semesterStatuses[assessment.semester] === false || savedMarks[student.id]?.[assessment.id] !== undefined}
+                                                                    title={savedMarks[student.id]?.[assessment.id] !== undefined ? "Mark already saved. Edit in Manage Results." : ""}
+                                                                />
+                                                                {savedMarks[student.id]?.[assessment.id] !== undefined && (
+                                                                    <span className="absolute right-2 top-2.5 text-green-500 text-xs" title="Saved">
+                                                                        ✔
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                     ))}
                                                     <td className="px-6 py-4 font-bold text-gray-700">

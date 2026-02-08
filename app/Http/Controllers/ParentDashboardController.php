@@ -86,51 +86,128 @@ class ParentDashboardController extends Controller
     public function semesterIndex($studentId)
     {
         $student = $this->getAuthorizedStudent($studentId);
-
-        // Cache semester data for 1 hour (increased from 10 minutes)
-        $cacheKey = "student_{$studentId}_semesters";
-        $semesters = cache()->remember($cacheKey, 3600, function() use ($student) {
-            // Single optimized query with all data - using WHERE clause for PostgreSQL compatibility
-            return \DB::table('marks')
-                ->join('academic_years', 'marks.academic_year_id', '=', 'academic_years.id')
-                ->leftJoin('semester_results', function($join) use ($student) {
-                    $join->on('marks.academic_year_id', '=', 'semester_results.academic_year_id')
-                         ->whereRaw('marks.semester::integer = semester_results.semester::integer')
-                         ->where('semester_results.student_id', '=', $student->id);
-                })
-                ->where('marks.student_id', $student->id)
-                ->select(
-                    'marks.semester',
-                    'marks.academic_year_id',
-                    'academic_years.name as year_name',
-                    \DB::raw('ROUND(AVG(marks.score), 2) as average'),
-                    \DB::raw('MAX(semester_results.rank) as rank')
-                )
-                ->groupBy('marks.semester', 'marks.academic_year_id', 'academic_years.name')
-                ->orderBy('marks.academic_year_id', 'desc')
-                ->orderBy('marks.semester', 'desc')
-                ->get()
-                ->map(function($sem) use ($student) {
-                    return [
-                        'semester' => $sem->semester,
-                        'academic_year_id' => $sem->academic_year_id,
-                        'academic_year' => ['id' => $sem->academic_year_id, 'name' => $sem->year_name],
-                        'average' => $sem->average,
-                        'rank' => $sem->rank ?? 'N/A',
-                        'total_students' => cache()->remember("section_{$student->section_id}_count", 3600, function() use ($student) {
-                            return \DB::table('students')->where('section_id', $student->section_id)->count();
-                        }),
-                    ];
-                });
-        });
-
-        // Get student info for header (cached)
         $student->load(['grade', 'section', 'user']);
+
+        // Get all official registrations (history of grades/years)
+        $registrations = \App\Models\Registration::where('student_id', $student->id)
+            ->with(['grade', 'academicYear', 'section'])
+            ->orderBy('academic_year_id', 'desc')
+            ->get();
+
+        $academicYearIds = $registrations->pluck('academic_year_id')->unique();
+        
+        // Pre-fetch all semester results for this student
+        $allSemesterResults = \App\Models\SemesterResult::where('student_id', $student->id)
+            ->whereIn('academic_year_id', $academicYearIds)
+            ->get()
+            ->groupBy(fn($r) => "{$r->academic_year_id}_{$r->semester}");
+
+        // Pre-fetch all semester periods for these years
+        $allSemesterPeriods = \App\Models\SemesterPeriod::whereIn('academic_year_id', $academicYearIds)
+            ->get()
+            ->groupBy(fn($p) => "{$p->academic_year_id}_{$p->semester}")
+            ->map(fn($group) => $group->first());
+
+        $history = $registrations->map(function($reg) use ($student, $allSemesterResults, $allSemesterPeriods) {
+            $semestersData = collect([1, 2])->map(function($semesterNum) use ($reg, $student, $allSemesterResults, $allSemesterPeriods) {
+                
+                $key = "{$reg->academic_year_id}_{$semesterNum}";
+                $result = $allSemesterResults->get($key)?->first();
+                $period = $allSemesterPeriods->get($key);
+
+                // If no result record, check if marks exist (for active/unprocessed semesters)
+                if (!$result) {
+                    $hasMarks = \App\Models\Mark::where('student_id', $student->id)
+                        ->where('academic_year_id', $reg->academic_year_id)
+                        ->where('grade_id', $reg->grade_id)
+                        ->where('semester', $semesterNum)
+                        ->exists();
+
+                    if (!$hasMarks) return null;
+                    
+                    // Basic data if results haven't been calculated/persisted yet
+                    return [
+                        'semester' => $semesterNum,
+                        'academic_year_id' => $reg->academic_year_id,
+                        'academic_year' => $reg->academicYear,
+                        'average' => 0,
+                        'rank' => '-',
+                        'total_students' => \App\Models\Student::where('section_id', $reg->section_id)->count(),
+                        'status' => $period ? $period->status : 'closed',
+                        'is_complete' => false,
+                    ];
+                }
+
+                return [
+                    'semester' => $semesterNum,
+                    'academic_year_id' => $reg->academic_year_id,
+                    'academic_year' => $reg->academicYear,
+                    'average' => round($result->average, 2),
+                    'rank' => $result->rank ?? '-',
+                    'total_students' => \App\Models\Student::where('section_id', $reg->section_id)->count(),
+                    'status' => $period ? $period->status : 'closed',
+                    'is_complete' => true,
+                ];
+            })->filter()->values();
+
+            return [
+                'id' => $reg->id,
+                'grade' => $reg->grade,
+                'academic_year' => $reg->academic_year,
+                'section' => $reg->section,
+                'semesters' => $semestersData
+            ];
+        })->filter(function($item) {
+            return count($item['semesters']) > 0;
+        })->values();
 
         return Inertia::render('Parent/SemesterRecord/Index', [
             'student' => $student,
-            'semesters' => $semesters,
+            'history' => $history,
         ]);
+    }
+
+    /**
+     * Helper to calculate rank for historical records
+     */
+    private function calculateSemesterRankFast($studentId, $sectionId, $semester, $academicYearId)
+    {
+        $cacheKey = "section_rankings_{$sectionId}_{$semester}_{$academicYearId}";
+        
+        $rankings = cache()->remember($cacheKey, 300, function () use ($sectionId, $semester, $academicYearId) {
+            $sectionStudents = \App\Models\Student::where('section_id', $sectionId)->pluck('id');
+
+            return \App\Models\Mark::whereIn('student_id', $sectionStudents)
+                ->where('semester', $semester)
+                ->where('academic_year_id', $academicYearId)
+                ->get()
+                ->groupBy('student_id')
+                ->map(function ($marks, $sid) {
+                    $subjectAvg = $marks->groupBy('subject_id')->map(function($m) {
+                        $score = $m->sum('score');
+                        $max = $m->sum('max_score') ?: (count($m) * 100);
+                        return $max > 0 ? ($score / $max) * 100 : 0;
+                    });
+                    return [
+                        'student_id' => $sid,
+                        'avg' => $subjectAvg->count() > 0 ? round($subjectAvg->avg(), 2) : 0
+                    ];
+                })
+                ->filter(fn($item) => $item['avg'] > 0)
+                ->sortByDesc('avg')
+                ->values();
+        });
+
+        $rankIndex = $rankings->search(fn($item) => $item['student_id'] == $studentId);
+        $totalStudents = $rankings->count();
+        if ($totalStudents === 0) {
+            $totalStudents = \App\Models\Student::where('section_id', $sectionId)->count();
+        }
+
+        return [
+            'rank' => $rankIndex !== false ? $rankIndex + 1 : '-',
+            'total' => $totalStudents,
+        ];
     }
 
     public function semesterShow($studentId, $semester, $academicYearId)
@@ -140,93 +217,64 @@ class ParentDashboardController extends Controller
         // Cache the entire semester show data for 1 hour (increased from 10 minutes)
         $cacheKey = "student_{$studentId}_semester_{$semester}_year_{$academicYearId}";
         $data = cache()->remember($cacheKey, 3600, function() use ($student, $semester, $academicYearId) {
-            // Get academic year
-            $academicYear = \DB::table('academic_years')
-                ->where('id', $academicYearId)
-                ->select('id', 'name')
-                ->first();
+            $academicYear = \App\Models\AcademicYear::find($academicYearId);
             
-            // Get teacher assignments (cached separately)
-            $teacherAssignments = cache()->remember("section_{$student->section_id}_teachers_year_{$academicYearId}", 3600, function() use ($student, $academicYearId) {
-                return \DB::table('teacher_assignments')
-                    ->join('teachers', 'teacher_assignments.teacher_id', '=', 'teachers.id')
-                    ->join('users', 'teachers.user_id', '=', 'users.id')
-                    ->where('teacher_assignments.section_id', $student->section_id)
-                    ->where('teacher_assignments.academic_year_id', $academicYearId)
-                    ->select('teacher_assignments.subject_id', 'users.name as teacher_name')
-                    ->get()
-                    ->keyBy('subject_id');
-            });
+            $teacherAssignments = \App\Models\TeacherAssignment::with('teacher.user')
+                ->where('section_id', $student->section_id)
+                ->where('academic_year_id', $academicYearId)
+                ->get()
+                ->keyBy('subject_id');
 
-            // Optimized query: Get marks with subjects and assessments in one go
-            $marks = \DB::table('marks')
-                ->join('subjects', 'marks.subject_id', '=', 'subjects.id')
-                ->leftJoin('assessments', 'marks.assessment_id', '=', 'assessments.id')
-                ->leftJoin('assessment_types', 'assessments.assessment_type_id', '=', 'assessment_types.id')
-                ->where('marks.student_id', $student->id)
-                ->where('marks.semester', $semester)
-                ->where('marks.academic_year_id', $academicYearId)
-                ->select(
-                    'marks.id',
-                    'marks.score',
-                    'marks.assessment_id',
-                    'marks.is_submitted',
-                    'subjects.id as subject_id',
-                    'subjects.name as subject_name',
-                    'subjects.code as subject_code',
-                    'assessments.name as assessment_name',
-                    'assessments.max_score',
-                    'assessments.weight_percentage',
-                    'assessment_types.name as type_name'
-                )
+            $allMarks = \App\Models\Mark::where('student_id', $student->id)
+                ->where('semester', $semester)
+                ->where('academic_year_id', $academicYearId)
+                ->with(['subject', 'assessment.assessmentType'])
                 ->get();
 
-            // Group by subject and calculate averages
-            $subjectRecords = $marks->groupBy('subject_id')->map(function ($subjectMarks) use ($teacherAssignments) {
-                $firstMark = $subjectMarks->first();
+            $subjectRecords = $allMarks->groupBy('subject_id')->map(function ($subjectMarks) use ($teacherAssignments) {
+                $subject = $subjectMarks->first()->subject;
                 
                 $detailedMarks = $subjectMarks->map(function($mark) {
                     return [
                         'id' => $mark->id,
                         'score' => $mark->score,
-                        'assessment_name' => $mark->assessment_name ?? 'Unknown Assessment',
+                        'assessment_name' => $mark->assessment?->name ?? $mark->assessment_type ?? 'Grade Entry',
                         'max_score' => $mark->max_score ?? 100,
-                        'weight' => $mark->weight_percentage ?? 0,
-                        'type' => $mark->type_name ?? 'General',
+                        'weight' => $mark->assessment?->weight_percentage ?? 0,
+                        'type' => $mark->assessment?->assessmentType->name ?? 'General',
                         'is_submitted' => $mark->is_submitted ?? true,
                     ];
                 });
 
+                $totalScore = $subjectMarks->sum('score');
+                $totalMax = $subjectMarks->sum('max_score') ?: ($subjectMarks->count() * 100);
+
                 return [
                     'subject' => [
-                        'id' => $firstMark->subject_id,
-                        'name' => $firstMark->subject_name,
-                        'code' => $firstMark->subject_code,
-                        'teacher_name' => $teacherAssignments->get($firstMark->subject_id)->teacher_name ?? 'Not Assigned',
+                        'id' => $subject->id,
+                        'name' => $subject->name,
+                        'code' => $subject->code,
+                        'teacher_name' => $teacherAssignments->get($subject->id)?->teacher?->user?->name ?? 'Not Assigned',
                     ],
-                    'marks' => $detailedMarks,
-                    'average' => round($subjectMarks->avg('score'), 2),
+                    'marks' => $detailedMarks->values(),
+                    'average' => $totalMax > 0 ? round(($totalScore / $totalMax) * 100, 2) : 0,
                 ];
             })->values();
 
-            $semesterAverage = round($marks->avg('score'), 2);
+            $semesterAverage = $subjectRecords->isNotEmpty() ? round($subjectRecords->avg('average'), 2) : 0;
             
             $rank = \DB::table('semester_results')
                 ->where('student_id', $student->id)
                 ->where('academic_year_id', $academicYearId)
-                ->where('semester', $semester)
+                ->where('semester', (string)$semester)
                 ->value('rank') ?? 'N/A';
             
-            $totalStudents = cache()->remember("section_{$student->section_id}_count", 3600, function() use ($student) {
-                return \DB::table('students')->where('section_id', $student->section_id)->count();
-            });
-
             return [
                 'academic_year' => $academicYear,
                 'subject_records' => $subjectRecords,
                 'semester_average' => $semesterAverage,
                 'rank' => $rank,
-                'total_students' => $totalStudents,
+                'total_students' => \App\Models\Student::where('section_id', $student->section_id)->count(),
             ];
         });
 
@@ -245,8 +293,7 @@ class ParentDashboardController extends Controller
 
     public function academicYearCurrent($studentId)
     {
-        $year = \DB::table('academic_years')
-            ->where('is_current', true)
+        $year = \App\Models\AcademicYear::where('is_current', true)
             ->orWhere('status', 'active')
             ->orderBy('created_at', 'desc')
             ->first();
@@ -265,30 +312,31 @@ class ParentDashboardController extends Controller
         // Cache academic year data for 1 hour (increased from 10 minutes)
         $cacheKey = "student_{$studentId}_academic_year_{$academicYearId}";
         $data = cache()->remember($cacheKey, 3600, function() use ($student, $academicYearId) {
-            $academicYear = \DB::table('academic_years')
-                ->where('id', $academicYearId)
+            $academicYear = \App\Models\AcademicYear::where('id', $academicYearId)
                 ->select('id', 'name')
                 ->first();
             
-            // Optimized single query for semester averages and subjects
-            $subjects = \DB::table('marks')
-                ->join('subjects', 'marks.subject_id', '=', 'subjects.id')
-                ->where('marks.student_id', $student->id)
-                ->where('marks.academic_year_id', $academicYearId)
-                ->select(
-                    'subjects.id',
-                    'subjects.name',
-                    'subjects.code',
-                    'subjects.credit_hours',
-                    'marks.semester',
-                    \DB::raw('ROUND(AVG(marks.score), 2) as avg_score')
-                )
-                ->groupBy('subjects.id', 'subjects.name', 'subjects.code', 'subjects.credit_hours', 'marks.semester')
+            // Optimized single query for subjects
+            $allMarks = \App\Models\Mark::where('student_id', $student->id)
+                ->where('academic_year_id', $academicYearId)
+                ->with('subject')
                 ->get();
 
-            // Calculate semester averages
-            $semester1Average = $subjects->where('semester', '1')->avg('avg_score');
-            $semester2Average = $subjects->where('semester', '2')->avg('avg_score');
+            // Calculate semester averages from SUBJECT averages
+            $subjectsBySemester = $allMarks->groupBy('semester');
+            
+            $calculateSemAvg = function($marks) {
+                if ($marks->isEmpty()) return null;
+                $subjectStats = $marks->groupBy('subject_id')->map(function($sm) {
+                    $score = $sm->sum('score');
+                    $max = $sm->sum('max_score') ?: ($sm->count() * 100);
+                    return $max > 0 ? ($score / $max) * 100 : 0;
+                });
+                return round($subjectStats->avg(), 2);
+            };
+
+            $semester1Average = $calculateSemAvg($subjectsBySemester->get('1', collect()));
+            $semester2Average = $calculateSemAvg($subjectsBySemester->get('2', collect()));
             
             $semester1Average = $semester1Average ? round($semester1Average, 2) : null;
             $semester2Average = $semester2Average ? round($semester2Average, 2) : null;
@@ -299,18 +347,24 @@ class ParentDashboardController extends Controller
             }
 
             // Group subjects by ID and calculate final averages
-            $subjectsList = $subjects->groupBy('id')->map(function ($marks) {
-                $subject = $marks->first();
-                $sem1Avg = $marks->where('semester', '1')->first()?->avg_score;
-                $sem2Avg = $marks->where('semester', '2')->first()?->avg_score;
+            $subjectsList = $allMarks->groupBy('subject_id')->map(function ($marks) {
+                $subject = $marks->first()->subject;
+                
+                $getSemAvg = function($m) {
+                    if ($m->isEmpty()) return null;
+                    $score = $m->sum('score');
+                    $max = $m->sum('max_score') ?: ($m->count() * 100);
+                    return $max > 0 ? ($score / $max) * 100 : 0;
+                };
+
+                $sem1Avg = $getSemAvg($marks->where('semester', '1'));
+                $sem2Avg = $getSemAvg($marks->where('semester', '2'));
                 
                 $finalAvg = null;
                 if ($sem1Avg !== null && $sem2Avg !== null) {
                     $finalAvg = round(($sem1Avg + $sem2Avg) / 2, 2);
-                } elseif ($sem1Avg !== null) {
-                    $finalAvg = $sem1Avg;
-                } elseif ($sem2Avg !== null) {
-                    $finalAvg = $sem2Avg;
+                } else {
+                    $finalAvg = $sem1Avg ?? $sem2Avg;
                 }
 
                 return [
@@ -318,9 +372,9 @@ class ParentDashboardController extends Controller
                     'name' => $subject->name,
                     'code' => $subject->code,
                     'credit_hours' => $subject->credit_hours ?? 3,
-                    'semester1_average' => $sem1Avg,
-                    'semester2_average' => $sem2Avg,
-                    'final_average' => $finalAvg,
+                    'semester1_average' => $sem1Avg ? round($sem1Avg, 2) : null,
+                    'semester2_average' => $sem2Avg ? round($sem2Avg, 2) : null,
+                    'final_average' => $finalAvg ? round($finalAvg, 2) : null,
                 ];
             })->values();
 
@@ -364,15 +418,22 @@ class ParentDashboardController extends Controller
     {
         $student = $this->getAuthorizedStudent($studentId);
         
-        // Calculate averages per subject
+        // Calculate averages per subject as percentages
         $averages = $student->marks()
-            ->join('subjects', 'marks.subject_id', '=', 'subjects.id')
-            ->selectRaw('subjects.name as subject, AVG(score) as average')
-            ->groupBy('subjects.name')
-            ->get();
+            ->with('subject')
+            ->get()
+            ->groupBy('subject_id')
+            ->map(function($marks) {
+                $score = $marks->sum('score');
+                $max = $marks->sum('max_score') ?: ($marks->count() * 100);
+                return [
+                    'subject' => $marks->first()->subject->name ?? 'Unknown',
+                    'average' => $max > 0 ? round(($score / $max) * 100, 2) : 0,
+                ];
+            })->values();
 
-        // Overall average
-        $overall = $student->marks()->avg('score');
+        // Overall average (average of subject percentages)
+        $overall = $averages->isNotEmpty() ? $averages->avg('average') : 0;
 
         return Inertia::render('Parent/Analytics/PerformanceTrends', [
             'student' => $student,
