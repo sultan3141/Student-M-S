@@ -83,7 +83,7 @@ class TeacherAssessmentController extends Controller
                         return [
                             'id' => $assignment->section_id,
                             'name' => $assignment->section->name,
-                            'stream_name' => $assignment->section->stream->name ?? $assignment->grade->stream->name ?? null,
+                            'stream_name' => $assignment->section->stream->name ?? null,
                         ];
                     })
                     ->unique('id')

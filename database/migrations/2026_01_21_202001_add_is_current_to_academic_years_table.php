@@ -29,8 +29,8 @@ return new class extends Migration {
                 WHERE id = (SELECT id FROM latest)
             ");
         } else {
-            // SQLite version
-            DB::statement("UPDATE academic_years SET is_current = 1 WHERE id = (SELECT id FROM academic_years ORDER BY created_at DESC LIMIT 1)");
+            // SQLite/MySQL/PostgreSQL fallback (using TRUE is safer for PG)
+            DB::statement("UPDATE academic_years SET is_current = TRUE WHERE id = (SELECT id FROM academic_years ORDER BY created_at DESC LIMIT 1)");
         }
     }
 

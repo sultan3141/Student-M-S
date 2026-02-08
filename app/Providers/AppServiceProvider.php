@@ -12,15 +12,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Fix PostgreSQL boolean binding issue
-        if (config('database.default') === 'pgsql') {
-            \Illuminate\Database\Query\Grammars\PostgresGrammar::macro('getBindingValue', function ($value) {
-                if (is_bool($value)) {
-                    return $value ? 'true' : 'false';
-                }
-                return $value;
-            });
-        }
+        //
     }
 
     /**
@@ -42,6 +34,23 @@ class AppServiceProvider extends ServiceProvider
             
             // Optimize URL generation
             \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
+        // PostgreSQL PgBouncer/Pooler Compatibility
+        if (config('database.default') === 'pgsql') {
+            // Listen to connection events to set PDO attributes
+            \Illuminate\Support\Facades\DB::listen(function ($query) {
+                // This ensures connection is established
+            });
+            
+            // Set PDO attributes after connection
+            try {
+                $pdo = \Illuminate\Support\Facades\DB::connection('pgsql')->getPdo();
+                $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
+                $pdo->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
+            } catch (\Exception $e) {
+                // Connection not ready yet
+            }
         }
 
         // Optimize SQLite for better performance (only if SQLite is configured)

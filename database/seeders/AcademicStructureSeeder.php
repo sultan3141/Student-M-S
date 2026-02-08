@@ -55,15 +55,15 @@ class AcademicStructureSeeder extends Seeder
             );
         }
         
-        // Active Academic Year
-        \App\Models\AcademicYear::updateOrCreate(
-            ['name' => '2025-2026'],
-            [
-                'start_date' => '2025-09-01',
-                'end_date' => '2026-06-30',
-                'status' => 'active',
-                'is_current' => true,
-            ]
-        );
+        // Active Academic Year - Use raw SQL for PostgreSQL boolean compatibility
+        $existingYear = \App\Models\AcademicYear::where('name', '2025-2026')->first();
+        
+        if (!$existingYear) {
+            \Illuminate\Support\Facades\DB::statement(
+                "INSERT INTO academic_years (name, start_date, end_date, status, is_current, created_at, updated_at) 
+                 VALUES (?, ?, ?, ?, true, NOW(), NOW())",
+                ['2025-2026', '2025-09-01', '2026-06-30', 'active']
+            );
+        }
     }
 }

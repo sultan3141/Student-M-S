@@ -19,22 +19,22 @@ class RankingService
      * @param string $academicYear
      * @return Collection
      */
-    public function calculateRankings(string $subject, string $semester, string $academicYear): Collection
-
+    public function calculateRankings(int $subjectId, string $semester, int $academicYearId): Collection
     {
         // Get all marks for this class and semester
-        $marks = Mark::where('subject', $subject)
+        $marks = Mark::where('subject_id', $subjectId)
             ->where('semester', $semester)
-            ->where('academic_year', $academicYear)
+            ->where('academic_year_id', $academicYearId)
             ->with('student')
             ->get();
 
-        // Group by student and calculate averages
+        // Group by student and calculate averages/totals
         $studentAverages = $marks->groupBy('student_id')->map(function ($studentMarks) {
             return [
                 'student_id' => $studentMarks->first()->student_id,
-                'average_score' => $studentMarks->avg('mark'),
-                'total_marks' => $studentMarks->sum('mark'),
+                'average_score' => $studentMarks->avg('score'),
+                'total_marks' => $studentMarks->sum('score'),
+                'max_total' => $studentMarks->sum('max_score'),
                 'count' => $studentMarks->count(),
             ];
         })->sortByDesc('average_score')->values();
@@ -45,7 +45,7 @@ class RankingService
             
             // Calculate previous ranking for trend
             $previousRanking = Ranking::where('student_id', $data['student_id'])
-                ->where('subject', $subject)
+                ->where('subject_id', $subjectId)
                 ->where('semester', $semester !== '1' ? '1' : '2') // previous semester
                 ->first();
 
@@ -62,8 +62,8 @@ class RankingService
                 [
                     'student_id' => $data['student_id'],
                     'semester' => $semester,
-                    'academic_year' => $academicYear,
-                    'subject' => $subject,
+                    'academic_year_id' => $academicYearId,
+                    'subject_id' => $subjectId,
                 ],
                 [
                     'rank_position' => $index + 1,

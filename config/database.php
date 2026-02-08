@@ -97,10 +97,13 @@ return [
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
             'options' => [
-                \PDO::ATTR_PERSISTENT => false, // Disable persistent for Neon
-                \PDO::ATTR_TIMEOUT => 30, // Increase timeout to 30 seconds
-                \PDO::ATTR_EMULATE_PREPARES => true,
+                \PDO::ATTR_PERSISTENT => false, // Disable persistent connections for poolers
+                \PDO::ATTR_TIMEOUT => 30, // Connection timeout
+                \PDO::ATTR_EMULATE_PREPARES => true, // Required for PgBouncer transaction pooling
+                \PDO::ATTR_STRINGIFY_FETCHES => false, // Keep native types
             ],
+            // Disable prepared statements for PgBouncer compatibility
+            'statement_timeout' => 30000, // 30 seconds
         ],
 
         'sqlsrv' => [

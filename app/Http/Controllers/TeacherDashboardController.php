@@ -64,7 +64,7 @@ class TeacherDashboardController extends Controller
                 'totalSubjects' => $totalSubjects,
                 'pendingMarks' => $pendingMarks,
                 'attendanceRate' => 98.5, // Mock for now
-                'activeClasses' => $teacher->teacherAssignments()->distinct('section_id')->count(),
+                'activeClasses' => $teacher->assignments()->distinct('section_id')->count(),
             ];
         });
     }
