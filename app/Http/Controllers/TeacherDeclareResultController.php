@@ -20,7 +20,7 @@ class TeacherDeclareResultController extends Controller
         $grades = Grade::with('sections')->orderBy('level')->get();
         $assessmentTypes = AssessmentType::all();
         $currentAcademicYear = AcademicYear::whereRaw('is_current = true')->first();
-        $currentSemester = $currentAcademicYear ? $currentAcademicYear->current_semester : 1;
+        $currentSemester = $currentAcademicYear ? $currentAcademicYear->getCurrentSemester() : 1;
 
         return Inertia::render('Teacher/DeclareResult', [
             'grades' => $grades,
