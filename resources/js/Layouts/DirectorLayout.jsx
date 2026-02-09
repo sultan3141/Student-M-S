@@ -123,6 +123,7 @@ export default function DirectorLayout({ children }) {
             {/* Main Content Area */}
             <div className="lg:pl-52 flex flex-col min-h-screen">
 
+<<<<<<< HEAD
                 {/* Ultra Compact Top Bar (Mobile) */}
                 <div className="sticky top-0 z-30 lg:hidden bg-white border-b border-gray-200 px-3 py-2 flex items-center justify-between shadow-sm">
                     <button
@@ -135,6 +136,35 @@ export default function DirectorLayout({ children }) {
                     <Link href="/logout" method="post" as="button" className="text-red-600">
                         <ArrowRightOnRectangleIcon className="h-4 w-4" />
                     </Link>
+=======
+                {/* Premium Mobile Top Bar */}
+                <div className="sticky top-0 z-30 lg:hidden bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 h-14 flex items-center shadow-sm">
+                    <div className="flex-1 flex items-center">
+                        <button
+                            onClick={() => setSidebarOpen(true)}
+                            className="p-2 -ml-2 text-gray-500 hover:text-navy-900 transition-colors"
+                        >
+                            <Bars3Icon className="h-6 w-6" />
+                        </button>
+                    </div>
+
+                    <div className="flex-shrink-0">
+                        <h1 className="text-base font-bold text-navy-900 tracking-tight">
+                            Director Portal
+                        </h1>
+                    </div>
+
+                    <div className="flex-1 flex items-center justify-end">
+                        <Link
+                            href="/logout"
+                            method="post"
+                            as="button"
+                            className="p-2 -mr-2 text-red-500 hover:text-red-600 transition-colors"
+                        >
+                            <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                        </Link>
+                    </div>
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                 </div>
 
                 {/* Ultra Compact Page Content */}

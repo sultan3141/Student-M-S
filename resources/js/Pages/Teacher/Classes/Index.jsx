@@ -9,7 +9,11 @@ import {
     ExclamationTriangleIcon,
     CheckCircleIcon,
     ArrowRightIcon,
+<<<<<<< HEAD
     RectangleStackIcon
+=======
+    LayersIcon
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
 } from '@heroicons/react/24/outline';
 
 export default function Index({ classes }) {

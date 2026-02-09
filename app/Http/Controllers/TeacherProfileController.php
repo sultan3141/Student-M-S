@@ -68,12 +68,16 @@ class TeacherProfileController extends Controller
 
     public function changePassword(Request $request)
     {
+<<<<<<< HEAD
         return Inertia::render('Teacher/Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
             'teacher' => Teacher::where('user_id', Auth::id())->firstOrFail(),
             'initialTab' => 'password',
         ]);
+=======
+        return Inertia::render('Teacher/Security/ChangePassword');
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
     }
 
     public function updatePassword(Request $request)

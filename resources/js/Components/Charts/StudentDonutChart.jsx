@@ -13,6 +13,7 @@ export default function StudentDonutChart({ data, title }) {
         Female: '#EC4899',  // Pink
     };
 
+<<<<<<< HEAD
     const total = data.male + data.female;
 
     const chartData = [
@@ -22,6 +23,22 @@ export default function StudentDonutChart({ data, title }) {
 
     const renderLabel = (entry) => {
         return `${entry.value} (${entry.percent}%)`;
+=======
+    // Robust null guards for data
+    const maleCount = data?.male || 0;
+    const femaleCount = data?.female || 0;
+    const malePerc = data?.malePercent || 0;
+    const femalePerc = data?.femalePercent || 0;
+    const total = maleCount + femaleCount;
+
+    const chartData = [
+        { name: 'Male', value: maleCount, percent: malePerc },
+        { name: 'Female', value: femaleCount, percent: femalePerc },
+    ];
+
+    const renderLabel = (entry) => {
+        return `${entry.value} (${entry.percent || 0}%)`;
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
     };
 
     return (
@@ -72,6 +89,7 @@ export default function StudentDonutChart({ data, title }) {
                 <div className="mt-2 flex justify-center space-x-4 text-sm">
                     <div className="flex items-center space-x-1">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.Male }}></div>
+<<<<<<< HEAD
                         <span className="font-medium">{data.male}</span>
                         <span className="text-gray-500">({data.malePercent}%)</span>
                     </div>
@@ -79,6 +97,15 @@ export default function StudentDonutChart({ data, title }) {
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.Female }}></div>
                         <span className="font-medium">{data.female}</span>
                         <span className="text-gray-500">({data.femalePercent}%)</span>
+=======
+                        <span className="font-medium">{maleCount}</span>
+                        <span className="text-gray-500">({malePerc}%)</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.Female }}></div>
+                        <span className="font-medium">{femaleCount}</span>
+                        <span className="text-gray-500">({femalePerc}%)</span>
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                     </div>
                 </div>
             </div>

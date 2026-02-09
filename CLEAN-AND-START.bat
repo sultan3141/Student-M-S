@@ -21,7 +21,11 @@ echo   STARTING NEW SERVERS
 echo ==================================================
 echo.
 
+<<<<<<< HEAD
 cd /d %~dp0
+=======
+cd /d C:\Users\Ezedi\Student-M-S\Student-M-S
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
 
 echo [1] Starting Laravel Backend (8000)...
 start "Laravel Server" cmd /k "C:\xampp\php\php.exe artisan serve"

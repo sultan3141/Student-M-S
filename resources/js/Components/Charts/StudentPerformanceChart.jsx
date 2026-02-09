@@ -13,9 +13,15 @@ export default function StudentPerformanceChart({ marks, currentAverage, current
     // Prepare data for the chart
     const chartData = marks && marks.length > 0
         ? marks.slice(0, 6).map(mark => ({
+<<<<<<< HEAD
             subject: mark.subject.length > 12 ? mark.subject.substring(0, 10) + '...' : mark.subject,
             score: mark.percentage,
             fullSubject: mark.subject,
+=======
+            subject: (mark.subject || 'Unknown').length > 12 ? (mark.subject || 'Unknown').substring(0, 10) + '...' : (mark.subject || 'Unknown'),
+            score: mark.percentage || 0,
+            fullSubject: mark.subject || 'Unknown',
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         }))
         : [];
 

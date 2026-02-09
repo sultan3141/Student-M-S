@@ -70,9 +70,14 @@ export default function StudentLayout({ children }) {
 
             {/* Larger Sidebar - Same Navy Gradient as Director */}
             <aside
+<<<<<<< HEAD
                 className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
                     sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                 } director-sidebar`}
+=======
+                className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                    } director-sidebar`}
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
             >
                 {/* Sidebar Header */}
                 <div className="p-4 border-b border-white border-opacity-20">
@@ -100,11 +105,18 @@ export default function StudentLayout({ children }) {
                             <Link
                                 key={item.name}
                                 href={item.href}
+<<<<<<< HEAD
                                 className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                                     isActive
                                         ? 'bg-white bg-opacity-20 text-white shadow-sm'
                                         : 'text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
                                 }`}
+=======
+                                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive
+                                    ? 'bg-white bg-opacity-20 text-white shadow-sm'
+                                    : 'text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
+                                    }`}
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                             >
                                 <Icon className="h-5 w-5 flex-shrink-0" />
                                 <span className="truncate">{item.name}</span>
@@ -149,6 +161,7 @@ export default function StudentLayout({ children }) {
 
             {/* Main Content Area */}
             <div className="lg:pl-64 flex flex-col min-h-screen">
+<<<<<<< HEAD
                 {/* Ultra Compact Top Bar (Mobile) */}
                 <div className="sticky top-0 z-30 lg:hidden bg-white border-b border-gray-200 px-3 py-2 flex items-center justify-between shadow-sm">
                     <button
@@ -161,6 +174,33 @@ export default function StudentLayout({ children }) {
                     <Link href={route('logout')} method="post" as="button" className="text-red-600">
                         <ArrowRightOnRectangleIcon className="h-4 w-4" />
                     </Link>
+=======
+                {/* Premium Mobile Top Bar - Corrected Navy Gradient */}
+                <div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10">
+                    <div className="flex-1 flex items-center">
+                        <button
+                            onClick={() => setSidebarOpen(true)}
+                            className="p-2 -ml-2 text-white/80 hover:text-white transition-colors"
+                        >
+                            <Bars3Icon className="h-6 w-6" />
+                        </button>
+                    </div>
+
+                    <div className="flex-shrink-0">
+                        <h1 className="text-sm font-black text-white tracking-[0.2em] uppercase">
+                            Student Portal
+                        </h1>
+                    </div>
+
+                    <div className="flex-1 flex items-center justify-end">
+                        <button
+                            onClick={() => window.location.href = route('logout')}
+                            className="p-2 -mr-2 text-red-400 hover:text-red-300 transition-colors"
+                        >
+                            <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                        </button>
+                    </div>
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                 </div>
 
                 {/* Ultra Compact Page Content */}

@@ -42,9 +42,15 @@ class ParentDashboardController extends Controller
 
         // Get selected student ID from session or default to first student
         $selectedStudentId = session('selected_student_id', $students->first()?->id);
+<<<<<<< HEAD
 
         $student = null;
         $attendanceData = null;
+=======
+        $schedule = null;
+        $attendanceData = null;
+        $student = null;
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
 
         if ($selectedStudentId) {
             $student = $students->firstWhere('id', $selectedStudentId) ?? $students->first();
@@ -55,6 +61,37 @@ class ParentDashboardController extends Controller
                 if ($academicYear) {
                     $attendanceData = $this->calculateAttendanceStats($student->id, $academicYear->id);
                 }
+<<<<<<< HEAD
+=======
+
+                // Fetch Full Weekly Schedule for the student
+                $schedule = \App\Models\Schedule::where('grade_id', $student->grade_id)
+                    ->where(function ($q) use ($student) {
+                        $q->where('section_id', $student->section_id)
+                            ->orWhereNull('section_id');
+                    })
+                    ->whereBoolTrue('is_active')
+                    ->orderByRaw("CASE day_of_week 
+                        WHEN 'Monday' THEN 1 
+                        WHEN 'Tuesday' THEN 2 
+                        WHEN 'Wednesday' THEN 3 
+                        WHEN 'Thursday' THEN 4 
+                        WHEN 'Friday' THEN 5 
+                        ELSE 6 END")
+                    ->orderBy('start_time')
+                    ->get()
+                    ->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'day_of_week' => $item->day_of_week,
+                            'activity' => $item->activity,
+                            'start_time' => $item->start_time->format('H:i'),
+                            'end_time' => $item->end_time->format('H:i'),
+                            'type' => $item->activity === 'Break' ? 'break' : 'class',
+                        ];
+                    })
+                    ->groupBy('day_of_week');
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
             }
         }
 
@@ -62,6 +99,10 @@ class ParentDashboardController extends Controller
             'parentName' => $user->name,
             'selectedStudent' => $student,
             'attendance' => $attendanceData,
+<<<<<<< HEAD
+=======
+            'schedule' => $schedule,
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         ])->withViewData([
                     'title' => 'Parent Dashboard'
                 ]);
