@@ -1,3 +1,7 @@
+/**
+ * Student Layout Component
+ * Provides the sidebar navigation and mobile top bar for the Student Portal.
+ */
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
