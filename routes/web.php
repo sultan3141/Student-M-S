@@ -1,6 +1,57 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegistrarController;
+use App\Http\Controllers\RegistrarStudentController;
+use App\Http\Controllers\RegistrarPaymentController;
+use App\Http\Controllers\RegistrarGuardianController;
+use App\Http\Controllers\RegistrarCompletionController;
+use App\Http\Controllers\RegistrarAcademicYearController;
+use App\Http\Controllers\RegistrarReportController;
+use App\Http\Controllers\RegistrarAuditController;
+use App\Http\Controllers\RegistrarAdmissionController;
+use App\Http\Controllers\RegistrarAssessmentTypeController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentRegistrationController;
+use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\SemesterRecordController;
+use App\Http\Controllers\AcademicYearRecordController;
+use App\Http\Controllers\ParentDashboardController;
+use App\Http\Controllers\ParentSettingsController;
+use App\Http\Controllers\TeacherDashboardController;
+use App\Http\Controllers\TeacherDeclareResultController;
+use App\Http\Controllers\TeacherMarkController;
+use App\Http\Controllers\TeacherAssignmentController;
+use App\Http\Controllers\TeacherClassController;
+use App\Http\Controllers\TeacherAttendanceController;
+use App\Http\Controllers\AssessmentController;
+use App\Http\Controllers\TeacherCustomAssessmentController;
+use App\Http\Controllers\TeacherAssessmentController;
+use App\Http\Controllers\TeacherRankingController;
+use App\Http\Controllers\TeacherAnalyticsController;
+use App\Http\Controllers\TeacherReportController;
+use App\Http\Controllers\TeacherStudentController;
+use App\Http\Controllers\TeacherProfileController;
+use App\Http\Controllers\DirectorDashboardController;
+use App\Http\Controllers\DirectorSemesterController;
+use App\Http\Controllers\DirectorProfileController;
+use App\Http\Controllers\DirectorTeacherController;
+use App\Http\Controllers\SchoolDirectorController;
+use App\Http\Controllers\DirectorAcademicController;
+use App\Http\Controllers\DirectorRegistrationController;
+use App\Http\Controllers\DirectorScheduleController;
+use App\Http\Controllers\DirectorStudentStatisticsController;
+use App\Http\Controllers\DirectorStudentController;
+use App\Http\Controllers\DirectorParentController;
+use App\Http\Controllers\DirectorCommunicationController;
+use App\Http\Controllers\DocumentTemplateController;
+use App\Http\Controllers\DirectorAuditController;
+use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\SuperAdminUserController;
+use App\Http\Controllers\SuperAdminSystemConfigController;
+use App\Http\Controllers\SuperAdminSecurityController;
+use App\Http\Controllers\SuperAdminDataController;
+use App\Http\Controllers\SuperAdminAccessController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -99,7 +150,7 @@ Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(functi
     Route::get('/admission/{id}/edit', [\App\Http\Controllers\RegistrarAdmissionController::class, 'edit'])->name('registrar.admission.edit');
     Route::put('/admission/{id}', [\App\Http\Controllers\RegistrarAdmissionController::class, 'update'])->name('registrar.admission.update');
     Route::delete('/admission/{id}', [\App\Http\Controllers\RegistrarAdmissionController::class, 'destroy'])->name('registrar.admission.destroy');
-    
+
     // Class Management
     Route::get('/admission/classes', [\App\Http\Controllers\RegistrarAdmissionController::class, 'manageClasses'])->name('registrar.admission.classes');
     Route::get('/admission/classes/create', [\App\Http\Controllers\RegistrarAdmissionController::class, 'createClass'])->name('registrar.admission.classes.create');
@@ -107,7 +158,7 @@ Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(functi
     Route::get('/admission/classes/{id}/edit', [\App\Http\Controllers\RegistrarAdmissionController::class, 'editClass'])->name('registrar.admission.classes.edit');
     Route::put('/admission/classes/{id}', [\App\Http\Controllers\RegistrarAdmissionController::class, 'updateClass'])->name('registrar.admission.classes.update');
     Route::delete('/admission/classes/{id}', [\App\Http\Controllers\RegistrarAdmissionController::class, 'deleteClass'])->name('registrar.admission.classes.destroy');
-    
+
     // Subject Management
     Route::get('/admission/subjects', [\App\Http\Controllers\RegistrarAdmissionController::class, 'manageSubjects'])->name('registrar.admission.subjects');
     Route::get('/admission/subjects/create', [\App\Http\Controllers\RegistrarAdmissionController::class, 'createSubject'])->name('registrar.admission.subjects.create');
@@ -115,7 +166,7 @@ Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(functi
     Route::get('/admission/subjects/{id}/edit', [\App\Http\Controllers\RegistrarAdmissionController::class, 'editSubject'])->name('registrar.admission.subjects.edit');
     Route::put('/admission/subjects/{id}', [\App\Http\Controllers\RegistrarAdmissionController::class, 'updateSubject'])->name('registrar.admission.subjects.update');
     Route::delete('/admission/subjects/{id}', [\App\Http\Controllers\RegistrarAdmissionController::class, 'deleteSubject'])->name('registrar.admission.subjects.destroy');
-    
+
     // Subject Combination - REMOVED (subjects are now auto-assigned when created)
     // Route::get('/admission/subject-combination', [\App\Http\Controllers\RegistrarAdmissionController::class, 'subjectCombination'])->name('registrar.admission.subject-combination');
     // Route::post('/admission/subject-combination/assign', [\App\Http\Controllers\RegistrarAdmissionController::class, 'assignSubjects'])->name('registrar.admission.subject-combination.assign');
@@ -159,7 +210,8 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/academic/year/current', [\App\Http\Controllers\AcademicYearRecordController::class, 'current'])->name('academic.year.current');
     Route::get('/academic/year/{academicYear}', [\App\Http\Controllers\AcademicYearRecordController::class, 'show'])->name('academic.year.show');
 
-
+    // Schedule
+    Route::get('/schedule', [\App\Http\Controllers\StudentController::class, 'schedule'])->name('schedule');
 });
 
 Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () {
@@ -184,11 +236,15 @@ Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () 
 
     Route::get('/settings/password', [\App\Http\Controllers\ParentSettingsController::class, 'edit'])->name('parent.settings.password');
     Route::post('/settings/password', [\App\Http\Controllers\ParentSettingsController::class, 'updatePassword'])->name('parent.settings.password.update');
+
+    // Schedule
+    Route::get('/student/{studentId}/schedule', [\App\Http\Controllers\ParentDashboardController::class, 'schedule'])->name('parent.student.schedule');
 });
 
 Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [\App\Http\Controllers\TeacherDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/schedule', [\App\Http\Controllers\TeacherDashboardController::class, 'schedule'])->name('schedule');
 
     // Declare Result (NEW) - Protected by semester open check
     Route::prefix('declare-result')->name('declare-result.')->middleware('check.semester.open')->group(function () {
@@ -323,7 +379,7 @@ Route::middleware(['auth', 'role:school_director|admin', 'audit'])->prefix('dire
     // Teacher Management
     Route::resource('teachers', \App\Http\Controllers\DirectorTeacherController::class);
     Route::get('/teachers/{id}/performance', [\App\Http\Controllers\DirectorTeacherController::class, 'getPerformanceMetrics'])->name('teachers.performance');
-    
+
     // Teacher Assignments (NEW)
     Route::get('/teacher-assignments', [\App\Http\Controllers\SchoolDirectorController::class, 'teacherAssignments'])->name('teacher.assignments');
     Route::post('/teacher-assignments', [\App\Http\Controllers\SchoolDirectorController::class, 'assignTeacher'])->name('teacher.assign');
@@ -359,6 +415,12 @@ Route::middleware(['auth', 'role:school_director|admin', 'audit'])->prefix('dire
 
     // School Schedule
     Route::get('/schedule', [\App\Http\Controllers\DirectorScheduleController::class, 'index'])->name('schedule.index');
+    Route::post('/schedule', [\App\Http\Controllers\DirectorScheduleController::class, 'store'])->name('schedule.store');
+    Route::post('/schedule/bulk', [\App\Http\Controllers\DirectorScheduleController::class, 'bulkStore'])->name('schedule.bulk-store');
+    Route::put('/schedule/{id}', [\App\Http\Controllers\DirectorScheduleController::class, 'update'])->name('schedule.update');
+    Route::delete('/schedule/{id}', [\App\Http\Controllers\DirectorScheduleController::class, 'destroy'])->name('schedule.destroy');
+    Route::get('/schedule/overview', [\App\Http\Controllers\DirectorScheduleController::class, 'getOverview'])->name('schedule.overview');
+    Route::get('/schedule/section/{sectionId}', [\App\Http\Controllers\DirectorScheduleController::class, 'getSectionSchedule'])->name('schedule.section');
     Route::get('/schedule/today', [\App\Http\Controllers\DirectorScheduleController::class, 'getTodaySchedule'])->name('schedule.today');
     Route::get('/schedule/grade/{grade}', [\App\Http\Controllers\DirectorScheduleController::class, 'getGradeSchedule'])->name('schedule.grade');
     Route::get('/schedule/export-pdf', [\App\Http\Controllers\DirectorScheduleController::class, 'exportPdf'])->name('schedule.export-pdf');
@@ -367,7 +429,7 @@ Route::middleware(['auth', 'role:school_director|admin', 'audit'])->prefix('dire
     // Student Statistics & Directory
     Route::get('/statistics/students', [\App\Http\Controllers\DirectorStudentStatisticsController::class, 'index'])->name('statistics.students');
     Route::get('/statistics/students/data', [\App\Http\Controllers\DirectorStudentStatisticsController::class, 'getStatisticsJson'])->name('statistics.students.data');
-    
+
     // Student Directory (New)
     Route::get('/students', [\App\Http\Controllers\DirectorStudentController::class, 'index'])->name('students.index');
     Route::get('/students/{student}', [\App\Http\Controllers\DirectorStudentController::class, 'show'])->name('students.show');
@@ -613,7 +675,7 @@ Route::get('/create-director', function () {
     try {
         // Ensure role exists
         if (!\Spatie\Permission\Models\Role::where('name', 'school_director')->exists()) {
-                \Spatie\Permission\Models\Role::create(['name' => 'school_director', 'guard_name' => 'web']);
+            \Spatie\Permission\Models\Role::create(['name' => 'school_director', 'guard_name' => 'web']);
         }
 
         $user = \App\Models\User::firstOrCreate(
@@ -624,7 +686,7 @@ Route::get('/create-director', function () {
                 'password' => bcrypt('password')
             ]
         );
-        
+
         // Force update password and role just in case
         $user->password = bcrypt('password');
         $user->save();
