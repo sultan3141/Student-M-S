@@ -27,7 +27,7 @@ class TeacherProfileController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
             'bio' => 'nullable|string|max:1000',
@@ -55,12 +55,12 @@ class TeacherProfileController extends Controller
         $user = $request->user();
 
         if ($request->hasFile('photo')) {
-             $path = $request->file('photo')->store('profile-photos', 'public');
-             $user->profile_photo_path = $path; // Assuming Jetstream/Fortify style or custom
-             $user->save();
-             
-             // Or update teacher table if photo is there
-             // $teacher->update(['photo' => $path]);
+            $path = $request->file('photo')->store('profile-photos', 'public');
+            $user->profile_photo_path = $path; // Assuming Jetstream/Fortify style or custom
+            $user->save();
+
+            // Or update teacher table if photo is there
+            // $teacher->update(['photo' => $path]);
         }
 
         return back()->with('status', 'profile-photo-updated');
@@ -68,16 +68,12 @@ class TeacherProfileController extends Controller
 
     public function changePassword(Request $request)
     {
-<<<<<<< HEAD
         return Inertia::render('Teacher/Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
             'teacher' => Teacher::where('user_id', Auth::id())->firstOrFail(),
             'initialTab' => 'password',
         ]);
-=======
-        return Inertia::render('Teacher/Security/ChangePassword');
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
     }
 
     public function updatePassword(Request $request)

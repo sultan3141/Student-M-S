@@ -19,26 +19,19 @@ class AcademicYearController extends Controller
     public function index()
     {
         $currentYear = AcademicYear::whereRaw('is_current = true')
-<<<<<<< HEAD
             ->with(['semesterStatuses.grade', 'semesterStatuses.academicYear'])
             ->first();
 
         if ($currentYear) {
             // Auto-initialize missing semester statuses for current year
             $currentYear->createDefaultSemesters();
-            
+
             // Refresh the currentYear after creation to get all statuses
             $currentYear->load('semesterStatuses.grade');
-            
+
             // Sync overall status
             $currentYear->update(['status' => $currentYear->getOverallStatus()]);
         }
-
-=======
-            ->with('semesterStatuses.grade')
-            ->first();
-
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         $pastYears = AcademicYear::whereRaw('is_current = false')
             ->orderBy('start_date', 'desc')
             ->with('semesterStatuses')
@@ -94,11 +87,7 @@ class AcademicYearController extends Controller
                 'name' => $currentYear->name,
                 'start_date' => $currentYear->start_date->format('M d, Y'),
                 'end_date' => $currentYear->end_date->format('M d, Y'),
-<<<<<<< HEAD
                 'status' => $currentYear->status,
-=======
-                'status' => $currentYear->getOverallStatus(),
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                 'semesters' => $semesterDetails,
             ] : null,
             'pastYears' => $pastYears,
@@ -148,7 +137,7 @@ class AcademicYearController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return redirect()
                 ->back()
                 ->withErrors(['error' => 'Failed to create academic year: ' . $e->getMessage()])
@@ -180,7 +169,7 @@ class AcademicYearController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return redirect()
                 ->back()
                 ->withErrors(['error' => 'Failed to set current year: ' . $e->getMessage()]);
@@ -235,7 +224,7 @@ class AcademicYearController extends Controller
         ]);
 
         $yearId = $request->input('academic_year_id');
-        
+
         if ($yearId) {
             $year = AcademicYear::findOrFail($yearId);
         } else {
@@ -259,12 +248,11 @@ class AcademicYearController extends Controller
             DB::beginTransaction();
 
             $newStatus = $request->action === 'open' ? 'open' : 'closed';
-            
-            $message = $request->action === 'open' 
+
+            $message = $request->action === 'open'
                 ? "Semester {$request->semester} opened for {$year->name}."
                 : "Semester {$request->semester} closed for {$year->name}.";
 
-<<<<<<< HEAD
             // Clear Teacher Dashboard and global semester cache
             \Illuminate\Support\Facades\Cache::forget("current_semester_info_year_{$year->id}");
             \Illuminate\Support\Facades\Cache::forget('current_semester_info_global'); // Legacy key just in case
@@ -284,12 +272,6 @@ class AcademicYearController extends Controller
                     ]
                 );
             }
-=======
-            // Update all semester statuses for this semester (Per Grade)
-            SemesterStatus::where('academic_year_id', $year->id)
-                ->where('semester', $request->semester)
-                ->update(['status' => $newStatus]);
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
 
             // ALSO Update the Global SemesterPeriod (Used by Student Results)
             \App\Models\SemesterPeriod::updateOrCreate(
@@ -321,10 +303,9 @@ class AcademicYearController extends Controller
                         ['academic_year_id' => $year->id, 'semester' => 2],
                         ['status' => 'open', 'opened_at' => now(), 'opened_by' => auth()->id()]
                     );
-                    
+
                     $message .= " Semester 2 has been automatically OPENED.";
-                } 
-                elseif ($request->semester == 2) {
+                } elseif ($request->semester == 2) {
                     // If Semester 2 closes, calculate FINAL results for the year
                     Log::info("S2 Closing - Triggering Final calculations for Year {$year->id}");
                     $calculationService->calculateFinalResults($year->id);
@@ -363,7 +344,7 @@ class AcademicYearController extends Controller
             DB::rollBack();
             Log::error("EXCEPTION in toggleSemester: " . $e->getMessage());
             Log::error($e->getTraceAsString());
-            
+
             return redirect()
                 ->back()
                 ->withErrors(['error' => 'Failed to update semester: ' . $e->getMessage()]);
@@ -378,21 +359,21 @@ class AcademicYearController extends Controller
         // Parse current name "2025-2026"
         $parts = explode('-', $currentYear->name);
         if (count($parts) === 2) {
-            $startYear = (int)$parts[0];
-            $endYear = (int)$parts[1];
-            
+            $startYear = (int) $parts[0];
+            $endYear = (int) $parts[1];
+
             $nextName = ($startYear + 1) . '-' . ($endYear + 1);
-            
+
             // Check if it already exists
             if (!AcademicYear::where('name', $nextName)->exists()) {
-                
+
                 // Calculate new dates (shift by 1 year)
                 $newStartDate = $currentYear->start_date->copy()->addYear();
                 $newEndDate = $currentYear->end_date->copy()->addYear();
 
                 // Deactivate the previous academic year
                 $currentYear->update(['is_current' => DB::raw('false')]);
-                
+
                 $nextYear = AcademicYear::create([
                     'name' => $nextName,
                     'start_date' => $newStartDate,
@@ -400,7 +381,7 @@ class AcademicYearController extends Controller
                     'is_current' => DB::raw('true'), // Make the new year current
                     'status' => 'active',  // It's starting now
                 ]);
-                
+
                 // Create semester statuses logic
                 // DEFAULT: S1 Open, S2 Closed for the new year
                 $grades = Grade::all();
@@ -412,9 +393,9 @@ class AcademicYearController extends Controller
                         'grade_id' => $grade->id,
                         'semester' => 1,
                     ], [
-                        'status' => 'open' 
+                        'status' => 'open'
                     ]);
-                    
+
                     // Semester 2: CLOSED
                     SemesterStatus::firstOrCreate([
                         'academic_year_id' => $nextYear->id,
@@ -427,7 +408,7 @@ class AcademicYearController extends Controller
 
                 // --- AUTOMATIC STUDENT PROMOTION LOGIC ---
                 Log::info("Starting Student Promotion for new year: " . $nextYear->name);
-                
+
                 // Get all students
                 $students = \App\Models\Student::with(['grade', 'section'])->get();
                 $promotedCount = 0;
@@ -440,7 +421,7 @@ class AcademicYearController extends Controller
                         ->first();
 
                     $passedThreshold = $finalResult && $finalResult->combined_average >= 50;
-                    
+
                     $oldGrade = $student->grade;
                     $newGradeId = $student->grade_id;
                     $newSectionId = $student->section_id;
@@ -448,17 +429,17 @@ class AcademicYearController extends Controller
                     if ($passedThreshold) {
                         // Find the next grade level
                         $nextGrade = Grade::where('level', $oldGrade->level + 1)->first();
-                        
+
                         if ($nextGrade) {
                             $newGradeId = $nextGrade->id;
-                            
+
                             // Attempt to find a matching section 'A' or 'B' in the new grade
                             $oldSectionName = $student->section?->name;
                             if ($oldSectionName) {
                                 $matchingSection = \App\Models\Section::where('grade_id', $newGradeId)
                                     ->where('name', $oldSectionName)
                                     ->first();
-                                
+
                                 if ($matchingSection) {
                                     $newSectionId = $matchingSection->id;
                                 } else {
@@ -466,7 +447,7 @@ class AcademicYearController extends Controller
                                     $newSectionId = \App\Models\Section::where('grade_id', $newGradeId)->first()?->id;
                                 }
                             }
-                            
+
                             $promotedCount++;
                         } else {
                             // Student completed final grade (e.g. Grade 12)

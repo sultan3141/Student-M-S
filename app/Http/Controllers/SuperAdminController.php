@@ -15,15 +15,15 @@ class SuperAdminController extends Controller
         $totalStudents = Student::count();
         $maleStudents = Student::where('gender', 'male')->count();
         $femaleStudents = Student::where('gender', 'female')->count();
-        
+
         // Payment status (placeholder - adjust based on your payment model)
         $paidStudents = 525; // Replace with actual query
         $partialStudents = 214;
         $unpaidStudents = 110;
-        
+
         // Total revenue (placeholder)
         $totalRevenue = 16350000; // in Birr
-        
+
         // Grade distribution
         $gradeDistribution = [
             ['grade' => 'Grade 1', 'enrolled' => 68, 'capacity' => 165, 'male' => 35, 'female' => 33, 'available' => 97],
@@ -34,7 +34,12 @@ class SuperAdminController extends Controller
             ['grade' => 'Grade 6', 'enrolled' => 74, 'capacity' => 165, 'male' => 38, 'female' => 36, 'available' => 91],
             ['grade' => 'Grade 7', 'enrolled' => 73, 'capacity' => 165, 'male' => 37, 'female' => 36, 'available' => 92],
         ];
-        
+
+        // Fetch accurate user distribution data
+        $instructorCount = \App\Models\Teacher::count();
+        $studentCount = \App\Models\Student::count();
+        $applicantCount = \App\Models\Registration::where('status', 'pending')->count();
+
         return Inertia::render('SuperAdmin/Dashboard', [
             'stats' => [
                 'totalStudents' => $totalStudents,
@@ -44,6 +49,11 @@ class SuperAdminController extends Controller
                 'partialStudents' => $partialStudents,
                 'unpaidStudents' => $unpaidStudents,
                 'totalRevenue' => $totalRevenue,
+            ],
+            'userDistribution' => [
+                ['name' => 'Instructor', 'value' => $instructorCount],
+                ['name' => 'Applicant', 'value' => $applicantCount],
+                ['name' => 'Student', 'value' => $studentCount],
             ],
             'gradeDistribution' => $gradeDistribution,
         ]);

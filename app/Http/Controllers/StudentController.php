@@ -131,8 +131,8 @@ class StudentController extends Controller
                     'id' => $item->id,
                     'day_of_week' => $item->day_of_week,
                     'activity' => $item->activity,
-                    'start_time' => $item->start_time->format('H:i'),
-                    'end_time' => $item->end_time->format('H:i'),
+                    'start_time' => \Carbon\Carbon::parse($item->start_time)->format('H:i'),
+                    'end_time' => \Carbon\Carbon::parse($item->end_time)->format('H:i'),
                     'location' => $item->location,
                     'type' => $item->activity === 'Break' ? 'break' : 'class',
                 ];
@@ -635,7 +635,7 @@ class StudentController extends Controller
                 $q->where('section_id', $student->section_id)
                     ->orWhereNull('section_id');
             })
-            ->whereBoolTrue('is_active')
+            ->where('is_active', true)
             ->orderByRaw("CASE day_of_week 
                 WHEN 'Monday' THEN 1 
                 WHEN 'Tuesday' THEN 2 

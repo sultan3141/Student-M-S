@@ -1,6 +1,7 @@
 import '../css/app.css';
 import '../css/director-theme.css';
 import './bootstrap';
+
 import { route } from 'ziggy-js';
 window.route = route;
 
