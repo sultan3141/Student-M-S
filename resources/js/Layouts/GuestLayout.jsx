@@ -1,3 +1,7 @@
+/**
+ * Guest Layout Component
+ * Layout for non-authenticated pages like the Login portal.
+ */
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link } from '@inertiajs/react';
 import Footer from '@/Components/Footer';
