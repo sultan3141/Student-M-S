@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Registration;
 use App\Models\Grade;
 use App\Models\Stream;
+use App\Models\SemesterPeriod;
 
 class ParentDashboardController extends Controller
 {
@@ -25,11 +26,17 @@ class ParentDashboardController extends Controller
 
         // Cache students data for 30 minutes (increased from 5)
         $cacheKey = "parent_{$user->id}_students";
-        $students = cache()->remember($cacheKey, 1800, function() use ($user) {
+        $students = cache()->remember($cacheKey, 1800, function () use ($user) {
             return $user->parentProfile->students()
-                ->with(['user:id,name', 'grade:id,name', 'section:id,name', 'currentRegistration', 'reports' => function($query) {
-                    $query->orderBy('reported_at', 'desc')->limit(10);
-                }])
+                ->with([
+                    'user:id,name',
+                    'grade:id,name',
+                    'section:id,name',
+                    'currentRegistration',
+                    'reports' => function ($query) {
+                        $query->orderBy('reported_at', 'desc')->limit(10);
+                    }
+                ])
                 ->get();
         });
 
@@ -40,8 +47,8 @@ class ParentDashboardController extends Controller
             'students' => $students,
             'selectedStudentId' => $selectedStudentId,
         ])->withViewData([
-            'title' => 'Parent Dashboard'
-        ]);
+                    'title' => 'Parent Dashboard'
+                ]);
     }
 
     public function profile($studentId)
@@ -59,7 +66,7 @@ class ParentDashboardController extends Controller
     {
         $student = $this->getAuthorizedStudent($studentId);
 
-        $academicYears = AcademicYear::where('status', 'active')->orWhereHas('marks', function($q) use ($studentId) {
+        $academicYears = AcademicYear::where('status', 'active')->orWhereHas('marks', function ($q) use ($studentId) {
             $q->where('student_id', $studentId);
         })->get();
 
@@ -68,7 +75,7 @@ class ParentDashboardController extends Controller
         if ($request->has('academic_year_id')) {
             $query->where('academic_year_id', $request->input('academic_year_id'));
         }
-        
+
         if ($request->has('semester')) {
             $query->where('semester', $request->input('semester'));
         }
@@ -95,7 +102,7 @@ class ParentDashboardController extends Controller
             ->get();
 
         $academicYearIds = $registrations->pluck('academic_year_id')->unique();
-        
+
         // Pre-fetch all semester results for this student
         $allSemesterResults = \App\Models\SemesterResult::where('student_id', $student->id)
             ->whereIn('academic_year_id', $academicYearIds)
@@ -108,9 +115,9 @@ class ParentDashboardController extends Controller
             ->groupBy(fn($p) => "{$p->academic_year_id}_{$p->semester}")
             ->map(fn($group) => $group->first());
 
-        $history = $registrations->map(function($reg) use ($student, $allSemesterResults, $allSemesterPeriods) {
-            $semestersData = collect([1, 2])->map(function($semesterNum) use ($reg, $student, $allSemesterResults, $allSemesterPeriods) {
-                
+        $history = $registrations->map(function ($reg) use ($student, $allSemesterResults, $allSemesterPeriods) {
+            $semestersData = collect([1, 2])->map(function ($semesterNum) use ($reg, $student, $allSemesterResults, $allSemesterPeriods) {
+
                 $key = "{$reg->academic_year_id}_{$semesterNum}";
                 $result = $allSemesterResults->get($key)?->first();
                 $period = $allSemesterPeriods->get($key);
@@ -123,8 +130,9 @@ class ParentDashboardController extends Controller
                         ->where('semester', $semesterNum)
                         ->exists();
 
-                    if (!$hasMarks) return null;
-                    
+                    if (!$hasMarks)
+                        return null;
+
                     // Basic data if results haven't been calculated/persisted yet
                     return [
                         'semester' => $semesterNum,
@@ -157,7 +165,7 @@ class ParentDashboardController extends Controller
                 'section' => $reg->section,
                 'semesters' => $semestersData
             ];
-        })->filter(function($item) {
+        })->filter(function ($item) {
             return count($item['semesters']) > 0;
         })->values();
 
@@ -173,7 +181,7 @@ class ParentDashboardController extends Controller
     private function calculateSemesterRankFast($studentId, $sectionId, $semester, $academicYearId)
     {
         $cacheKey = "section_rankings_{$sectionId}_{$semester}_{$academicYearId}";
-        
+
         $rankings = cache()->remember($cacheKey, 300, function () use ($sectionId, $semester, $academicYearId) {
             $sectionStudents = \App\Models\Student::where('section_id', $sectionId)->pluck('id');
 
@@ -183,7 +191,7 @@ class ParentDashboardController extends Controller
                 ->get()
                 ->groupBy('student_id')
                 ->map(function ($marks, $sid) {
-                    $subjectAvg = $marks->groupBy('subject_id')->map(function($m) {
+                    $subjectAvg = $marks->groupBy('subject_id')->map(function ($m) {
                         $score = $m->sum('score');
                         $max = $m->sum('max_score') ?: (count($m) * 100);
                         return $max > 0 ? ($score / $max) * 100 : 0;
@@ -216,9 +224,9 @@ class ParentDashboardController extends Controller
 
         // Cache the entire semester show data for 1 hour (increased from 10 minutes)
         $cacheKey = "student_{$studentId}_semester_{$semester}_year_{$academicYearId}";
-        $data = cache()->remember($cacheKey, 3600, function() use ($student, $semester, $academicYearId) {
+        $data = cache()->remember($cacheKey, 3600, function () use ($student, $semester, $academicYearId) {
             $academicYear = \App\Models\AcademicYear::find($academicYearId);
-            
+
             $teacherAssignments = \App\Models\TeacherAssignment::with('teacher.user')
                 ->where('section_id', $student->section_id)
                 ->where('academic_year_id', $academicYearId)
@@ -233,8 +241,8 @@ class ParentDashboardController extends Controller
 
             $subjectRecords = $allMarks->groupBy('subject_id')->map(function ($subjectMarks) use ($teacherAssignments) {
                 $subject = $subjectMarks->first()->subject;
-                
-                $detailedMarks = $subjectMarks->map(function($mark) {
+
+                $detailedMarks = $subjectMarks->map(function ($mark) {
                     return [
                         'id' => $mark->id,
                         'score' => $mark->score,
@@ -262,13 +270,13 @@ class ParentDashboardController extends Controller
             })->values();
 
             $semesterAverage = $subjectRecords->isNotEmpty() ? round($subjectRecords->avg('average'), 2) : 0;
-            
+
             $rank = \DB::table('semester_results')
                 ->where('student_id', $student->id)
                 ->where('academic_year_id', $academicYearId)
-                ->where('semester', (string)$semester)
+                ->where('semester', (string) $semester)
                 ->value('rank') ?? 'N/A';
-            
+
             return [
                 'academic_year' => $academicYear,
                 'subject_records' => $subjectRecords,
@@ -297,11 +305,11 @@ class ParentDashboardController extends Controller
             ->orWhere('status', 'active')
             ->orderBy('created_at', 'desc')
             ->first();
-        
+
         if ($year) {
             return redirect()->route('parent.academic.year.show', ['studentId' => $studentId, 'academicYear' => $year->id]);
         }
-        
+
         return redirect()->route('parent.dashboard')->with('error', 'No active academic year found.');
     }
 
@@ -311,11 +319,11 @@ class ParentDashboardController extends Controller
 
         // Cache academic year data for 1 hour (increased from 10 minutes)
         $cacheKey = "student_{$studentId}_academic_year_{$academicYearId}";
-        $data = cache()->remember($cacheKey, 3600, function() use ($student, $academicYearId) {
+        $data = cache()->remember($cacheKey, 3600, function () use ($student, $academicYearId) {
             $academicYear = \App\Models\AcademicYear::where('id', $academicYearId)
                 ->select('id', 'name')
                 ->first();
-            
+
             // Optimized single query for subjects
             $allMarks = \App\Models\Mark::where('student_id', $student->id)
                 ->where('academic_year_id', $academicYearId)
@@ -324,10 +332,11 @@ class ParentDashboardController extends Controller
 
             // Calculate semester averages from SUBJECT averages
             $subjectsBySemester = $allMarks->groupBy('semester');
-            
-            $calculateSemAvg = function($marks) {
-                if ($marks->isEmpty()) return null;
-                $subjectStats = $marks->groupBy('subject_id')->map(function($sm) {
+
+            $calculateSemAvg = function ($marks) {
+                if ($marks->isEmpty())
+                    return null;
+                $subjectStats = $marks->groupBy('subject_id')->map(function ($sm) {
                     $score = $sm->sum('score');
                     $max = $sm->sum('max_score') ?: ($sm->count() * 100);
                     return $max > 0 ? ($score / $max) * 100 : 0;
@@ -337,10 +346,10 @@ class ParentDashboardController extends Controller
 
             $semester1Average = $calculateSemAvg($subjectsBySemester->get('1', collect()));
             $semester2Average = $calculateSemAvg($subjectsBySemester->get('2', collect()));
-            
+
             $semester1Average = $semester1Average ? round($semester1Average, 2) : null;
             $semester2Average = $semester2Average ? round($semester2Average, 2) : null;
-            
+
             $finalAverage = null;
             if ($semester1Average && $semester2Average) {
                 $finalAverage = round(($semester1Average + $semester2Average) / 2, 2);
@@ -349,9 +358,10 @@ class ParentDashboardController extends Controller
             // Group subjects by ID and calculate final averages
             $subjectsList = $allMarks->groupBy('subject_id')->map(function ($marks) {
                 $subject = $marks->first()->subject;
-                
-                $getSemAvg = function($m) {
-                    if ($m->isEmpty()) return null;
+
+                $getSemAvg = function ($m) {
+                    if ($m->isEmpty())
+                        return null;
                     $score = $m->sum('score');
                     $max = $m->sum('max_score') ?: ($m->count() * 100);
                     return $max > 0 ? ($score / $max) * 100 : 0;
@@ -359,7 +369,7 @@ class ParentDashboardController extends Controller
 
                 $sem1Avg = $getSemAvg($marks->where('semester', '1'));
                 $sem2Avg = $getSemAvg($marks->where('semester', '2'));
-                
+
                 $finalAvg = null;
                 if ($sem1Avg !== null && $sem2Avg !== null) {
                     $finalAvg = round(($sem1Avg + $sem2Avg) / 2, 2);
@@ -382,8 +392,8 @@ class ParentDashboardController extends Controller
                 ->where('student_id', $student->id)
                 ->where('academic_year_id', $academicYearId)
                 ->value('final_rank') ?? 'N/A';
-            
-            $totalStudents = cache()->remember("section_{$student->section_id}_count", 3600, function() use ($student) {
+
+            $totalStudents = cache()->remember("section_{$student->section_id}_count", 3600, function () use ($student) {
                 return \DB::table('students')->where('section_id', $student->section_id)->count();
             });
 
@@ -417,13 +427,13 @@ class ParentDashboardController extends Controller
     public function progress($studentId)
     {
         $student = $this->getAuthorizedStudent($studentId);
-        
+
         // Calculate averages per subject as percentages
         $averages = $student->marks()
             ->with('subject')
             ->get()
             ->groupBy('subject_id')
-            ->map(function($marks) {
+            ->map(function ($marks) {
                 $score = $marks->sum('score');
                 $max = $marks->sum('max_score') ?: ($marks->count() * 100);
                 return [
@@ -485,12 +495,12 @@ class ParentDashboardController extends Controller
     public function paymentHistory($studentId)
     {
         $student = $this->getAuthorizedStudent($studentId);
-        
+
         // Get payment records for this student
         $payments = $student->payments()
             ->orderBy('transaction_date', 'desc')
             ->get()
-            ->map(function($payment) {
+            ->map(function ($payment) {
                 return [
                     'id' => $payment->id,
                     'transaction_date' => $payment->transaction_date,
@@ -510,9 +520,9 @@ class ParentDashboardController extends Controller
     public function registrationCreate($studentId)
     {
         $student = $this->getAuthorizedStudent($studentId);
-        
-        $academicYear = AcademicYear::where('status', 'active')->first() 
-                        ?? AcademicYear::latest('start_date')->first();
+
+        $academicYear = AcademicYear::where('status', 'active')->first()
+            ?? AcademicYear::latest('start_date')->first();
 
         // Get existing registration for THIS academic year
         $existingRegistration = null;
@@ -529,7 +539,7 @@ class ParentDashboardController extends Controller
         if ($currentGrade) {
             $nextGrade = Grade::where('level', $currentGrade->level + 1)->first();
         }
-        
+
         $streams = Stream::all();
 
         return Inertia::render('Parent/Registration/Index', [
@@ -550,8 +560,8 @@ class ParentDashboardController extends Controller
             'stream_id' => 'nullable|exists:streams,id',
         ]);
 
-        $academicYear = AcademicYear::where('status', 'active')->first() 
-                        ?? AcademicYear::latest('start_date')->first();
+        $academicYear = AcademicYear::where('status', 'active')->first()
+            ?? AcademicYear::latest('start_date')->first();
 
         if (!$academicYear) {
             return back()->with('error', 'No active academic year found.');
@@ -571,10 +581,37 @@ class ParentDashboardController extends Controller
             'grade_id' => $validated['grade_id'],
             'stream_id' => $validated['stream_id'] ?? null,
             'registration_date' => now(),
-            'status' => 'Pending', 
+            'status' => 'Pending',
         ]);
 
         return redirect()->route('parent.dashboard')->with('success', 'Registration submitted successfully.');
+    }
+
+    public function schedule(Request $request, $studentId)
+    {
+        $student = $this->getAuthorizedStudent($studentId);
+
+        $schedule = \App\Models\Schedule::where('grade_id', $student->grade_id)
+            ->where(function ($q) use ($student) {
+                $q->where('section_id', $student->section_id)
+                    ->orWhereNull('section_id');
+            })
+            ->whereBoolTrue('is_active')
+            ->orderByRaw("CASE day_of_week 
+                WHEN 'Monday' THEN 1 
+                WHEN 'Tuesday' THEN 2 
+                WHEN 'Wednesday' THEN 3 
+                WHEN 'Thursday' THEN 4 
+                WHEN 'Friday' THEN 5 
+                ELSE 6 END")
+            ->orderBy('start_time')
+            ->get()
+            ->groupBy('day_of_week');
+
+        return Inertia::render('Parent/Schedule', [
+            'student' => $student->load('grade', 'section'),
+            'schedule' => $schedule,
+        ]);
     }
 
     private function getAuthorizedStudent($studentId)
