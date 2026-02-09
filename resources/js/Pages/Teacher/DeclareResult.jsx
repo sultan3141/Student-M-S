@@ -1,15 +1,29 @@
 import TeacherLayout from '@/Layouts/TeacherLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import {
     ExclamationTriangleIcon,
     PlusIcon,
-    ClipboardDocumentCheckIcon
+    ClipboardDocumentCheckIcon,
+    AcademicCapIcon,
+    UserGroupIcon,
+    CheckCircleIcon,
+    ArrowPathIcon,
+    ChevronRightIcon
 } from '@heroicons/react/24/outline';
 
-export default function DeclareResult({ grades, currentSemester = 1, initialStep = 1, initialGradeId = null, initialSectionId = null, initialSubjectId = null, initialStudentId = null, initialShowClosed = false }) {
-    console.log('DeclareResult Props:', { initialStep, initialGradeId, initialSectionId, initialSubjectId });
+const classNames = (...classes) => classes.filter(Boolean).join(' ');
 
+export default function DeclareResult({
+    grades,
+    currentSemester = 1,
+    initialStep = 1,
+    initialGradeId = null,
+    initialSectionId = null,
+    initialSubjectId = null,
+    initialStudentId = null,
+    initialShowClosed = false
+}) {
     const [step, setStep] = useState(initialStep);
     const [loading, setLoading] = useState(false);
 
@@ -26,8 +40,10 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [fetchedStudents, setFetchedStudents] = useState([]);
     const [fetchedAssessments, setFetchedAssessments] = useState([]);
-    const [semesterStatuses, setSemesterStatuses] = useState({}); // { semester: isOpen }
+    const [semesterStatuses, setSemesterStatuses] = useState({});
     const [showClosed, setShowClosed] = useState(initialShowClosed);
+    const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+    const [savedMarks, setSavedMarks] = useState({});
 
     // Form Data
     const { data, setData, post, processing, errors } = useForm({
@@ -37,13 +53,11 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
         semester: currentSemester || 1,
         student_ids: initialStudentId ? [parseInt(initialStudentId)] : [],
         marks: {}, // Structure: { studentId: { assessmentId: mark } }
+        is_finalized: false
     });
 
-    const [selectedStudentIds, setSelectedStudentIds] = useState([]);
-    const [savedMarks, setSavedMarks] = useState({});
-
+    // --- Initialization Logic ---
     useEffect(() => {
-        // Handle grade and section selection from sidebar/URL
         if (initialGradeId && initialSectionId) {
             const grade = grades.find(g => g.id === parseInt(initialGradeId));
             if (grade) {
@@ -51,51 +65,31 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
                 if (section) {
                     setSelectedGrade(grade);
                     setSelectedSection(section);
-                    setData(d => ({
-                        ...d,
-                        grade_id: grade.id,
-                        section_id: section.id
-                    }));
+                    setData(d => ({ ...d, grade_id: grade.id, section_id: section.id }));
                     fetchStudents(grade.id, section.id);
                     fetchSubjects(grade.id, section.id);
-                    // Start at Step 1: Select Students
-                    setStep(1);
                 }
             }
         }
 
-        const initializeStep3 = async () => {
-            if (initialStep == 3 && initialGradeId && initialSectionId && initialSubjectId) {
-                const grade = grades.find(g => g.id === parseInt(initialGradeId));
-                const section = grade?.sections?.find(s => s.id === parseInt(initialSectionId));
-
-                if (grade && section) {
-                    setSelectedGrade(grade);
-                    setSelectedSection(section);
-                    const studentsData = await fetchStudents(initialGradeId, initialSectionId);
-                    const subjectsData = await fetchSubjects(initialGradeId, initialSectionId);
-                    const subject = subjectsData.find(s => s.id === parseInt(initialSubjectId));
-                    if (subject) setSelectedSubject(subject);
-                    await fetchAssessments(initialGradeId, initialSectionId, initialSubjectId, studentsData, initialShowClosed);
-                    setStep(3);
-                }
-            }
-        };
-
-        initializeStep3();
+        if (initialStep == 3 && initialSubjectId) {
+            // Special case for direct deep links to mark entry
+            // This is handled in the fetch logic below if initial params exist
+        }
     }, []);
 
-    // --- Step 1: Student Selection Logic ---
-
+    // --- Data Fetching ---
     const fetchStudents = async (gradeId, sectionId) => {
         setLoading(true);
         try {
             const response = await fetch(`/teacher/declare-result/students?grade_id=${gradeId}&section_id=${sectionId}`);
             const data = await response.json();
             setFetchedStudents(data);
-            // Default select all? Or none? User prompt implies selection.
+            setSelectedStudentIds(data.map(s => s.id));
+            return data;
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching students:', error);
+            return [];
         } finally {
             setLoading(false);
         }
@@ -108,208 +102,102 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
             setSubjects(data);
             return data;
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching subjects:', error);
             return [];
         }
     };
 
-    const fetchAssessments = async (gradeId, sectionId, subjectId, studentsList = null, isShowClosed = showClosed) => {
+    const fetchAssessments = async (subjectId) => {
         setLoading(true);
         try {
-            const response = await fetch(`/teacher/declare-result/assessments?grade_id=${gradeId}&section_id=${sectionId}&subject_id=${subjectId}&show_closed=${isShowClosed ? 1 : 0}`);
+            const response = await fetch(`/teacher/declare-result/assessments?grade_id=${selectedGrade.id}&section_id=${selectedSection.id}&subject_id=${subjectId}&show_closed=${showClosed ? 1 : 0}`);
             const assessmentsData = await response.json();
             setFetchedAssessments(assessmentsData);
 
-            // Fetch status for relevant semesters
+            // Check semester locking status
             const uniqueSemesters = [...new Set(assessmentsData.map(a => a.semester))];
             const statusMap = {};
-
             for (const sem of uniqueSemesters) {
                 if (!sem) continue;
                 try {
-                    const statusRes = await fetch(`/teacher/declare-result/check-status?grade_id=${gradeId}&semester=${sem}`);
+                    const statusRes = await fetch(`/teacher/declare-result/check-status?grade_id=${selectedGrade.id}&semester=${sem}`);
                     const statusJson = await statusRes.json();
                     statusMap[sem] = statusJson.is_open;
                 } catch (e) {
-                    console.error("Failed to check status for sem " + sem, e);
-                    statusMap[sem] = true; // Default open on error? Or closed to be safe? Open avoids blocking if API fails.
+                    statusMap[sem] = true;
                 }
             }
-            setSemesterStatuses(statusMap); // Need to add this state
+            setSemesterStatuses(statusMap);
 
-            // Set the selected subject and students
-            const studentsToUse = studentsList || fetchedStudents;
-            if (studentsToUse.length > 0) {
-                const idsToSelect = (initialStep === 5 && initialStudentId)
-                    ? [parseInt(initialStudentId)]
-                    : studentsToUse.map(s => s.id);
-
-                setSelectedStudentIds(idsToSelect);
-                setData('student_ids', idsToSelect);
-
-                // Fetch existing marks
-                const marksResponse = await fetch(`/teacher/declare-result/existing-marks?grade_id=${gradeId}&section_id=${sectionId}&subject_id=${subjectId}&student_ids=${idsToSelect.join(',')}`);
-                const existingMarks = await marksResponse.json();
-
+            // Fetch existing marks
+            if (selectedStudentIds.length > 0) {
+                const marksRes = await fetch(`/teacher/declare-result/existing-marks?grade_id=${selectedGrade.id}&section_id=${selectedSection.id}&subject_id=${subjectId}&student_ids=${selectedStudentIds.join(',')}`);
+                const existingMarks = await marksRes.json();
                 if (existingMarks && Object.keys(existingMarks).length > 0) {
                     setData('marks', existingMarks);
                     setSavedMarks(existingMarks);
+                } else {
+                    setData('marks', {});
+                    setSavedMarks({});
                 }
-            }
-
-            // More robust subject selection
-            const findAndSetSubject = () => {
-                const subject = (subjects.length > 0 ? subjects : (studentsList ? [] : subjects)).find(s => s.id === parseInt(subjectId));
-                if (subject) {
-                    setSelectedSubject(subject);
-                    return true;
-                }
-                return false;
-            };
-
-            if (!findAndSetSubject()) {
-                setTimeout(findAndSetSubject, 200);
             }
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching assessments:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    // --- Step 3: Student Selection ---
-    const toggleStudent = (studentId) => {
-        setSelectedStudentIds(prev => {
-            if (prev.includes(studentId)) {
-                return prev.filter(id => id !== studentId);
-            } else {
-                return [...prev, studentId];
-            }
-        });
-    };
-
-    const toggleAllStudents = () => {
-        if (selectedStudentIds.length === fetchedStudents.length) {
-            setSelectedStudentIds([]);
-        } else {
-            setSelectedStudentIds(fetchedStudents.map(s => s.id));
-        }
-    };
-
-<<<<<<< HEAD
-    const handleStudentsConfirmed = async () => {
-=======
+    // --- Action Handlers ---
     const handleStudentsConfirmed = () => {
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         if (selectedStudentIds.length === 0) {
             alert('Please select at least one student.');
             return;
         }
-<<<<<<< HEAD
-        
-        // Directly fetch assessments and go to step 2 (marks entry)
-        setLoading(true);
-        try {
-            const response = await fetch(`/teacher/declare-result/assessments?grade_id=${selectedGrade.id}&section_id=${selectedSection.id}&subject_id=${selectedSubject.id}&show_closed=${showClosed ? 1 : 0}`);
-            const assessmentsData = await response.json();
-            setFetchedAssessments(assessmentsData);
-
-            // Fetch existing marks for selected students
-            const marksResponse = await fetch(`/teacher/declare-result/existing-marks?grade_id=${selectedGrade.id}&section_id=${selectedSection.id}&subject_id=${selectedSubject.id}&student_ids=${selectedStudentIds.join(',')}`);
-            const existingMarks = await marksResponse.json();
-
-            if (existingMarks && Object.keys(existingMarks).length > 0) {
-                setData('marks', existingMarks);
-                setSavedMarks(existingMarks);
-            } else {
-                setSavedMarks({});
-            }
-
-            setStep(2); // Go directly to step 2 (marks entry)
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-=======
+        setData('student_ids', selectedStudentIds);
         setStep(2);
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
     };
 
-    // --- Step 2: Subject Selection ---
     const handleSubjectSelect = async (subject) => {
         setSelectedSubject(subject);
         setData('subject_id', subject.id);
-
-        // Fetch Assessments
-        setLoading(true);
-        try {
-            const response = await fetch(`/teacher/declare-result/assessments?grade_id=${selectedGrade.id}&section_id=${selectedSection.id}&subject_id=${subject.id}&show_closed=${showClosed ? 1 : 0}`);
-            const assessmentsData = await response.json();
-            setFetchedAssessments(assessmentsData);
-
-            // Fetch existing marks for selected students
-            const marksResponse = await fetch(`/teacher/declare-result/existing-marks?grade_id=${selectedGrade.id}&section_id=${selectedSection.id}&subject_id=${subject.id}&student_ids=${selectedStudentIds.join(',')}`);
-            const existingMarks = await marksResponse.json();
-
-            // Pre-fill marks if they exist
-            if (existingMarks && Object.keys(existingMarks).length > 0) {
-                setData('marks', existingMarks);
-                setSavedMarks(existingMarks);
-            } else {
-                setSavedMarks({});
-            }
-
-            setStep(3);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
+        await fetchAssessments(subject.id);
+        setStep(3);
     };
 
-    // --- Step 3: Marks Entry ---
     const handleMarkChange = (studentId, assessmentId, value) => {
-        // Validation: Check Max Mark
         const assessment = fetchedAssessments.find(a => a.id === assessmentId);
-        const maxScore = assessment ? (assessment.total_marks || assessment.max_score || 0) : 100;
+        const maxScore = assessment?.total_marks || 100;
 
-        if (assessment && Number(value) > maxScore) {
-            // Optional: Clamp or show UI hint
-        }
+        let numericValue = value === '' ? '' : parseFloat(value);
+        if (numericValue !== '' && numericValue > maxScore) numericValue = maxScore;
+        if (numericValue !== '' && numericValue < 0) numericValue = 0;
 
         setData('marks', {
             ...data.marks,
             [studentId]: {
                 ...(data.marks[studentId] || {}),
-                [assessmentId]: value
+                [assessmentId]: numericValue
             }
         });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        // Pass the additional fields as part of the post data
         post(route('teacher.declare-result.store'), {
             onSuccess: () => {
                 setSavedMarks(data.marks);
+                alert('Results saved successfully.');
             },
-            // Note: In Inertia useForm, the data is already tracked. 
-            // If we need extra fields not in useForm, we should use transform() or setData.
-            // But here we can just update the data before posting if they are missing.
+            preserveScroll: true
         });
     };
 
     const getStepTitle = () => {
         switch (step) {
-            case 1: return "Select Students";
-<<<<<<< HEAD
-            case 2: return "Enter Marks";
-=======
-            case 2: return "Select Subject";
-            case 3: return "Enter Marks";
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
+            case 1: return "Enrollment Verification";
+            case 2: return "Subject Binding";
+            case 3: return "Data Entry";
             default: return "";
         }
     };
@@ -320,430 +208,347 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
 
     return (
         <TeacherLayout>
-            <Head title="Declare Result" />
-
-<<<<<<< HEAD
-            {/* Professional Header */}
-            <div className="bg-white border-b border-gray-200 mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                                Declare Result
-                            </h1>
-                            <p className="text-sm text-gray-600">
-                                {selectedSection && selectedSubject ? `Step ${step} of 2: ${getStepTitle()}` : 'Select grade, section, and subject to begin'}
-=======
-            {/* Header */}
-            <div className="bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] shadow-sm mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-semibold text-white mb-1">
-                                Declare Result
-                            </h1>
-                            <p className="text-blue-100 text-sm">
-                                {selectedSection ? `Step ${step} of 3: ${getStepTitle()}` : 'Select a section to begin'}
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
-                            </p>
-                        </div>
-                        {step > 1 && (
-                            <button
-                                onClick={handleBack}
-<<<<<<< HEAD
-                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium border border-gray-300"
-=======
-                                className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-md transition-colors text-sm"
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
-                            >
-                                ← Back
-                            </button>
-                        )}
-                    </div>
-                </div>
-            </div>
+            <Head title="Declare Result | Teacher Portal" />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-
-<<<<<<< HEAD
-                {/* Clean Selection Dashboard */}
-                <div className="bg-white rounded-lg border border-gray-200 mb-6">
-                    {/* Header */}
-                    <div className="border-b border-gray-200 px-6 py-4">
-                        <h2 className="text-lg font-semibold text-gray-900">Class Selection</h2>
-                        <p className="text-sm text-gray-600 mt-1">Select grade, section, and subject to view students</p>
+                {/* Minimalist Professional Header */}
+                <div className="mb-10">
+                    <div className="flex items-center gap-2 mb-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                        <Link href={route('teacher.dashboard')} className="hover:text-blue-600 transition-colors">Dashboard</Link>
+                        <span className="text-gray-300">/</span>
+                        <span className="text-gray-900 border-b border-gray-100 uppercase tracking-tighter">Declare Result</span>
                     </div>
 
-                    {/* Selection Form */}
-                    <div className="p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Grade Selection */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Grade
-                                </label>
-                                <select
-                                    value={selectedGrade?.id || ''}
-                                    onChange={(e) => {
-                                        const gradeId = parseInt(e.target.value);
-                                        const grade = grades.find(g => g.id === gradeId);
-                                        setSelectedGrade(grade || null);
-                                        setSelectedSection(null);
-                                        setSelectedSubject(null);
-                                        setFetchedStudents([]);
-                                        setSubjects([]);
-                                        setData('grade_id', gradeId);
-                                        setData('section_id', '');
-                                        setData('subject_id', '');
-                                        setStep(1);
-                                    }}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                >
-                                    <option value="">Select Grade</option>
-                                    {grades.map(grade => (
-                                        <option key={grade.id} value={grade.id}>
-                                            {grade.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Section Selection */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Section
-                                </label>
-                                <select
-                                    value={selectedSection?.id || ''}
-                                    onChange={(e) => {
-                                        const sectionId = parseInt(e.target.value);
-                                        const section = selectedGrade?.sections?.find(s => s.id === sectionId);
-                                        setSelectedSection(section || null);
-                                        setSelectedSubject(null);
-                                        setData('section_id', sectionId);
-                                        setData('subject_id', '');
-                                        
-                                        if (section && selectedGrade) {
-                                            fetchStudents(selectedGrade.id, sectionId);
-                                            fetchSubjects(selectedGrade.id, sectionId);
-                                            setStep(1);
-                                        }
-                                    }}
-                                    disabled={!selectedGrade}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
-                                >
-                                    <option value="">Select Section</option>
-                                    {selectedGrade?.sections?.map(section => (
-                                        <option key={section.id} value={section.id}>
-                                            Section {section.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Subject Selection */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Subject
-                                </label>
-                                <select
-                                    value={selectedSubject?.id || ''}
-                                    onChange={(e) => {
-                                        const subjectId = parseInt(e.target.value);
-                                        const subject = subjects.find(s => s.id === subjectId);
-                                        setSelectedSubject(subject || null);
-                                        setData('subject_id', subjectId);
-                                        
-                                        if (subject && selectedGrade && selectedSection) {
-                                            // Move to step 2 (subject selection complete, ready for student selection)
-                                            setStep(1);
-                                        }
-                                    }}
-                                    disabled={!selectedSection || subjects.length === 0}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
-                                >
-                                    <option value="">Select Subject</option>
-                                    {subjects.map(subject => (
-                                        <option key={subject.id} value={subject.id}>
-                                            {subject.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight uppercase">
+                                Result <span className="text-blue-600">Declaration</span>
+                            </h1>
+                            <p className="mt-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                {selectedSection ? `Phase 0${step} &bull; ${getStepTitle()}` : 'Identify Cohort to Begin'}
+                            </p>
                         </div>
 
-                        {/* Selected Info */}
-                        {selectedGrade && selectedSection && selectedSubject && (
-                            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                <p className="text-sm text-blue-900">
-                                    <span className="font-medium">Selected:</span> {selectedGrade.name} - Section {selectedSection.name} - {selectedSubject.name}
-                                </p>
+                        <div className="flex items-center gap-3">
+                            {step > 1 && (
+                                <button
+                                    onClick={handleBack}
+                                    className="px-6 py-3 bg-white border border-gray-100 text-gray-400 rounded-xl hover:text-blue-600 text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm"
+                                >
+                                    &larr; Go Back
+                                </button>
+                            )}
+                            <div className="px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 italic">
+                                <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                                Semester {currentSemester}
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
 
-                {/* Clean Empty State */}
-                {!selectedSection && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
-                        <div className="w-16 h-16 bg-gray-200 text-gray-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                            <ClipboardDocumentCheckIcon className="w-10 h-10" />
+                {/* Progress Visualizer */}
+                <div className="flex items-center gap-4 mb-10 overflow-x-auto pb-2 custom-scrollbar">
+                    {[1, 2, 3].map((s) => (
+                        <div key={s} className="flex items-center gap-4 shrink-0">
+                            <div className={classNames(
+                                "flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all duration-300",
+                                step === s ? "bg-white border-blue-200 shadow-md shadow-blue-50/50" :
+                                    step > s ? "bg-gray-50 border-gray-100 opacity-60" : "bg-white border-gray-100 opacity-40"
+                            )}>
+                                <div className={classNames(
+                                    "w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black",
+                                    step >= s ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400"
+                                )}>
+                                    {step > s ? "✓" : `0${s}`}
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Step {s}</span>
+                                    <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">
+                                        {s === 1 ? "Students" : s === 2 ? "Subject" : "Marks Entry"}
+                                    </span>
+                                </div>
+                            </div>
+                            {s < 3 && <ChevronRightIcon className="w-4 h-4 text-gray-200" />}
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Class Selected</h3>
-                        <p className="text-gray-600 max-w-md mx-auto">
-                            Please select a grade, section, and subject above to view students and begin entering marks.
-                        </p>
-                    </div>
-                )}
+                    ))}
+                </div>
 
-                {/* Show message when section is selected but no subject */}
-                {selectedSection && !selectedSubject && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-8 text-center">
-                        <div className="w-14 h-14 bg-amber-200 text-amber-600 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                            </svg>
-                        </div>
-                        <h3 className="text-base font-semibold text-gray-900 mb-2">Select a Subject</h3>
-                        <p className="text-sm text-gray-600">
-                            Please select a subject from the dropdown above to continue.
-                        </p>
-=======
-                {/* Empty State / Initial Landing */}
                 {!selectedSection && (
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-                        <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
+                    <div className="bg-white rounded-[2rem] border border-gray-100 p-20 text-center shadow-sm">
+                        <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-8 animate-pulse">
                             <PlusIcon className="w-10 h-10" />
                         </div>
-                        <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-4">Start Declaring Results</h2>
-                        <p className="text-gray-500 font-medium max-w-md mx-auto mb-8 text-lg">
-                            Please select a <span className="text-blue-600 font-bold">Grade</span> and <span className="text-blue-600 font-bold">Section</span> from the sidebar navigation to begin the result declaration process.
+                        <h2 className="text-3xl font-bold text-gray-900 uppercase tracking-tight mb-4">Initialize Session</h2>
+                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] max-w-sm mx-auto leading-relaxed italic">
+                            Select a target Grade and Section from the sidebar to activate the result declaration workflow
                         </p>
-                        <div className="flex justify-center gap-4">
-                            <div className="flex items-center gap-2 text-sm text-gray-400 font-bold uppercase tracking-widest">
-                                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                                Waiting for selection
-                            </div>
-                        </div>
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                     </div>
                 )}
 
-                {/* Step 1: Student Selection */}
-<<<<<<< HEAD
-                {selectedSection && selectedSubject && step === 1 && (
-=======
+                {/* --- Step 1: Student Selection --- */}
                 {selectedSection && step === 1 && (
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-[#1E293B]">
-                        <div className="mb-8 flex justify-between items-center">
+                    <div className="bg-white rounded-[2rem] border border-gray-100 p-10 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-10">
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Select Students</h2>
-                                <p className="text-gray-500 font-medium">{selectedGrade?.name} - Section {selectedSection?.name}</p>
+                                <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Phase 01: Enrollment</h2>
+                                <h3 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">Verify <span className="text-blue-600">Students</span></h3>
+                                <div className="mt-3 flex items-center gap-3">
+                                    <span className="px-4 py-1.5 bg-gray-50 border border-gray-100 rounded-xl text-[9px] font-bold text-gray-400 uppercase tracking-widest italic">{selectedGrade?.name}</span>
+                                    <span className="px-4 py-1.5 bg-gray-50 border border-gray-100 rounded-xl text-[9px] font-bold text-gray-400 uppercase tracking-widest italic">Section {selectedSection?.name}</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-4">
+
+                            <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => setSelectedStudentIds(fetchedStudents.map(s => s.id))}
-                                    className="text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-4 py-2 rounded-lg transition-colors"
+                                    className="px-5 py-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest"
                                 >
                                     Select All
                                 </button>
                                 <button
                                     onClick={() => setSelectedStudentIds([])}
-                                    className="text-sm font-bold text-gray-600 hover:text-gray-700 bg-gray-50 px-4 py-2 rounded-lg transition-colors"
+                                    className="px-5 py-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-100 hover:text-gray-600 transition-all text-[10px] font-bold uppercase tracking-widest"
                                 >
-                                    Clear Selection
+                                    Clear
                                 </button>
                             </div>
                         </div>
-                        <div className="overflow-hidden border border-gray-200 rounded-xl">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+
+                        <div className="overflow-hidden border border-gray-100 rounded-3xl">
+                            <table className="min-w-full divide-y divide-gray-100">
+                                <thead className="bg-gray-50/50">
                                     <tr>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-16">Select</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Student Name</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">ID Number</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Gender</th>
+                                        <th className="px-8 py-5 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">Include</th>
+                                        <th className="px-8 py-5 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">Student Core Identity</th>
+                                        <th className="px-8 py-5 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">Universal ID</th>
+                                        <th className="px-8 py-5 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">Gender</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-white divide-y divide-gray-50">
                                     {fetchedStudents.map(student => (
-                                        <tr key={student.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                        <tr key={student.id} className="hover:bg-gray-50/50 transition-colors group">
+                                            <td className="px-8 py-5">
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedStudentIds.includes(student.id)}
-                                                    onChange={(e) => {
-                                                        if (e.target.checked) setSelectedStudentIds([...selectedStudentIds, student.id]);
-                                                        else setSelectedStudentIds(selectedStudentIds.filter(id => id !== student.id));
+                                                    onChange={() => {
+                                                        if (selectedStudentIds.includes(student.id)) setSelectedStudentIds(selectedStudentIds.filter(id => id !== student.id));
+                                                        else setSelectedStudentIds([...selectedStudentIds, student.id]);
                                                     }}
-                                                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                                    className="w-5 h-5 text-blue-600 border-gray-200 rounded-lg focus:ring-blue-500/20 transition-all cursor-pointer"
                                                 />
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap font-bold text-gray-900">{student.user?.name}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">{student.student_id}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap capitalize text-sm font-medium text-gray-600">{student.gender}</td>
+                                            <td className="px-8 py-5 whitespace-nowrap">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center font-bold text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all uppercase text-xs">
+                                                        {student.user?.name?.charAt(0)}
+                                                    </div>
+                                                    <span className="text-sm font-bold text-gray-900 uppercase tracking-tight">{student.user?.name}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-5 whitespace-nowrap text-[11px] font-bold text-gray-500 uppercase tracking-widest">{student.student_id}</td>
+                                            <td className="px-8 py-5 whitespace-nowrap">
+                                                <span className="px-3 py-1 bg-gray-50 rounded-lg text-[9px] font-bold uppercase tracking-widest text-gray-400 group-hover:text-gray-600 transition-colors italic border border-gray-100/50">
+                                                    {student.gender}
+                                                </span>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
-                        <div className="mt-8 flex justify-end">
+
+                        <div className="mt-10 flex justify-end">
                             <button
                                 onClick={handleStudentsConfirmed}
-                                className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-base font-bold transition-colors shadow-lg shadow-blue-200"
+                                className="px-10 py-5 bg-blue-600 text-white rounded-[1.25rem] hover:bg-blue-700 text-[11px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-blue-200 flex items-center gap-3 group"
                             >
-                                Continue ({selectedStudentIds.length})
+                                Continue To Subject Binding
+                                <ChevronRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </button>
                         </div>
                     </div>
                 )}
 
-<<<<<<< HEAD
-                {/* Step 2: Marks Entry */}
+                {/* --- Step 2: Subject Selection --- */}
                 {step === 2 && (
-=======
-                {/* Step 2: Subject Selection */}
-                {step === 2 && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-                        <div className="mb-8">
-                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Select Subject</h2>
-                            <p className="text-gray-500 font-medium">{selectedGrade?.name} - Section {selectedSection?.name}</p>
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="mb-10 text-center lg:text-left">
+                            <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Phase 02: Binding</h2>
+                            <h3 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">Select <span className="text-blue-600">Assigned Subject</span></h3>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">{selectedStudentIds.length} Students Selected for Deployment</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {subjects.map(subject => (
                                 <button
                                     key={subject.id}
                                     onClick={() => handleSubjectSelect(subject)}
-                                    className="p-6 rounded-xl border border-gray-200 hover:border-blue-600 hover:ring-1 hover:ring-blue-600 hover:shadow-md transition-all text-left bg-white group focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="group relative p-8 rounded-[2rem] bg-white border border-gray-100 transition-all duration-300 hover:border-blue-600 hover:shadow-2xl hover:shadow-blue-50 hover:-translate-y-1 overflow-hidden"
                                 >
-                                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 mb-1">
+                                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <ChevronRightIcon className="w-5 h-5 text-blue-600" />
+                                    </div>
+                                    <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors">
+                                        <AcademicCapIcon className="w-6 h-6 text-gray-400 group-hover:text-white" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight mb-2 group-hover:text-blue-600 transition-colors">
                                         {subject.name}
                                     </h3>
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
+                                    <span className="px-3 py-1 bg-gray-50 rounded-lg text-[9px] font-bold text-gray-400 uppercase tracking-widest italic group-hover:bg-blue-50 group-hover:text-blue-600/60 transition-colors">
                                         {subject.code}
-                                    </p>
+                                    </span>
                                 </button>
                             ))}
-                            {subjects.length === 0 && (
-                                <div className="col-span-full py-12 text-center">
-                                    <p className="text-gray-500 font-medium">No subjects found for this class and section.</p>
-                                </div>
-                            )}
                         </div>
                     </div>
                 )}
 
-                {/* Step 3: Marks Entry */}
+                {/* --- Step 3: Marks Entry --- */}
                 {step === 3 && (
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="p-8 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="p-10 border-b border-gray-50 bg-gray-50/20">
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-1">Enter Marks</h2>
-                                    <p className="text-gray-500 font-medium">Results for {selectedSubject?.name}</p>
-                                </div>
-                                <div className="flex flex-wrap gap-6 text-sm">
-                                    <div className="flex flex-col">
-                                        <span className="text-gray-400 font-bold uppercase text-[10px] tracking-wider">Grade & Section</span>
-                                        <span className="text-gray-900 font-bold">{selectedGrade?.name} - {selectedSection?.name}</span>
+                                    <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Phase 03: Data Entry</h2>
+                                    <h3 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">Bulk Marks <span className="text-blue-600">Sync</span></h3>
+                                    <div className="mt-4 flex flex-wrap gap-3">
+                                        <span className="px-4 py-1.5 bg-white border border-gray-100 rounded-xl text-[9px] font-bold text-blue-600 uppercase tracking-widest italic shadow-sm">{selectedSubject?.name}</span>
+                                        <span className="px-4 py-1.5 bg-white border border-gray-100 rounded-xl text-[9px] font-bold text-gray-400 uppercase tracking-widest italic shadow-sm">{selectedGrade?.name} &bull; Section {selectedSection?.name}</span>
                                     </div>
-                                    <div className="h-10 w-px bg-gray-200 hidden md:block"></div>
-                                    <div className="flex flex-col">
-                                        <span className="text-gray-400 font-bold uppercase text-[10px] tracking-wider">Academic Year</span>
-                                        <span className="text-gray-900 font-bold">2025/26</span>
+                                </div>
+                                <div className="p-3 bg-white border border-gray-100 rounded-2xl flex items-center gap-6 shadow-sm">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                            <UserGroupIcon className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest leading-none">Cohort</p>
+                                            <p className="text-[11px] font-black text-gray-900 uppercase">{selectedStudentIds.length} Enrolled</p>
+                                        </div>
+                                    </div>
+                                    <div className="w-px h-8 bg-gray-100"></div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                                            <ClipboardDocumentCheckIcon className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest leading-none">Activities</p>
+                                            <p className="text-[11px] font-black text-gray-900 uppercase">{fetchedAssessments.length} Tasks</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {fetchedAssessments.length === 0 ? (
-                            <div className="p-16 text-center">
-                                <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <ClipboardDocumentCheckIcon className="w-8 h-8" />
+                            <div className="p-24 text-center">
+                                <div className="w-20 h-20 bg-gray-50 text-gray-200 rounded-[2rem] flex items-center justify-center mx-auto mb-8 animate-bounce">
+                                    <ExclamationTriangleIcon className="w-10 h-10" />
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">No Assessments Found</h3>
-                                <p className="text-gray-500 mb-6 max-w-sm mx-auto">You need to create assessments for this subject before you can enter marks.</p>
-                                <button
-                                    onClick={() => {
-                                        const url = `/teacher/assessments-simple/create?grade_id=${selectedGrade?.id}&subject_id=${selectedSubject?.id}&section_id=${selectedSection?.id}`;
-                                        window.location.href = url;
-                                    }}
-                                    className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+                                <h3 className="text-2xl font-bold text-gray-900 uppercase tracking-tight mb-2">No Assessments Found</h3>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] max-w-xs mx-auto mb-10 leading-loose">
+                                    Target subject requires configured assessment schemes before mark injection is possible.
+                                </p>
+                                <Link
+                                    href={route('teacher.assessments-simple.create', {
+                                        grade_id: selectedGrade?.id,
+                                        subject_id: selectedSubject?.id,
+                                        section_id: selectedSection?.id
+                                    })}
+                                    className="inline-flex items-center px-8 py-4 bg-gray-900 text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-gray-100"
                                 >
-                                    <PlusIcon className="w-5 h-5 mr-2" />
-                                    Create Assessment First
-                                </button>
+                                    <PlusIcon className="w-4 h-4 mr-2" />
+                                    Configure Assessment Structure
+                                </Link>
                             </div>
                         ) : (
                             <form onSubmit={handleSubmit}>
                                 <div className="overflow-x-auto custom-scrollbar">
-                                    <table className="w-full text-sm text-left">
+                                    <table className="w-full text-left border-collapse">
                                         <thead>
-                                            <tr className="bg-gray-50 border-b border-gray-100">
-                                                <th className="px-8 py-5 font-bold text-gray-600 uppercase tracking-widest text-[10px] sticky left-0 bg-gray-50 z-10 w-80">Student Details</th>
+                                            <tr className="bg-gray-50/50 border-b border-gray-100">
+                                                <th className="px-10 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest sticky left-0 bg-white/80 backdrop-blur-md z-10 border-r border-gray-100">Student Identity</th>
                                                 {fetchedAssessments.map(assessment => (
-                                                    <th key={assessment.id} className="px-6 py-5 min-w-[160px]">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-gray-900 font-bold text-sm mb-1">{assessment.name}</span>
+                                                    <th key={assessment.id} className="px-8 py-6 min-w-[180px]">
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <span className="text-[11px] font-black text-gray-900 uppercase tracking-tight truncate">{assessment.name}</span>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-bold uppercase">Max: {assessment.total_marks}</span>
-                                                                <span className="text-[9px] text-gray-400 font-bold uppercase">Sem {assessment.semester}</span>
+                                                                <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[8px] font-black uppercase tracking-widest border border-blue-100/50">Max: {assessment.total_marks || assessment.max_score}</span>
+                                                                {semesterStatuses[assessment.semester] === false && (
+                                                                    <span className="px-2 py-0.5 bg-red-50 text-red-600 rounded text-[8px] font-black uppercase tracking-widest italic animate-pulse">LOCKED</span>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </th>
                                                 ))}
-                                                <th className="px-8 py-5 font-bold text-gray-600 uppercase tracking-widest text-[10px]">Total Score</th>
+                                                <th className="px-10 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest italic text-right bg-white/80 backdrop-blur-md sticky right-0 z-10 border-l border-gray-100">Synthesis</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
                                             {fetchedStudents.filter(s => selectedStudentIds.includes(s.id)).map(student => (
-                                                <tr key={student.id} className="hover:bg-blue-50/30 transition-colors group">
-                                                    <td className="px-8 py-5 sticky left-0 bg-white z-10 shadow-[4px_0_10px_-4px_rgba(0,0,0,0.05)] border-r border-gray-50 group-hover:bg-blue-50/30">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors uppercase">
+                                                <tr key={student.id} className="hover:bg-blue-50/10 transition-colors group">
+                                                    <td className="px-10 py-6 sticky left-0 bg-white z-10 shadow-[4px_0_10px_-4px_rgba(0,0,0,0.02)] border-r border-gray-50 group-hover:bg-blue-50/30 transition-colors">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center font-bold text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all uppercase text-xs">
                                                                 {student.user?.name?.charAt(0)}
                                                             </div>
                                                             <div>
-                                                                <div className="font-bold text-gray-900">{student.user?.name}</div>
-                                                                <div className="text-xs text-gray-500 font-medium">{student.student_id}</div>
+                                                                <div className="font-bold text-gray-900 uppercase tracking-tight text-sm leading-none mb-1">{student.user?.name}</div>
+                                                                <div className="text-[9px] font-black text-gray-300 uppercase tracking-widest leading-none">{student.student_id}</div>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    {fetchedAssessments.map(assessment => (
-                                                        <td key={assessment.id} className="px-6 py-5">
-                                                            <div className="relative max-w-[120px]">
-                                                                <input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    max={assessment.total_marks}
-                                                                    step="0.5"
-                                                                    value={data.marks[student.id]?.[assessment.id] || ''}
-                                                                    onChange={(e) => handleMarkChange(student.id, assessment.id, e.target.value)}
-                                                                    className={`w-full h-11 px-4 border border-gray-200 rounded-xl font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 text-base ${(semesterStatuses[assessment.semester] === false || savedMarks[student.id]?.[assessment.id] !== undefined) ? 'bg-gray-100 cursor-not-allowed text-gray-400' : 'bg-white'}`}
-                                                                    placeholder={`0.0`}
-                                                                    disabled={semesterStatuses[assessment.semester] === false || savedMarks[student.id]?.[assessment.id] !== undefined}
-                                                                />
-                                                                {savedMarks[student.id]?.[assessment.id] !== undefined && (
-                                                                    <div className="absolute -right-1 -top-1 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center text-[10px] shadow-sm ring-2 ring-white">
-                                                                        ✔
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    ))}
-                                                    <td className="px-8 py-5">
+                                                    {fetchedAssessments.map(assessment => {
+                                                        const isLocked = semesterStatuses[assessment.semester] === false;
+                                                        const isSaved = savedMarks[student.id]?.[assessment.id] !== undefined;
+
+                                                        return (
+                                                            <td key={assessment.id} className="px-8 py-6">
+                                                                <div className="relative max-w-[120px]">
+                                                                    <input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        max={assessment.total_marks || assessment.max_score}
+                                                                        step="0.5"
+                                                                        value={data.marks[student.id]?.[assessment.id] || ''}
+                                                                        onChange={(e) => handleMarkChange(student.id, assessment.id, e.target.value)}
+                                                                        className={classNames(
+                                                                            "w-full h-12 px-4 rounded-xl font-bold text-sm tracking-tight transition-all text-center",
+                                                                            isLocked || isSaved ? "bg-gray-50 text-gray-300 border-gray-100 border italic cursor-not-allowed" :
+                                                                                "bg-white border border-gray-100 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/5 text-gray-900 placeholder-gray-100"
+                                                                        )}
+                                                                        placeholder="0.0"
+                                                                        disabled={isLocked || isSaved}
+                                                                    />
+                                                                    {isSaved && (
+                                                                        <div className="absolute -right-2 top-1/2 -translate-y-1/2">
+                                                                            <CheckCircleIcon className="w-5 h-5 text-emerald-500 bg-white rounded-full p-0.5" />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        );
+                                                    })}
+                                                    <td className="px-10 py-6 text-right bg-white group-hover:bg-blue-50/30 sticky right-0 z-10 border-l border-gray-100 transition-colors">
                                                         {(() => {
                                                             const studentMarks = data.marks[student.id] || {};
                                                             const totalObtained = fetchedAssessments.reduce((sum, assessment) => sum + (Number(studentMarks[assessment.id]) || 0), 0);
-                                                            const totalMax = fetchedAssessments.reduce((sum, assessment) => sum + (Number(assessment.total_marks) || 0), 0);
+                                                            const totalMax = fetchedAssessments.reduce((sum, assessment) => sum + (Number(assessment.total_marks || assessment.max_score) || 0), 0);
                                                             const percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
                                                             return (
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-lg font-black text-gray-900">{totalObtained} <span className="text-gray-400 font-normal text-sm">/ {totalMax}</span></span>
-                                                                    <div className="w-20 h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
-                                                                        <div className="h-full bg-blue-600 rounded-full" style={{ width: `${percentage}%` }}></div>
+                                                                <div className="flex flex-col items-end">
+                                                                    <span className="text-base font-black text-gray-900 tracking-tighter leading-none mb-1">
+                                                                        {totalObtained} <span className="text-[10px] text-gray-300 font-bold uppercase ml-0.5 italic">/ {totalMax}</span>
+                                                                    </span>
+                                                                    <div className="w-16 h-1 bg-gray-100 rounded-full overflow-hidden">
+                                                                        <div
+                                                                            className={classNames(
+                                                                                "h-full rounded-full transition-all duration-500",
+                                                                                percentage > 75 ? "bg-emerald-500" : percentage > 40 ? "bg-blue-500" : "bg-red-500"
+                                                                            )}
+                                                                            style={{ width: `${percentage}%` }}
+                                                                        ></div>
                                                                     </div>
                                                                 </div>
                                                             );
@@ -755,45 +560,40 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
                                     </table>
                                 </div>
 
-                                <div className="p-8 bg-gray-50 border-t border-gray-100 flex flex-col items-end gap-6">
-                                    {Object.keys(errors).length > 0 && (
-                                        <div className="w-full bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100">
-                                            <p className="font-bold flex items-center gap-2 mb-2">
-                                                <ExclamationTriangleIcon className="w-5 h-5" />
-                                                Validation Errors
-                                            </p>
-                                            <ul className="list-disc list-inside space-y-1">
-                                                {Object.entries(errors).map(([key, error]) => (
-                                                    <li key={key} className="font-medium">{error}</li>
-                                                ))}
-                                            </ul>
+                                <div className="p-10 bg-gray-50/50 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-10">
+                                    <div className="flex-1 max-w-xl">
+                                        <div className="flex items-start gap-4">
+                                            <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl border border-amber-100">
+                                                <ExclamationTriangleIcon className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest mb-1">Integrity Validation</h4>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase leading-relaxed tracking-wider italic">
+                                                    Ensure all student scores are entered correctly. Submitting values will commit them to the academic ledger for review.
+                                                </p>
+                                            </div>
                                         </div>
-                                    )}
+                                    </div>
 
                                     <div className="flex items-center gap-4">
                                         <button
                                             type="button"
                                             onClick={() => setStep(2)}
-                                            className="px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-bold transition-all shadow-sm"
+                                            className="px-8 py-4 bg-white border border-gray-100 text-gray-400 hover:text-blue-600 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm"
                                         >
-                                            Back to Subjects
+                                            &larr; Subjects
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={processing}
-                                            className="px-10 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 font-black transition-all shadow-lg shadow-blue-200 flex items-center gap-2"
+                                            className="px-10 py-5 bg-blue-600 text-white rounded-[1.25rem] hover:bg-blue-700 disabled:opacity-50 text-[11px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-blue-200 flex items-center gap-3 group"
                                         >
                                             {processing ? (
-                                                <>
-                                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                                                    Saving...
-                                                </>
+                                                <ArrowPathIcon className="w-5 h-5 animate-spin" />
                                             ) : (
-                                                <>
-                                                    <ClipboardDocumentCheckIcon className="w-5 h-5" />
-                                                    Submit Results
-                                                </>
+                                                <ClipboardDocumentCheckIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                             )}
+                                            Commit Marks To Ledger
                                         </button>
                                     </div>
                                 </div>

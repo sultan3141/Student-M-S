@@ -20,23 +20,14 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "tailwindcss": "^3.2.1",
-<<<<<<< HEAD
-        "vite": "^7.0.7"
-=======
         "vite": "^7.0.7",
         "ziggy-js": "^2.6.0"
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
     },
     "dependencies": {
         "@heroicons/react": "^2.2.0",
         "chart.js": "^4.5.1",
         "lodash": "^4.17.23",
         "react-chartjs-2": "^5.3.1",
-<<<<<<< HEAD
-        "recharts": "^3.6.0",
-        "ziggy-js": "^2.6.0"
-=======
         "recharts": "^3.6.0"
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
     }
 }

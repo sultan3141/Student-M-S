@@ -130,76 +130,90 @@ export default function CreateSimple({ grades, academicYear, currentSemester }) 
             </div>
 
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-                {/* Class Selection Card */}
-                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-8 transition-all hover:shadow-md">
-                    <div className="flex items-center gap-2 mb-8">
-                        <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
-                            <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                {/* Step 1: Grade Selection */}
+                <div className={`bg-white rounded-3xl shadow-sm border p-8 mb-6 transition-all duration-300 ${selectedGradeId ? 'border-blue-500/30' : 'border-gray-100'}`}>
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-colors ${selectedGradeId ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                            1
+                        </div>
+                        <h2 className={`text-xs font-black uppercase tracking-[0.2em] transition-colors ${selectedGradeId ? 'text-blue-600' : 'text-gray-400'}`}>
+                            Step 1: Select Grade
+                            {selectedGradeId && <span className="ml-2 text-green-500">✓</span>}
+                        </h2>
+                    </div>
+
+                    <div className="pl-14">
+                        <div className="relative group max-w-md">
+                            <select
+                                value={selectedGradeId}
+                                onChange={(e) => setSelectedGradeId(e.target.value)}
+                                className={`w-full pl-5 pr-12 py-4 bg-gray-50/50 border focus:bg-white focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-2xl text-xs font-black text-gray-700 transition-all appearance-none cursor-pointer ${errors.grade_id ? 'border-red-500' : 'border-gray-100'}`}
+                            >
+                                <option value="">Choose a Grade Level...</option>
+                                {grades.map(grade => (
+                                    <option key={grade.id} value={grade.id}>{grade.name}</option>
+                                ))}
+                            </select>
+                            <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
                             </svg>
                         </div>
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Class Selection</h2>
+                        {errors.grade_id && <p className="text-red-500 text-[10px] font-black uppercase tracking-wider mt-2">{errors.grade_id}</p>}
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-3">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Grade</label>
-                            <div className="relative group">
-                                <select
-                                    value={selectedGradeId}
-                                    onChange={(e) => setSelectedGradeId(e.target.value)}
-                                    className="w-full pl-5 pr-12 py-4 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-2xl text-xs font-black text-gray-700 transition-all appearance-none cursor-pointer"
-                                >
-                                    <option value="">Select Grade</option>
-                                    {grades.map(grade => (
-                                        <option key={grade.id} value={grade.id}>{grade.name}</option>
-                                    ))}
-                                </select>
-                                <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                            {errors.grade_id && <p className="text-red-500 text-[10px] font-black uppercase tracking-wider mt-1 ml-1">{errors.grade_id}</p>}
-                        </div>
-                        <div className="space-y-3">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Subject</label>
-                            <div className="relative group">
-                                <select
-                                    value={selectedSubjectId}
-                                    onChange={(e) => setSelectedSubjectId(e.target.value)}
-                                    disabled={!selectedGradeId || loading}
-                                    className={`w-full pl-5 pr-12 py-4 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-2xl text-xs font-black text-gray-700 transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${errors.subject_id ? 'border-red-500' : ''}`}
-                                >
-                                    <option value="">{loading ? 'Loading...' : 'Select Subject'}</option>
-                                    {subjects.map(subject => (
-                                        <option key={subject.id} value={subject.id}>{subject.name}</option>
-                                    ))}
-                                </select>
-                                <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                            {errors.subject_id && <p className="text-red-500 text-[10px] font-black uppercase tracking-wider mt-1 ml-1">{errors.subject_id}</p>}
-                        </div>
-                    </div>
-
-                    {selectedGrade && selectedSubject && (
-                        <div className="mt-8 flex items-center gap-3 text-blue-600 font-black text-[10px] uppercase tracking-widest bg-blue-50/50 px-5 py-3 rounded-2xl border border-blue-100">
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                            Selected: {selectedGrade.name} • {selectedSubject.name}
-                        </div>
-                    )}
                 </div>
 
-                {/* Assessment Details Form (when selected) */}
+                {/* Step 2: Subject Selection */}
+                <div className={`bg-white rounded-3xl shadow-sm border p-8 mb-8 transition-all duration-300 ${selectedGradeId ? 'opacity-100 translate-y-0' : 'opacity-50 translate-y-4 pointer-events-none'} ${selectedSubjectId ? 'border-blue-500/30' : 'border-gray-100'}`}>
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-colors ${selectedSubjectId ? 'bg-blue-600 text-white' : (selectedGradeId ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400')}`}>
+                            2
+                        </div>
+                        <h2 className={`text-xs font-black uppercase tracking-[0.2em] transition-colors ${selectedSubjectId ? 'text-blue-600' : (selectedGradeId ? 'text-gray-900' : 'text-gray-400')}`}>
+                            Step 2: Select Subject
+                            {selectedSubjectId && <span className="ml-2 text-green-500">✓</span>}
+                        </h2>
+                    </div>
+
+                    <div className="pl-14">
+                        <div className="relative group max-w-md">
+                            <select
+                                value={selectedSubjectId}
+                                onChange={(e) => setSelectedSubjectId(e.target.value)}
+                                disabled={!selectedGradeId || loading}
+                                className={`w-full pl-5 pr-12 py-4 bg-gray-50/50 border focus:bg-white focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-2xl text-xs font-black text-gray-700 transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${errors.subject_id ? 'border-red-500' : 'border-gray-100'}`}
+                            >
+                                <option value="">{loading ? 'Loading...' : 'Choose a Subject...'}</option>
+                                {subjects.map(subject => (
+                                    <option key={subject.id} value={subject.id}>{subject.name}</option>
+                                ))}
+                            </select>
+                            <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                        {!selectedGradeId && (
+                            <p className="text-[10px] uppercase tracking-wider text-gray-400 mt-2 font-bold">Please select a grade first</p>
+                        )}
+                        {errors.subject_id && <p className="text-red-500 text-[10px] font-black uppercase tracking-wider mt-2">{errors.subject_id}</p>}
+                    </div>
+                </div>
+
+                {/* Step 3: Assessment Details */}
                 {selectedGradeId && selectedSubjectId && (
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between px-1">
-                            <h2 className="text-lg font-bold text-gray-900">Assessment Details</h2>
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                         <div className="flex items-center justify-between mb-6">
+                             <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black bg-blue-600 text-white shadow-sm">
+                                    3
+                                </div>
+                                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-900 border-b-2 border-blue-500 pb-1">
+                                    Assessment Details
+                                </h2>
+                            </div>
                             <button
                                 type="button"
                                 onClick={addAssessmentRow}
-                                className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 text-sm bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+                                className="text-blue-600 hover:text-blue-700 font-bold flex items-center gap-2 text-xs uppercase tracking-wider bg-blue-50 px-4 py-2 rounded-xl transition-all hover:bg-blue-100"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TeacherLayout from '@/Layouts/TeacherLayout';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, Link } from '@inertiajs/react';
 import {
     CalendarIcon,
     ChartBarIcon,
