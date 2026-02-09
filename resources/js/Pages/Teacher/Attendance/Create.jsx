@@ -51,18 +51,18 @@ export default function Create({ auth, section, subject, grade, students, date, 
         const isActive = currentStatus === targetStatus;
 
         const colors = {
-            green: isActive ? 'bg-green-600 text-white shadow-lg shadow-green-100' : 'bg-gray-50 text-gray-400 hover:bg-green-50 hover:text-green-600',
-            red: isActive ? 'bg-red-600 text-white shadow-lg shadow-red-100' : 'bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600',
-            amber: isActive ? 'bg-amber-500 text-white shadow-lg shadow-amber-100' : 'bg-gray-50 text-gray-400 hover:bg-amber-50 hover:text-amber-600'
+            green: isActive ? 'bg-green-600 text-white' : 'bg-gray-50 text-gray-400 hover:bg-green-50 hover:text-green-600',
+            red: isActive ? 'bg-red-600 text-white' : 'bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600',
+            amber: isActive ? 'bg-amber-500 text-white' : 'bg-gray-50 text-gray-400 hover:bg-amber-50 hover:text-amber-600'
         };
 
         return (
             <button
                 type="button"
                 onClick={onClick}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${colors[color]}`}
+                className={`px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 border border-transparent ${colors[color]} ${isActive ? 'scale-100' : 'opacity-70 hover:opacity-100'}`}
             >
-                {isActive && <CheckIcon className="w-3 h-3 stroke-[4]" />}
+                {isActive && <CheckIcon className="w-3 h-3 stroke-[3]" />}
                 {label}
             </button>
         );
@@ -73,73 +73,77 @@ export default function Create({ auth, section, subject, grade, students, date, 
             <Head title={`Mark Attendance - ${subject.name}`} />
 
             <div className="max-w-5xl mx-auto pb-12">
-                {/* Back Button & Header */}
-                <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="flex items-start gap-5">
+                <div className="mb-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+                    <div className="flex items-start gap-4">
                         <Link
                             href={route('teacher.attendance.index')}
-                            className="mt-1 p-3 rounded-2xl bg-white border-2 border-gray-100 text-gray-400 hover:text-blue-600 hover:border-blue-100 hover:bg-blue-50/50 transition-all group lg:shadow-sm"
+                            className="p-3.5 rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-blue-600 hover:border-blue-100 transition-all group shrink-0"
                         >
                             <ArrowLeftIcon className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                         </Link>
                         <div>
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className="text-xs font-black text-blue-600 uppercase tracking-widest">{section.grade.name}</span>
-                                <span className="text-gray-300 italic">&bull;</span>
-                                <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Section {section.name}</span>
+                            <div className="flex items-center gap-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                <span className="text-blue-600">{grade.name}</span>
+                                <span className="text-gray-300">/</span>
+                                <span className="text-gray-900 border-b border-gray-50">Section {section.name}</span>
                             </div>
-                            <h1 className="text-4xl font-black text-gray-900 tracking-tight leading-none">
-                                MARK <span className="text-blue-600">ATTENDANCE</span>
+                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight uppercase">
+                                Record <span className="text-blue-600">Attendance</span>
                             </h1>
-                            <p className="mt-2 text-sm font-bold text-gray-400 flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-blue-500" />
-                                {formattedDate}
-                            </p>
+                            <div className="mt-3 flex items-center gap-3">
+                                <span className="px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-[10px] font-bold text-gray-400 tracking-widest flex items-center gap-2">
+                                    <CalendarIcon className="w-4 h-4 text-blue-500" />
+                                    {formattedDate}
+                                </span>
+                                <span className="px-4 py-2 bg-blue-50 border border-blue-50 rounded-xl text-[10px] font-bold text-blue-600 tracking-widest uppercase italic">
+                                    {subject.name}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Batch Actions Container */}
-                    <div className="bg-white p-2 rounded-2xl border-2 border-gray-100 shadow-sm flex items-center gap-2">
-                        <span className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Batch Actions</span>
-                        <div className="w-px h-6 bg-gray-100"></div>
+                    {/* Flat Quick Actions */}
+                    <div className="bg-white p-2 rounded-2xl border border-gray-100 flex items-center gap-2">
+                        <span className="px-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest border-r border-gray-50 mr-1">Batch Ops</span>
                         <button
                             type="button"
                             onClick={() => markAll('Present')}
-                            className="px-4 py-2 rounded-xl bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest hover:bg-green-600 hover:text-white transition-all"
+                            className="px-5 py-2.5 rounded-xl bg-green-50 text-green-600 text-[10px] font-bold uppercase tracking-widest hover:bg-green-600 hover:text-white transition-all"
                         >
-                            All Present
+                            Mark All Present
                         </button>
                         <button
                             type="button"
                             onClick={() => markAll('Absent')}
-                            className="px-4 py-2 rounded-xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all"
+                            className="px-5 py-2.5 rounded-xl bg-red-50 text-red-600 text-[10px] font-bold uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all"
                         >
-                            All Absent
+                            Mark All Absent
                         </button>
                     </div>
                 </div>
 
-                {/* Info Banner */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start">
-                    <CheckIcon className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-blue-800">
-                        <p className="font-medium">Important: Once saved, this attendance record will be locked and cannot be edited.</p>
-                        <p className="mt-1 text-blue-700">Please review all entries carefully before submitting.</p>
+                {/* Professional Advisory */}
+                <div className="bg-gray-50 border border-gray-100 rounded-3xl p-6 flex items-start gap-5 mb-10">
+                    <div className="p-3 bg-blue-600 text-white rounded-2xl shadow-sm shrink-0">
+                        <InformationCircleIcon className="w-5 h-5" />
+                    </div>
+                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-relaxed">
+                        <span className="text-gray-900">Attendance advisory:</span> once synchronized, these records are finalized for reporting and notifications. Please ensure high accuracy before proceeding with the sync.
                     </div>
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
-                    {/* Student Records Layer */}
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {students.map((student, index) => (
                             <div
                                 key={student.id}
-                                className="group bg-white rounded-[24px] border-2 border-gray-50 p-6 transition-all hover:border-blue-100 hover:shadow-xl hover:shadow-blue-50/50"
+                                className="group bg-white rounded-2xl border border-gray-100 p-6 transition-all hover:border-blue-200 relative overflow-hidden"
                             >
+                                <div className="absolute top-0 left-0 w-1 h-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <div className="flex flex-col lg:flex-row lg:items-center gap-6">
                                     {/* Student Identity */}
-                                    <div className="flex items-center gap-4 min-w-[240px]">
-                                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-gray-400 group-hover:from-blue-50 group-hover:to-blue-100 group-hover:text-blue-600 transition-all duration-500 font-black text-xl border-2 border-white shadow-sm overflow-hidden">
+                                    <div className="flex items-center gap-5 min-w-[260px]">
+                                        <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-blue-50 group-hover:text-blue-500 transition-all font-bold text-lg border border-gray-50 shadow-sm overflow-hidden">
                                             {student.profile_photo_url ? (
                                                 <img src={student.profile_photo_url} alt="" className="w-full h-full object-cover" />
                                             ) : (
@@ -147,8 +151,8 @@ export default function Create({ auth, section, subject, grade, students, date, 
                                             )}
                                         </div>
                                         <div>
-                                            <h3 className="text-lg font-black text-gray-900 leading-tight mb-0.5">{student.name}</h3>
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">ID: {student.student_id}</p>
+                                            <h3 className="text-lg font-bold text-gray-900 leading-tight uppercase tracking-tight">{student.name}</h3>
+                                            <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">STU ID: {student.student_id}</p>
                                         </div>
                                     </div>
 
@@ -179,51 +183,48 @@ export default function Create({ auth, section, subject, grade, students, date, 
 
                                     {/* Remarks Field */}
                                     <div className="lg:w-64">
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                value={data.students[index].remarks || ''}
-                                                onChange={(e) => updateRemarks(index, e.target.value)}
-                                                placeholder="Add a remark..."
-                                                className="w-full bg-gray-50 border-none rounded-xl py-3 px-4 text-sm font-bold text-gray-700 placeholder:text-gray-300 focus:ring-2 focus:ring-blue-100 transition-all"
-                                            />
-                                            {data.students[index].remarks && (
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                            )}
-                                        </div>
+                                        <input
+                                            type="text"
+                                            value={data.students[index].remarks || ''}
+                                            onChange={(e) => updateRemarks(index, e.target.value)}
+                                            placeholder="Session remark..."
+                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-5 text-[10px] font-bold text-gray-700 placeholder:text-gray-300 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all"
+                                        />
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    {/* Submission Board */}
-                    <div className="sticky bottom-8 bg-white/80 backdrop-blur-xl rounded-[32px] border-2 border-gray-100 p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl shadow-blue-900/10 transition-all">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                                <InformationCircleIcon className="w-6 h-6" />
+                    {/* Flat Submission Board */}
+                    <div className="sticky bottom-8 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-100 p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-lg border-t-2 border-t-blue-600 transition-all z-20">
+                        <div className="flex items-center gap-5">
+                            <div className="w-11 h-11 rounded-xl bg-gray-900 flex items-center justify-center text-white">
+                                <InformationCircleIcon className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-black text-gray-900 leading-none mb-1 uppercase tracking-tight">Ready to sync?</h4>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                    {data.students.filter(s => s.status === 'Present').length} Present &bull; {data.students.filter(s => s.status === 'Absent').length} Absent
-                                </p>
+                                <h4 className="text-[10px] font-bold text-gray-900 leading-none mb-1.5 uppercase tracking-widest">Commit Session Records?</h4>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest">{data.students.filter(s => s.status === 'Present').length} P</span>
+                                    <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
+                                    <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest">{data.students.filter(s => s.status === 'Absent').length} A</span>
+                                </div>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-3 w-full sm:w-auto">
                             <Link
                                 href={route('teacher.attendance.index')}
-                                className="flex-1 sm:flex-none px-8 py-4 rounded-2xl text-sm font-black text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all text-center uppercase tracking-widest"
+                                className="flex-1 sm:flex-none px-6 py-4 rounded-xl text-[10px] font-bold text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-all text-center uppercase tracking-widest"
                             >
                                 Discard
                             </Link>
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="flex-1 sm:flex-none px-10 py-4 bg-blue-600 text-white rounded-2xl text-sm font-black shadow-xl shadow-blue-200 hover:bg-blue-700 disabled:opacity-50 transition-all uppercase tracking-widest"
+                                className="flex-1 sm:flex-none px-10 py-4 bg-blue-600 text-white rounded-xl text-[10px] font-bold hover:bg-blue-700 disabled:opacity-50 transition-all uppercase tracking-widest"
                             >
-                                {processing ? 'Syncing...' : 'Sync Records'}
+                                {processing ? 'Syncing...' : 'Sync Now'}
                             </button>
                         </div>
                     </div>

@@ -96,6 +96,7 @@ class StudentAcademicController extends Controller
 
         return Inertia::render('Student/Academic/Results', [
             'student' => $student,
+            'marks' => $marks,
             'subjectPerformance' => $subjectPerformance,
             'trendData' => $trendData,
             'academicYear' => $academicYear,

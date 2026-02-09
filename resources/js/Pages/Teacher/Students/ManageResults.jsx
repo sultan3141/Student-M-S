@@ -11,7 +11,7 @@ export default function ManageResults({ grades, subjects, students, selectedGrad
     const [filters, setFilters] = useState({
         grade_id: selectedGrade?.id || '',
         section_id: selectedSection?.id || '',
-        semester: selectedSemester || '',
+        subject_id: '',
     });
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -31,17 +31,23 @@ export default function ManageResults({ grades, subjects, students, selectedGrad
 
     const handleFilterChange = (field, value) => {
         const newFilters = { ...filters, [field]: value };
-        setFilters(newFilters);
 
-        // If grade changes, reset section
+        // Cascading reset logic
         if (field === 'grade_id') {
             newFilters.section_id = '';
-            newFilters.semester = ''; // Reset semester on grade change too
+            newFilters.subject_id = '';
+        } else if (field === 'section_id') {
+            newFilters.subject_id = '';
         }
 
-        // Auto-submit when both are selected
+        setFilters(newFilters);
+
+        // Auto-submit when grade and section are selected (to fetch subjects and students)
         if (newFilters.grade_id && newFilters.section_id) {
-            router.get(route('teacher.students.manage-results'), newFilters, {
+            router.get(route('teacher.students.manage-results'), {
+                grade_id: newFilters.grade_id,
+                section_id: newFilters.section_id
+            }, {
                 preserveState: true,
                 preserveScroll: true,
             });
@@ -91,56 +97,64 @@ export default function ManageResults({ grades, subjects, students, selectedGrad
             <div className="py-8 bg-gray-50/50 min-h-screen">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header Section */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    {/* Header Section */}
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-16">
                         <div>
-                            <h1 className="text-3xl font-black text-gray-900 tracking-tight">
-                                STUDENT <span className="text-blue-600">RESULTS</span>
-                            </h1>
-                            <div className="mt-2 flex items-center text-sm font-medium">
-                                <Link href={route('teacher.dashboard')} className="text-gray-400 hover:text-blue-600 transition-colors">
+                            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-3">
+                                <Link href={route('teacher.dashboard')} className="hover:text-blue-600 transition-colors">
                                     Dashboard
                                 </Link>
-                                <svg className="mx-2 h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                                <span className="text-gray-600">Result Management</span>
+                                <span className="text-gray-300">/</span>
+                                <span className="text-gray-900">Result Management</span>
                             </div>
+                            <h1 className="text-4xl font-black text-gray-900 tracking-tight uppercase">
+                                Student <span className="text-blue-600">Results</span>
+                            </h1>
                         </div>
                         <div className="flex items-center gap-3">
-                            <div className="px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 flex items-center gap-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                {academicYear?.name || 'Current Year'}
+                            <div className="px-5 py-2.5 bg-white border border-gray-100 rounded-2xl shadow-sm text-[11px] font-black text-gray-400 tracking-widest flex items-center gap-2 h-fit">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                {academicYear?.name || '2025–2026'}
                             </div>
                         </div>
                     </div>
 
-                    {/* Filters Card */}
-                    <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8 mb-8 transition-all hover:shadow-2xl hover:shadow-gray-200/60">
-                        <div className="flex flex-col lg:flex-row lg:items-end gap-6">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
+                    {/* Class Selection Card - Centered */}
+                    <div className="max-w-4xl mx-auto mb-16">
+                        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-12 transition-all hover:shadow-md relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-50 to-blue-600/20"></div>
+
+                            <div className="text-center mb-10">
+                                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Class <span className="text-blue-600">Selection</span></h2>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">
+                                    Select grade, section, and subject to begin
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 {/* Grade Selector */}
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
                                         Academic Grade
                                     </label>
                                     <div className="relative group">
                                         <select
                                             value={filters.grade_id}
                                             onChange={(e) => handleFilterChange('grade_id', e.target.value)}
-                                            className="w-full pl-4 pr-10 py-3.5 bg-gray-50 border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500 rounded-xl text-sm font-bold text-gray-700 transition-all appearance-none cursor-pointer"
+                                            className="w-full pl-5 pr-12 py-4 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-2xl text-xs font-black text-gray-700 transition-all appearance-none cursor-pointer"
                                         >
-                                            <option value="">Choose Grade</option>
+                                            <option value="">Select Grade</option>
                                             {grades.map(grade => (
                                                 <option key={grade.id} value={grade.id}>{grade.name}</option>
                                             ))}
                                         </select>
-                                        <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none transition-transform group-hover:text-blue-500" />
+                                        <ChevronDownIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform group-focus-within:rotate-180" />
                                     </div>
                                 </div>
 
                                 {/* Section Selector */}
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
                                         Class Section
                                     </label>
                                     <div className="relative group">
@@ -148,66 +162,63 @@ export default function ManageResults({ grades, subjects, students, selectedGrad
                                             value={filters.section_id}
                                             onChange={(e) => handleFilterChange('section_id', e.target.value)}
                                             disabled={!filters.grade_id}
-                                            className="w-full pl-4 pr-10 py-3.5 bg-gray-50 border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500 rounded-xl text-sm font-bold text-gray-700 transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full pl-5 pr-12 py-4 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-2xl text-xs font-black text-gray-700 transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            <option value="">Choose Section</option>
+                                            <option value="">Select Section</option>
                                             {selectedGradeData?.sections?.map(section => (
                                                 <option key={section.id} value={section.id}>
                                                     Section {section.name} {section.stream && `(${section.stream.name})`}
                                                 </option>
                                             ))}
                                         </select>
-                                        <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none transition-transform group-hover:text-blue-500" />
+                                        <ChevronDownIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform group-focus-within:rotate-180" />
                                     </div>
                                 </div>
 
-                                {/* Semester Selector */}
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
-                                        Academic Term
+                                {/* Subject Selector */}
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
+                                        Subject
                                     </label>
                                     <div className="relative group">
                                         <select
-                                            value={filters.semester}
-                                            onChange={(e) => handleFilterChange('semester', e.target.value)}
-                                            disabled={!filters.grade_id || !filters.section_id}
-                                            className="w-full pl-4 pr-10 py-3.5 bg-gray-50 border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500 rounded-xl text-sm font-bold text-gray-700 transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                            value={filters.subject_id}
+                                            onChange={(e) => handleFilterChange('subject_id', e.target.value)}
+                                            disabled={!filters.section_id}
+                                            className="w-full pl-5 pr-12 py-4 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-2xl text-xs font-black text-gray-700 transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            <option value="">Full Year</option>
-                                            <option value="1">Semester 1</option>
-                                            <option value="2">Semester 2</option>
+                                            <option value="">Select Subject</option>
+                                            {subjects.map(subject => (
+                                                <option key={subject.id} value={subject.id}>{subject.name}</option>
+                                            ))}
                                         </select>
-                                        <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none transition-transform group-hover:text-blue-500" />
+                                        <ChevronDownIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform group-focus-within:rotate-180" />
                                     </div>
                                 </div>
                             </div>
-
-                            <button
-                                onClick={resetFilters}
-                                className="px-6 py-3.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 text-sm font-black transition-all border-none flex items-center gap-2"
-                            >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                RESET
-                            </button>
                         </div>
                     </div>
 
                     {/* Main Content Area */}
-                    {students && students.length > 0 ? (
-                        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+                    {students && filters.subject_id ? (
+                        <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/30 border border-gray-100 overflow-hidden">
                             {/* Table Controls */}
-                            <div className="px-8 py-6 border-b border-gray-100 bg-white sticky top-0 z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="px-10 py-8 border-b border-gray-100 bg-white sticky top-0 z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div>
-                                    <h3 className="text-lg font-black text-gray-900">STUDENT DIRECTORY</h3>
-                                    <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">
-                                        {selectedGrade?.name} • Section {selectedSection?.name} • {filteredStudents.length} Students
-                                    </p>
+                                    <h3 className="text-xl font-black text-gray-900 uppercase">Student Results</h3>
+                                    <div className="flex items-center gap-3 mt-1">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                            {selectedGrade?.name} • Section {selectedSection?.name}
+                                        </p>
+                                        <div className="w-1 h-1 bg-gray-200 rounded-full"></div>
+                                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-wider">
+                                            {subjects.find(s => s.id === parseInt(filters.subject_id))?.name}
+                                        </p>
+                                    </div>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <div className="relative group max-w-xs w-full">
-                                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 transition-colors group-focus-within:text-blue-500" />
+                                        <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 transition-colors group-focus-within:text-blue-500" />
                                         <input
                                             type="text"
                                             value={searchTerm}
@@ -215,24 +226,9 @@ export default function ManageResults({ grades, subjects, students, selectedGrad
                                                 setSearchTerm(e.target.value);
                                                 setCurrentPage(1);
                                             }}
-                                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500 rounded-xl text-sm font-bold text-gray-700 transition-all"
-                                            placeholder="Search by name or ID..."
+                                            className="w-full pl-12 pr-4 py-3.5 bg-gray-50/50 border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-2xl text-[11px] font-black text-gray-700 transition-all placeholder:text-gray-300"
+                                            placeholder="SEARCH BY NAME OR ID..."
                                         />
-                                    </div>
-                                    <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-xl">
-                                        <span className="text-xs font-black text-gray-400 uppercase">Show</span>
-                                        <select
-                                            value={entriesCount}
-                                            onChange={(e) => {
-                                                setEntriesCount(parseInt(e.target.value));
-                                                setCurrentPage(1);
-                                            }}
-                                            className="bg-transparent border-none text-sm font-bold text-gray-700 focus:ring-0 cursor-pointer py-1"
-                                        >
-                                            <option value="10">10</option>
-                                            <option value="25">25</option>
-                                            <option value="50">50</option>
-                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -242,118 +238,115 @@ export default function ManageResults({ grades, subjects, students, selectedGrad
                                 <table className="min-w-full divide-y divide-gray-100">
                                     <thead className="bg-gray-50/50">
                                         <tr>
-                                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">#</th>
-                                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Student Details</th>
-                                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Gender</th>
-                                            {subjects.map(subject => (
-                                                <th key={subject.id} className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                                                    {subject.name}
-                                                </th>
-                                            ))}
-                                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Completion</th>
-                                            <th className="px-8 py-5 text-right text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Actions</th>
+                                            <th className="px-10 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] w-16">#</th>
+                                            <th className="px-10 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Student Details</th>
+                                            <th className="px-10 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Gender</th>
+                                            <th className="px-10 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                                                {subjects.find(s => s.id === parseInt(filters.subject_id))?.name} Status
+                                            </th>
+                                            <th className="px-10 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Overall Progress</th>
+                                            <th className="px-10 py-5 text-right text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-50">
-                                        {paginatedStudents.map((student, index) => (
-                                            <tr key={student.id} className="hover:bg-blue-50/30 transition-colors group">
-                                                <td className="px-8 py-6 whitespace-nowrap text-sm font-black text-gray-300 group-hover:text-blue-200">
-                                                    {String((currentPage - 1) * entriesCount + index + 1).padStart(2, '0')}
-                                                </td>
-                                                <td className="px-8 py-6 whitespace-nowrap">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-black text-sm group-hover:bg-blue-600 group-hover:text-white transition-all">
-                                                            {student.name.charAt(0)}
+                                        {paginatedStudents.map((student, index) => {
+                                            const status = student.subject_status[filters.subject_id];
+                                            return (
+                                                <tr key={student.id} className="hover:bg-gray-50/30 transition-colors group">
+                                                    <td className="px-10 py-6 whitespace-nowrap text-[11px] font-black text-gray-300 group-hover:text-blue-500 transition-colors">
+                                                        {String((currentPage - 1) * entriesCount + index + 1).padStart(2, '0')}
+                                                    </td>
+                                                    <td className="px-10 py-6 whitespace-nowrap">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-300 font-black text-lg group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all shadow-sm">
+                                                                {student.name.charAt(0)}
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-sm font-black text-gray-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{student.name}</div>
+                                                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">{student.student_id}</div>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <div className="text-sm font-black text-gray-900">{student.name}</div>
-                                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{student.student_id}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-6 whitespace-nowrap">
-                                                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${student.gender === 'Female' ? 'bg-pink-100 text-pink-600' : 'bg-blue-100 text-blue-600'
-                                                        }`}>
-                                                        {student.gender}
-                                                    </span>
-                                                </td>
-                                                {subjects.map(subject => {
-                                                    const status = student.subject_status[subject.id];
-                                                    return (
-                                                        <td key={subject.id} className="px-8 py-6 whitespace-nowrap">
-                                                            <div className="flex flex-col gap-1.5">
-                                                                <div className="flex items-center gap-2">
-                                                                    <div className={`text-sm font-black ${getStatusColor(status.percentage)}`}>
-                                                                        {status.percentage}%
-                                                                    </div>
-                                                                    <div className="text-[10px] font-bold text-gray-400">
-                                                                        ({status.filled}/{status.total})
-                                                                    </div>
+                                                    </td>
+                                                    <td className="px-10 py-6 whitespace-nowrap">
+                                                        <span className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest ${student.gender === 'Female' ? 'bg-pink-50 text-pink-600' : 'bg-blue-50 text-blue-600'
+                                                            }`}>
+                                                            {student.gender}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-10 py-6 whitespace-nowrap">
+                                                        <div className="flex flex-col gap-2">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`text-sm font-black ${getStatusColor(status.percentage)}`}>
+                                                                    {status.percentage}%
                                                                 </div>
+                                                                <div className="text-[10px] font-black text-gray-300 uppercase tracking-[0.1em]">
+                                                                    ({status.filled}/{status.total})
+                                                                </div>
+                                                                <div className="w-px h-3 bg-gray-100"></div>
                                                                 {status.is_editable ? (
                                                                     <button
-                                                                        onClick={() => handleEditStudent(student.id, subject.id)}
-                                                                        className="w-fit px-3 py-1 bg-gray-50 text-[10px] font-black text-gray-500 rounded-lg border border-gray-100 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all uppercase tracking-wider"
+                                                                        onClick={() => handleEditStudent(student.id, filters.subject_id)}
+                                                                        className="text-[10px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest transition-colors"
                                                                     >
-                                                                        {status.percentage === 100 ? 'Review' : 'Fill'}
+                                                                        {status.percentage === 100 ? 'REVIEW' : 'ENTER'}
                                                                     </button>
                                                                 ) : (
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            router.get(route('teacher.declare-result.index'), {
-                                                                                step: 5,
-                                                                                grade_id: filters.grade_id,
-                                                                                section_id: filters.section_id,
-                                                                                subject_id: subject.id,
-                                                                                student_id: student.id,
-                                                                                show_closed: 1
-                                                                            });
-                                                                        }}
-                                                                        className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-wider hover:text-gray-900 transition-colors"
-                                                                    >
+                                                                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest flex items-center gap-1.5">
                                                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                                                         </svg>
-                                                                        Locked
-                                                                    </button>
+                                                                        LOCKED
+                                                                    </span>
                                                                 )}
                                                             </div>
-                                                        </td>
-                                                    );
-                                                })}
-                                                <td className="px-8 py-6 whitespace-nowrap">
-                                                    <div className="flex flex-col gap-2">
-                                                        <div className={`text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-md w-fit ${getStatusColor(student.completion_percentage).replace('text-', 'bg-').replace('600', '100')} ${getStatusColor(student.completion_percentage)}`}>
-                                                            {getStatusText(student.completion_percentage)}
+                                                            <div className="w-32 h-1.5 bg-gray-50 rounded-full overflow-hidden">
+                                                                <div
+                                                                    className={`h-full transition-all duration-700 ease-out ${getStatusColor(status.percentage).replace('text-', 'bg-')}`}
+                                                                    style={{ width: `${status.percentage}%` }}
+                                                                ></div>
+                                                            </div>
                                                         </div>
-                                                        <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                            <div
-                                                                className={`h-full transition-all duration-500 ${getStatusColor(student.completion_percentage).replace('text-', 'bg-')}`}
-                                                                style={{ width: `${student.completion_percentage}%` }}
-                                                            ></div>
+                                                    </td>
+                                                    <td className="px-10 py-6 whitespace-nowrap">
+                                                        <div className="flex flex-col gap-2">
+                                                            <div className="flex items-center justify-between w-32">
+                                                                <div className={`text-[9px] font-black uppercase tracking-widest ${getStatusColor(student.completion_percentage)} opacity-80`}>
+                                                                    {getStatusText(student.completion_percentage)}
+                                                                </div>
+                                                                <div className="text-[10px] font-black text-gray-900">
+                                                                    {student.completion_percentage}%
+                                                                </div>
+                                                            </div>
+                                                            <div className="w-32 h-1.5 bg-gray-50 rounded-full overflow-hidden">
+                                                                <div
+                                                                    className={`h-full transition-all duration-1000 ease-out ${getStatusColor(student.completion_percentage).replace('text-', 'bg-')}`}
+                                                                    style={{ width: `${student.completion_percentage}%` }}
+                                                                ></div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-6 whitespace-nowrap text-right text-sm font-medium">
-                                                    <button
-                                                        onClick={() => router.get(route('teacher.students.show', student.id))}
-                                                        className="inline-flex items-center px-4 py-2 bg-white border-2 border-blue-600 text-blue-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                                                    >
-                                                        Analytics
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                    </td>
+                                                    <td className="px-10 py-6 whitespace-nowrap text-right">
+                                                        <button
+                                                            onClick={() => router.get(route('teacher.students.show', student.id))}
+                                                            className="inline-flex items-center px-6 py-2.5 bg-white border border-gray-100 text-gray-900 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm hover:shadow-md active:translate-y-0.5"
+                                                        >
+                                                            REPORT
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
 
                             {/* Enhanced Pagination Footer */}
-                            <div className="px-8 py-6 bg-gray-50 border-t border-gray-100">
+                            <div className="px-10 py-8 bg-gray-50/50 border-t border-gray-100">
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                                     <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                                        Showing <span className="text-gray-900">{filteredStudents.length > 0 ? (currentPage - 1) * entriesCount + 1 : 0}</span> to <span className="text-gray-900">{Math.min(currentPage * entriesCount, filteredStudents.length)}</span> of <span className="text-gray-900">{filteredStudents.length}</span> students
+                                        Page <span className="text-gray-900">{currentPage}</span> of <span className="text-gray-900">{totalPages || 1}</span>
+                                        <span className="mx-3 text-gray-200">|</span>
+                                        Showing <span className="text-gray-900">{filteredStudents.length}</span> Total Students
                                     </div>
 
                                     {totalPages > 1 && (
@@ -361,56 +354,50 @@ export default function ManageResults({ grades, subjects, students, selectedGrad
                                             <button
                                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                                 disabled={currentPage === 1}
-                                                className="p-2 bg-white border border-gray-200 rounded-xl text-gray-400 disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-xs"
+                                                className="px-4 py-2 bg-white border border-gray-100 rounded-xl text-gray-400 disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-[10px] uppercase tracking-widest"
                                             >
-                                                Prev
+                                                PREV
                                             </button>
                                             <div className="flex items-center gap-1.5 px-2">
                                                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                                                     <button
                                                         key={page}
                                                         onClick={() => setCurrentPage(page)}
-                                                        className={`w-8 h-8 rounded-xl font-black text-xs transition-all ${currentPage === page
+                                                        className={`w-10 h-10 rounded-xl font-black text-[10px] transition-all ${currentPage === page
                                                             ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                                                            : 'text-gray-400 hover:bg-gray-100'
+                                                            : 'text-gray-400 hover:bg-gray-50'
                                                             }`}
                                                     >
-                                                        {page}
+                                                        {String(page).padStart(2, '0')}
                                                     </button>
                                                 ))}
                                             </div>
                                             <button
                                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                                 disabled={currentPage === totalPages}
-                                                className="p-2 bg-white border border-gray-200 rounded-xl text-gray-400 disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-xs"
+                                                className="px-4 py-2 bg-white border border-gray-100 rounded-xl text-gray-400 disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-[10px] uppercase tracking-widest"
                                             >
-                                                Next
+                                                NEXT
                                             </button>
                                         </div>
                                     )}
-
-                                    <div className="flex items-center gap-6">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Complete</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Partial</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Empty</span>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-xl shadow-lg p-12 text-center text-gray-500">
-                            <UserGroupIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                            <p className="text-lg font-medium text-gray-900">No results to display</p>
-                            <p className="text-sm">Please select a grade and section from the filters above to view student results.</p>
+                        <div className="max-w-4xl mx-auto bg-white rounded-[3rem] border border-gray-100 p-32 text-center shadow-sm relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/30 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-50/20 rounded-full -ml-16 -mb-16 blur-3xl"></div>
+
+                            <div className="w-24 h-24 bg-gray-50/80 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-sm border border-gray-50 group hover:scale-110 transition-transform duration-500">
+                                <svg className="w-10 h-10 text-gray-200 group-hover:text-blue-200 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <h3 className="text-2xl font-black text-gray-900 mb-4 uppercase tracking-tight tracking-wide">No Class <span className="text-blue-600">Selected</span></h3>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] max-w-xs mx-auto leading-loose opacity-60">
+                                Please select a grade, section, and subject above to view results.
+                            </p>
                         </div>
                     )}
                 </div>

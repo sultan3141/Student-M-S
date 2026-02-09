@@ -6,8 +6,6 @@ import {
     TrashIcon,
     DocumentTextIcon,
     AcademicCapIcon,
-    CheckCircleIcon,
-    LockClosedIcon,
     ClockIcon,
     ChartBarIcon
 } from '@heroicons/react/24/outline';
@@ -42,139 +40,126 @@ export default function Index({ assessments, error, filters }) {
         <TeacherLayout>
             <Head title="Assessments" />
 
-            {/* Premium Header / Hero */}
-            <div className="bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] shadow-lg mb-8 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-12 relative overflow-hidden group">
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400 rounded-full mix-blend-screen filter blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
-                </div>
-
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
-                    <div>
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2.5 bg-blue-500/20 rounded-2xl backdrop-blur-md border border-blue-400/30">
-                                <DocumentTextIcon className="w-5 h-5 text-blue-200" />
-                            </div>
-                            <span className="text-blue-200 font-black uppercase tracking-[0.3em] text-[10px]">Academic Evaluation</span>
+            {/* Clean Professional Header */}
+            <div className="bg-white border-b border-gray-200 mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-semibold text-gray-900 mb-1">
+                                Assessments
+                            </h1>
+                            <p className="text-sm text-gray-600">
+                                Create and manage student assessments
+                            </p>
                         </div>
-                        <h1 className="text-4xl font-black text-white tracking-tight leading-none">
-                            MY <span className="text-blue-300">ASSESSMENTS</span>
-                        </h1>
-                        <p className="mt-4 text-blue-100/60 font-medium max-w-xl">
-                            Create, track, and manage student evaluations. High-precision tools for academic performance measurement.
-                        </p>
+                        {!error && (
+                            <Link
+                                href={route('teacher.assessments-simple.create')}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center gap-2"
+                            >
+                                <PlusIcon className="w-4 h-4" />
+                                Create Assessment
+                            </Link>
+                        )}
                     </div>
-
-                    {!error && (
-                        <Link
-                            href={route('teacher.assessments-simple.create')}
-                            className="inline-flex items-center px-10 py-5 bg-white text-blue-600 text-xs font-black uppercase tracking-widest rounded-[32px] hover:translate-y-[-4px] hover:shadow-2xl hover:shadow-blue-500/20 transition-all active:translate-y-0"
-                        >
-                            <PlusIcon className="w-5 h-5 mr-3" />
-                            Create New Assessment
-                        </Link>
-                    )}
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto pb-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
                 {error ? (
-                    <div className="bg-rose-50 border-2 border-rose-100 rounded-[32px] p-8 flex items-center gap-6 shadow-xl shadow-rose-900/5">
-                        <div className="w-16 h-16 rounded-[24px] bg-rose-100 flex items-center justify-center text-rose-600">
-                            <AcademicCapIcon className="w-8 h-8" />
-                        </div>
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+                        <AcademicCapIcon className="w-5 h-5 text-red-600" />
                         <div>
-                            <h3 className="text-rose-900 font-black uppercase tracking-widest text-sm mb-1">System Error</h3>
-                            <p className="text-rose-700 font-medium text-sm">{error}</p>
+                            <h3 className="text-sm font-medium text-red-900">Error</h3>
+                            <p className="text-sm text-red-700">{error}</p>
                         </div>
                     </div>
                 ) : deduplicatedAssessments && deduplicatedAssessments.length > 0 ? (
-                    <div className="bg-white rounded-[40px] border-2 border-gray-50 shadow-sm overflow-hidden">
-                        <div className="p-8 border-b border-gray-100 bg-white sticky top-0 z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div>
-                                <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-4">
-                                    ASSESSMENT BOARD
-                                    {isFiltered && (
-                                        <div className="flex items-center gap-2">
-                                            <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-blue-100">
-                                                Filtered View
-                                            </span>
-                                            <button
-                                                onClick={clearFilters}
-                                                className="text-[10px] font-black text-gray-400 hover:text-rose-500 uppercase tracking-widest transition-colors"
-                                            >
-                                                [Clear]
-                                            </button>
-                                        </div>
-                                    )}
+                    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <h2 className="text-lg font-semibold text-gray-900">
+                                    Assessment List
                                 </h2>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Real-time Evaluation tracking</p>
+                                {isFiltered && (
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded border border-blue-200">
+                                            Filtered
+                                        </span>
+                                        <button
+                                            onClick={clearFilters}
+                                            className="text-xs text-gray-500 hover:text-gray-700"
+                                        >
+                                            Clear
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                            <div className="flex items-center gap-4 bg-gray-50 px-4 py-2 rounded-2xl border border-gray-100">
-                                <ChartBarIcon className="w-5 h-5 text-blue-500" />
-                                <span className="text-xs font-black text-gray-600 uppercase tracking-widest">{deduplicatedAssessments.length} Total</span>
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <ChartBarIcon className="w-4 h-4" />
+                                <span>{deduplicatedAssessments.length} Total</span>
                             </div>
                         </div>
 
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-50">
-                                <thead className="bg-gray-50/50">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-8 py-6 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Title</th>
-                                        <th className="px-8 py-6 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Assignment</th>
-                                        <th className="px-8 py-6 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Date</th>
-                                        <th className="px-8 py-6 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Max Score</th>
-                                        <th className="px-8 py-6 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Status</th>
-                                        <th className="px-8 py-6 text-right text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Control</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grade & Subject</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Max Score</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-50">
+                                <tbody className="bg-white divide-y divide-gray-200">
                                     {deduplicatedAssessments.map((assessment) => (
-                                        <tr key={assessment.id} className="hover:bg-blue-50/30 transition-colors group">
-                                            <td className="px-8 py-6 whitespace-nowrap">
-                                                <div className="text-sm font-black text-gray-900 uppercase tracking-tight group-hover:text-blue-600 transition-colors">
+                                        <tr key={assessment.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">
                                                     {assessment.name}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6 whitespace-nowrap">
-                                                <div className="flex flex-col gap-1">
-                                                    <div className="text-xs font-black text-gray-700 uppercase">{assessment.grade?.name}</div>
-                                                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{assessment.subject?.name}</div>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">{assessment.grade?.name}</div>
+                                                <div className="text-xs text-gray-500">{assessment.subject?.name}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                                                    <ClockIcon className="w-4 h-4" />
+                                                    {new Date(assessment.due_date || assessment.date).toLocaleDateString()}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6 whitespace-nowrap">
-                                                <div className="flex items-center gap-2 text-xs font-black text-gray-900 tabular-nums">
-                                                    <ClockIcon className="w-4 h-4 text-gray-300" />
-                                                    {new Date(assessment.due_date || assessment.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6 whitespace-nowrap">
-                                                <div className="inline-flex items-center px-3 py-1 bg-gray-50 border border-gray-100 rounded-lg text-sm font-black text-gray-900 tabular-nums shadow-sm">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">
                                                     {assessment.max_score || assessment.total_marks}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6 whitespace-nowrap">
-                                                <span className={`px-4 py-1.5 inline-flex text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 py-1 text-xs font-medium rounded
                                                     ${assessment.status === 'published'
-                                                        ? 'bg-emerald-100 text-emerald-700'
+                                                        ? 'bg-green-100 text-green-800'
                                                         : assessment.status === 'locked'
-                                                            ? 'bg-rose-100 text-rose-700'
-                                                            : 'bg-amber-100 text-amber-700'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : 'bg-yellow-100 text-yellow-800'
                                                     }`}>
                                                     {assessment.status || 'draft'}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-6 whitespace-nowrap text-right">
+                                            <td className="px-6 py-4 whitespace-nowrap text-right">
                                                 <button
                                                     onClick={() => handleDelete(assessment.id)}
-                                                    className={`p-3 rounded-2xl transition-all shadow-sm flex items-center justify-center ml-auto
+                                                    className={`p-2 rounded-lg transition-colors
                                                         ${assessment.status === 'locked'
-                                                            ? 'bg-gray-50 text-gray-300 cursor-not-allowed border border-gray-100'
-                                                            : 'bg-white text-rose-500 border border-rose-100 hover:bg-rose-600 hover:text-white hover:border-rose-600'
+                                                            ? 'text-gray-300 cursor-not-allowed'
+                                                            : 'text-red-600 hover:bg-red-50'
                                                         }
                                                     `}
                                                     disabled={assessment.status === 'locked'}
+                                                    title="Delete assessment"
                                                 >
-                                                    <TrashIcon className="w-5 h-5" />
+                                                    <TrashIcon className="w-4 h-4" />
                                                 </button>
                                             </td>
                                         </tr>
@@ -184,20 +169,20 @@ export default function Index({ assessments, error, filters }) {
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-[40px] border-2 border-dashed border-gray-200 p-20 text-center flex flex-col items-center">
-                        <div className="w-24 h-24 rounded-[32px] bg-gray-50 flex items-center justify-center text-gray-200 mb-8 border border-gray-100 shadow-inner">
-                            <DocumentTextIcon className="w-12 h-12" />
+                    <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+                        <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-lg flex items-center justify-center mx-auto mb-4">
+                            <DocumentTextIcon className="w-10 h-10" />
                         </div>
-                        <h3 className="text-2xl font-black text-gray-900 tracking-tight uppercase mb-2">No Assessments Found</h3>
-                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-8">
-                            Your Evaluation board is currently empty.
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Assessments Found</h3>
+                        <p className="text-sm text-gray-600 mb-6">
+                            You haven't created any assessments yet.
                         </p>
                         <Link
                             href={route('teacher.assessments-simple.create')}
-                            className="inline-flex items-center px-12 py-5 bg-blue-600 text-white text-xs font-black uppercase tracking-widest rounded-[32px] hover:translate-y-[-4px] hover:shadow-2xl hover:shadow-blue-200 transition-all active:translate-y-0"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                         >
-                            <PlusIcon className="w-5 h-5 mr-3" />
-                            Create Your First Assessment
+                            <PlusIcon className="w-4 h-4" />
+                            Create Assessment
                         </Link>
                     </div>
                 )}

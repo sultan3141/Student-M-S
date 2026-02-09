@@ -16,7 +16,7 @@ import {
 export default function History({ auth, records, filters, filterOptions, stats }) {
     const [expandedRecord, setExpandedRecord] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
-    
+
     const [localFilters, setLocalFilters] = useState({
         date_from: filters.date_from || '',
         date_to: filters.date_to || '',
@@ -24,18 +24,18 @@ export default function History({ auth, records, filters, filterOptions, stats }
         section_id: filters.section_id || '',
         subject_id: filters.subject_id || '',
     });
-    
+
     const handleFilterChange = (key, value) => {
         setLocalFilters(prev => ({ ...prev, [key]: value }));
     };
-    
+
     const applyFilters = () => {
         router.get(route('teacher.attendance.history'), localFilters, {
             preserveState: true,
             preserveScroll: true,
         });
     };
-    
+
     const clearFilters = () => {
         const cleared = {
             date_from: '',
@@ -47,11 +47,11 @@ export default function History({ auth, records, filters, filterOptions, stats }
         setLocalFilters(cleared);
         router.get(route('teacher.attendance.history'), cleared);
     };
-    
+
     const toggleRecord = (index) => {
         setExpandedRecord(expandedRecord === index ? null : index);
     };
-    
+
     const getStatusIcon = (status) => {
         switch (status) {
             case 'Present':
@@ -66,108 +66,113 @@ export default function History({ auth, records, filters, filterOptions, stats }
                 return null;
         }
     };
-    
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'Present':
-                return 'bg-green-100 text-green-800';
+                return 'bg-green-50 text-green-600';
             case 'Absent':
-                return 'bg-red-100 text-red-800';
+                return 'bg-red-50 text-red-600';
             case 'Late':
-                return 'bg-yellow-100 text-yellow-800';
+                return 'bg-amber-50 text-amber-600';
             case 'Excused':
-                return 'bg-blue-100 text-blue-800';
+                return 'bg-blue-50 text-blue-600';
             default:
-                return 'bg-gray-100 text-gray-800';
+                return 'bg-gray-50 text-gray-400';
         }
     };
-    
+
     return (
         <TeacherLayout>
             <Head title="Attendance History" />
-            
+
             <div className="space-y-6">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">📚 Attendance History</h1>
-                        <p className="mt-1 text-sm text-gray-500">View past attendance records</p>
+                        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                            <Link href={route('teacher.dashboard')} className="hover:text-blue-600 transition-colors">Dashboard</Link>
+                            <span className="text-gray-300">/</span>
+                            <Link href={route('teacher.attendance.index')} className="hover:text-blue-600 transition-colors">Attendance</Link>
+                            <span className="text-gray-300">/</span>
+                            <span className="text-gray-900 border-b border-gray-50 uppercase tracking-tighter">History</span>
+                        </div>
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight uppercase">
+                            Attendance <span className="text-blue-600">Archive</span>
+                        </h1>
                     </div>
-                    
+
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                        className={`inline-flex items-center px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${showFilters ? 'bg-gray-900 text-white' : 'bg-white border border-gray-100 text-gray-400 hover:text-blue-600'}`}
                     >
-                        <FunnelIcon className="w-5 h-5 mr-2" />
-                        {showFilters ? 'Hide Filters' : 'Show Filters'}
+                        <FunnelIcon className="w-4 h-4 mr-2" />
+                        {showFilters ? 'Hide Filters' : 'Filter View'}
                     </button>
                 </div>
-                
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div className="flex items-center">
-                            <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
-                                <CalendarIcon className="w-6 h-6" />
+
+                {/* Analytics Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    <div className="bg-white rounded-2xl border border-gray-100 p-6 transition-colors hover:border-blue-100">
+                        <div className="flex items-center gap-6">
+                            <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
+                                <CalendarIcon className="w-5 h-5" />
                             </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">Total Records</p>
-                                <p className="text-2xl font-semibold text-gray-900">{stats.total_records}</p>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Total Records</p>
+                                <p className="text-2xl font-bold text-gray-900 uppercase">{stats.total_records} Entries</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div className="flex items-center">
-                            <div className="p-3 rounded-lg bg-green-50 text-green-600">
-                                <ChartBarIcon className="w-6 h-6" />
+
+                    <div className="bg-white rounded-2xl border border-gray-100 p-6 transition-colors hover:border-green-100">
+                        <div className="flex items-center gap-6">
+                            <div className="p-3 bg-green-50 rounded-xl text-green-600">
+                                <ChartBarIcon className="w-5 h-5" />
                             </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">Average Attendance</p>
-                                <p className="text-2xl font-semibold text-gray-900">{stats.avg_attendance_rate}%</p>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Efficiency Score</p>
+                                <p className="text-2xl font-bold text-gray-900 uppercase">{stats.avg_attendance_rate}% Stability</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                {/* Filters */}
+
+                {/* Filters Board */}
                 {showFilters && (
-                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <h3 className="text-sm font-semibold text-gray-700 mb-4">Filter Records</h3>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    From Date
-                                </label>
+                    <div className="bg-white rounded-2xl p-8 border border-gray-100 mb-10 overflow-hidden">
+                        <h3 className="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                            <FunnelIcon className="w-4 h-4 text-blue-600" />
+                            Database Refinement
+                        </h3>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">Date From</label>
                                 <input
                                     type="date"
                                     value={localFilters.date_from}
                                     onChange={(e) => handleFilterChange('date_from', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-xl text-[10px] font-bold text-gray-700 transition-all uppercase tracking-tight"
                                 />
                             </div>
-                            
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    To Date
-                                </label>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">Date To</label>
                                 <input
                                     type="date"
                                     value={localFilters.date_to}
                                     onChange={(e) => handleFilterChange('date_to', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-xl text-[10px] font-bold text-gray-700 transition-all uppercase tracking-tight"
                                 />
                             </div>
-                            
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Grade
-                                </label>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">Grade</label>
                                 <select
                                     value={localFilters.grade_id}
                                     onChange={(e) => handleFilterChange('grade_id', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-xl text-[10px] font-bold text-gray-700 transition-all appearance-none cursor-pointer uppercase tracking-tight"
                                 >
                                     <option value="">All Grades</option>
                                     {filterOptions.grades.map(grade => (
@@ -175,15 +180,13 @@ export default function History({ auth, records, filters, filterOptions, stats }
                                     ))}
                                 </select>
                             </div>
-                            
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Section
-                                </label>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">Section</label>
                                 <select
                                     value={localFilters.section_id}
                                     onChange={(e) => handleFilterChange('section_id', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-xl text-[10px] font-bold text-gray-700 transition-all appearance-none cursor-pointer uppercase tracking-tight"
                                 >
                                     <option value="">All Sections</option>
                                     {filterOptions.sections.map(section => (
@@ -193,15 +196,13 @@ export default function History({ auth, records, filters, filterOptions, stats }
                                     ))}
                                 </select>
                             </div>
-                            
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Subject
-                                </label>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">Subject</label>
                                 <select
                                     value={localFilters.subject_id}
                                     onChange={(e) => handleFilterChange('subject_id', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-xl text-[10px] font-bold text-gray-700 transition-all appearance-none cursor-pointer uppercase tracking-tight"
                                 >
                                     <option value="">All Subjects</option>
                                     {filterOptions.subjects.map(subject => (
@@ -210,128 +211,118 @@ export default function History({ auth, records, filters, filterOptions, stats }
                                 </select>
                             </div>
                         </div>
-                        
-                        <div className="flex items-center justify-end space-x-3 mt-4">
+
+                        <div className="flex items-center justify-end gap-3 mt-8">
                             <button
                                 onClick={clearFilters}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                className="px-6 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors"
                             >
-                                Clear
+                                Reset
                             </button>
                             <button
                                 onClick={applyFilters}
-                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                                className="px-8 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-bold hover:bg-blue-700 hover:shadow-blue-100 transition-all uppercase tracking-widest"
                             >
-                                Apply Filters
+                                Update Results
                             </button>
                         </div>
                     </div>
                 )}
-                
-                {/* Records List */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-                        <h3 className="text-lg font-medium text-gray-900">Past Attendance Records</h3>
+
+                {/* Records Collection */}
+                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-12">
+                    <div className="px-8 py-5 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
+                        <h3 className="text-[10px] font-bold text-gray-900 uppercase tracking-widest italic">Synchronized Archives</h3>
+                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{records.length} Cycles</span>
                     </div>
-                    
+
                     {records.length > 0 ? (
                         <div className="divide-y divide-gray-100">
                             {records.map((record, index) => (
                                 <div key={index} className="transition-colors hover:bg-gray-50/50">
                                     {/* Summary Row */}
                                     <div
-                                        className="p-6 cursor-pointer"
+                                        className={`p-8 cursor-pointer underline-offset-4 ${expandedRecord === index ? 'bg-blue-50/20' : 'hover:bg-gray-50/50'}`}
                                         onClick={() => toggleRecord(index)}
                                     >
-                                        <div className="flex items-center justify-between">
+                                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                                             <div className="flex-1">
-                                                <div className="flex items-center space-x-3">
-                                                    <span className="text-sm font-medium text-gray-900">
+                                                <div className="flex flex-wrap items-center gap-3 mb-3">
+                                                    <span className="text-sm font-bold text-gray-900 tracking-tight">
                                                         {record.formatted_date}
                                                     </span>
-                                                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-xs font-medium text-gray-600">
-                                                        {record.grade_name} - {record.section_name}
+                                                    <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
+                                                    <span className="px-3 py-1 rounded-lg bg-blue-50 text-[9px] font-bold text-blue-600 uppercase tracking-widest">
+                                                        {record.grade_name} &bull; {record.section_name}
                                                     </span>
-                                                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-xs font-medium text-blue-700">
+                                                    <span className="px-3 py-1 rounded-lg bg-gray-100 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                                                         {record.subject_name}
                                                     </span>
                                                 </div>
-                                                
-                                                <div className="mt-2 flex items-center space-x-6 text-sm">
-                                                    <span className="flex items-center text-green-600">
-                                                        <CheckCircleIcon className="w-4 h-4 mr-1" />
-                                                        {record.present} Present
-                                                    </span>
-                                                    <span className="flex items-center text-red-600">
-                                                        <XCircleIcon className="w-4 h-4 mr-1" />
-                                                        {record.absent} Absent
-                                                    </span>
+
+                                                <div className="flex flex-wrap items-center gap-5">
+                                                    <div className="flex items-center text-green-600">
+                                                        <CheckCircleIcon className="w-3.5 h-3.5 mr-1.5" />
+                                                        <span className="text-[9px] font-bold uppercase tracking-widest">{record.present} P</span>
+                                                    </div>
+                                                    <div className="flex items-center text-red-600">
+                                                        <XCircleIcon className="w-3.5 h-3.5 mr-1.5" />
+                                                        <span className="text-[9px] font-bold uppercase tracking-widest">{record.absent} A</span>
+                                                    </div>
                                                     {record.late > 0 && (
-                                                        <span className="flex items-center text-yellow-600">
-                                                            <ClockIcon className="w-4 h-4 mr-1" />
-                                                            {record.late} Late
-                                                        </span>
+                                                        <div className="flex items-center text-amber-600">
+                                                            <ClockIcon className="w-3.5 h-3.5 mr-1.5" />
+                                                            <span className="text-[9px] font-bold uppercase tracking-widest">{record.late} L</span>
+                                                        </div>
                                                     )}
-                                                    {record.excused > 0 && (
-                                                        <span className="flex items-center text-blue-600">
-                                                            <ExclamationCircleIcon className="w-4 h-4 mr-1" />
-                                                            {record.excused} Excused
-                                                        </span>
-                                                    )}
-                                                    <span className="text-gray-600">
-                                                        Rate: {record.attendance_rate}%
-                                                    </span>
+                                                    <div className="px-4 border-l border-gray-100 ml-1">
+                                                        <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">Efficiency: <span className="text-gray-900">{record.attendance_rate}%</span></span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            
-                                            <div className="ml-4">
-                                                {expandedRecord === index ? (
-                                                    <ChevronUpIcon className="w-5 h-5 text-gray-400" />
-                                                ) : (
-                                                    <ChevronDownIcon className="w-5 h-5 text-gray-400" />
-                                                )}
+
+                                            <div className="shrink-0">
+                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${expandedRecord === index ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 rotate-180' : 'bg-gray-50 text-gray-300'}`}>
+                                                    <ChevronDownIcon className="w-5 h-5" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Expanded Details */}
                                     {expandedRecord === index && (
-                                        <div className="px-6 pb-6 bg-gray-50/50">
-                                            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                                                <table className="min-w-full divide-y divide-gray-200">
-                                                    <thead className="bg-gray-50">
-                                                        <tr>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        <div className="px-10 pb-10">
+                                            <div className="bg-gray-50/50 rounded-[2rem] border border-gray-100 overflow-hidden">
+                                                <table className="min-w-full divide-y divide-gray-100">
+                                                    <thead>
+                                                        <tr className="bg-white/50">
+                                                            <th className="px-8 py-4 text-left text-[9px] font-black text-gray-300 uppercase tracking-widest">
                                                                 Student
                                                             </th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                                ID
-                                                            </th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            <th className="px-8 py-4 text-left text-[9px] font-black text-gray-300 uppercase tracking-widest">
                                                                 Status
                                                             </th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                                Remarks
+                                                            <th className="px-8 py-4 text-left text-[9px] font-black text-gray-300 uppercase tracking-widest">
+                                                                Analytical Remark
                                                             </th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="bg-white divide-y divide-gray-200">
+                                                    <tbody className="divide-y divide-gray-100">
                                                         {record.students.map((student, idx) => (
-                                                            <tr key={idx} className="hover:bg-gray-50">
-                                                                <td className="px-4 py-3 text-sm text-gray-900">
-                                                                    {student.name}
+                                                            <tr key={idx} className="hover:bg-white transition-colors">
+                                                                <td className="px-8 py-5">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-sm font-black text-gray-900 uppercase tracking-tight">{student.name}</span>
+                                                                        <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">ID: {student.student_id}</span>
+                                                                    </div>
                                                                 </td>
-                                                                <td className="px-4 py-3 text-sm text-gray-500">
-                                                                    {student.student_id}
-                                                                </td>
-                                                                <td className="px-4 py-3">
-                                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(student.status)}`}>
-                                                                        {getStatusIcon(student.status)}
-                                                                        <span className="ml-1">{student.status}</span>
+                                                                <td className="px-8 py-5">
+                                                                    <span className={`inline-flex items-center px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${getStatusColor(student.status)}`}>
+                                                                        {student.status}
                                                                     </span>
                                                                 </td>
-                                                                <td className="px-4 py-3 text-sm text-gray-500">
-                                                                    {student.remarks || '-'}
+                                                                <td className="px-8 py-5 text-xs font-bold text-gray-400 italic">
+                                                                    {student.remarks || 'No remarks recorded'}
                                                                 </td>
                                                             </tr>
                                                         ))}
@@ -344,10 +335,14 @@ export default function History({ auth, records, filters, filterOptions, stats }
                             ))}
                         </div>
                     ) : (
-                        <div className="p-12 text-center text-gray-500">
-                            <CalendarIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                            <p className="text-lg font-medium">No attendance records found</p>
-                            <p className="text-sm">Try adjusting your filters or date range</p>
+                        <div className="p-24 text-center">
+                            <div className="w-24 h-24 bg-gray-50/80 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-sm border border-gray-50">
+                                <CalendarIcon className="w-10 h-10 text-gray-200" />
+                            </div>
+                            <h3 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">No Archive Found</h3>
+                            <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.25em] max-w-xs mx-auto leading-loose opacity-60 mt-4">
+                                Try adjusting your filters or date range to find historical attendance sessions.
+                            </p>
                         </div>
                     )}
                 </div>

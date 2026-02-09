@@ -237,7 +237,9 @@ class TeacherAssessmentController extends Controller
             'assessments' => 'required|array|min:1',
             'assessments.*.name' => 'required|string|max:255',
             'assessments.*.total_marks' => 'required|numeric|min:0',
-            'assessments.*.assessment_type_id' => 'nullable|exists:assessment_types,id', // Added validation
+            'assessments.*.assessment_type_id' => 'nullable|exists:assessment_types,id',
+            'assessments.*.due_date' => 'nullable|date',
+            'assessments.*.description' => 'nullable|string',
         ]);
 
         // Get all sections in this grade that the teacher teaches this subject
@@ -272,9 +274,9 @@ class TeacherAssessmentController extends Controller
                     'section_id' => $sectionId,
                     'subject_id' => $validated['subject_id'],
                     'assessment_type_id' => $assessmentData['assessment_type_id'] ?? null,
-                    'due_date' => now()->addDays(7), // Default to one week from now
+                    'due_date' => $assessmentData['due_date'] ?? now()->addDays(7),
                     'max_score' => $assessmentData['total_marks'],
-                    'description' => null,
+                    'description' => $assessmentData['description'] ?? null,
                     'academic_year_id' => $academicYear->id,
                     'weight_percentage' => $weight,
                     'semester' => $academicYear->getCurrentSemester() ?? '1',

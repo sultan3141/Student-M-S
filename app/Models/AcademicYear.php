@@ -27,8 +27,7 @@ class AcademicYear extends Model
      */
     public static function current()
     {
-        // PostgreSQL-compatible boolean query
-        return static::whereRaw("is_current = true")->first();
+        return static::whereRaw('is_current = true')->first();
     }
 
     /**

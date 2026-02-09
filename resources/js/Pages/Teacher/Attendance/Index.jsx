@@ -85,96 +85,123 @@ export default function Index({ auth, schedule, todayDate, stats }) {
 
     return (
         <TeacherLayout>
-            <Head title="Attendance Dashboard" />
+            <Head title="Attendance Console" />
 
-            {/* Header / Hero Section */}
-            <div className="bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] shadow-sm mb-8 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                {/* Clean Header */}
+                <div className="mb-10">
+                    <div className="flex items-center gap-2 mb-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                        <Link href={route('teacher.dashboard')} className="hover:text-blue-600 transition-colors">Dashboard</Link>
+                        <span className="text-gray-300">/</span>
+                        <span className="text-gray-900 border-b border-gray-100 italic">Attendance</span>
+                    </div>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                                    <CalendarIcon className="w-5 h-5 text-white" />
-                                </div>
-                                <span className="text-blue-100 font-bold uppercase tracking-widest text-[10px]">{todayDate}</span>
-                            </div>
-                            <h1 className="text-3xl font-black text-white tracking-tight">
-                                ATTENDANCE <span className="text-blue-200">DASHBOARD</span>
+                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight uppercase">
+                                Attendance <span className="text-blue-600">Console</span>
                             </h1>
+                            <p className="mt-2 text-xs font-bold text-gray-400 flex items-center gap-2">
+                                <CalendarIcon className="w-4 h-4 text-blue-500" />
+                                {todayDate}
+                            </p>
                         </div>
+                        <Link
+                            href={route('teacher.attendance.history')}
+                            className="inline-flex items-center px-6 py-3 bg-white border border-gray-100 rounded-2xl text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-blue-600 hover:border-blue-100 transition-all shadow-sm"
+                        >
+                            <ClockIcon className="w-4 h-4 mr-2" />
+                            View Archive
+                        </Link>
+                    </div>
+                </div>
 
-                        {/* Summary Stats in Hero */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
-                                <div className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Completed</div>
-                                <div className="text-2xl font-black text-white leading-none">
-                                    {stats?.todayCompleted ?? 0} <span className="text-xs font-medium text-white/50">/ {stats?.totalClasses ?? 0}</span>
-                                </div>
+                {/* Flat Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <div className="bg-white rounded-2xl border border-gray-100 p-6 transition-colors hover:border-blue-100">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
+                                <UserGroupIcon className="w-5 h-5" />
                             </div>
-                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
-                                <div className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Weekly Rate</div>
-                                <div className="text-2xl font-black text-white leading-none">{stats?.weekRate ?? 0}%</div>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Active Cohorts</p>
+                                <p className="text-2xl font-bold text-gray-900">{stats?.total_sections ?? 0}</p>
                             </div>
-                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hidden sm:block">
-                                <div className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Pending</div>
-                                <div className="text-2xl font-black text-white leading-none">{(stats?.totalClasses ?? 0) - (stats?.todayCompleted ?? 0)}</div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-gray-100 p-6 transition-colors hover:border-green-100">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-green-50 rounded-xl text-green-600">
+                                <CheckCircleIcon className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Today's Progress</p>
+                                <p className="text-2xl font-bold text-gray-900">{stats?.today_completed ?? 0}%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-gray-100 p-6 transition-colors hover:border-amber-100">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-amber-50 rounded-xl text-amber-600">
+                                <BookOpenIcon className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Scheduled Today</p>
+                                <p className="text-2xl font-bold text-gray-900">{schedule?.length ?? 0} Classes</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="max-w-7xl mx-auto py-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column: Take Attendance Form */}
-                    <div className="lg:col-span-1">
-                        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2 bg-blue-50 rounded-xl">
-                                    <ClockIcon className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <h2 className="text-xl font-black text-gray-900 tracking-tight">Take Attendance</h2>
-                            </div>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                    {/* Left Column: Attendance Form */}
+                    <div className="lg:col-span-4">
+                        <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+                            <h2 className="text-[11px] font-bold text-gray-900 uppercase tracking-widest mb-8 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                                Attendance Session
+                            </h2>
 
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">1. Select Grade</label>
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Academic Grade</label>
                                     <select
                                         value={selectedGrade}
                                         onChange={(e) => setSelectedGrade(e.target.value)}
-                                        className="w-full bg-gray-50 border-none rounded-2xl py-4 px-4 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-100 transition-all"
+                                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-xl text-[11px] font-bold text-gray-700 transition-all appearance-none cursor-pointer uppercase tracking-tight"
                                     >
-                                        <option value="">Choose Grade</option>
+                                        <option value="">Select Grade</option>
                                         {grades.map(grade => (
                                             <option key={grade.id} value={grade.id}>{grade.name}</option>
                                         ))}
                                     </select>
                                 </div>
 
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">2. Select Section</label>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Class Section</label>
                                     <select
                                         value={selectedSection}
                                         onChange={(e) => setSelectedSection(e.target.value)}
                                         disabled={!selectedGrade || loading}
-                                        className="w-full bg-gray-50 border-none rounded-2xl py-4 px-4 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-100 transition-all disabled:opacity-50"
+                                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-xl text-[11px] font-bold text-gray-700 transition-all appearance-none cursor-pointer disabled:opacity-50 uppercase tracking-tight"
                                     >
-                                        <option value="">Choose Section</option>
+                                        <option value="">Select Section</option>
                                         {sections.map(section => (
                                             <option key={section.id} value={section.id}>{section.name}</option>
                                         ))}
                                     </select>
                                 </div>
 
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">3. Select Subject</label>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Session Subject</label>
                                     <select
                                         value={selectedSubject}
                                         onChange={(e) => setSelectedSubject(e.target.value)}
                                         disabled={!selectedSection || loading}
-                                        className="w-full bg-gray-50 border-none rounded-2xl py-4 px-4 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-100 transition-all disabled:opacity-50"
+                                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 rounded-xl text-[11px] font-bold text-gray-700 transition-all appearance-none cursor-pointer disabled:opacity-50 uppercase tracking-tight"
                                     >
-                                        <option value="">Choose Subject</option>
+                                        <option value="">Select Subject</option>
                                         {subjects.map(subject => (
                                             <option key={subject.id} value={subject.id}>{subject.name}</option>
                                         ))}
@@ -184,119 +211,89 @@ export default function Index({ auth, schedule, todayDate, stats }) {
                                 <button
                                     onClick={handleTakeAttendance}
                                     disabled={!selectedGrade || !selectedSection || !selectedSubject || loading}
-                                    className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-200 hover:bg-blue-700 disabled:opacity-50 transition-all uppercase tracking-widest mt-4"
+                                    className="w-full py-5 bg-blue-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 transition-all"
                                 >
-                                    {loading ? 'Processing...' : 'Start Marking'}
+                                    {loading ? 'Processing...' : 'Launch Session'}
                                 </button>
-
-                                <Link
-                                    href={route('teacher.attendance.history')}
-                                    className="block w-full text-center py-4 text-sm font-black text-gray-400 uppercase tracking-widest hover:text-blue-600 transition-colors"
-                                >
-                                    Attendance History
-                                </Link>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Column: Today's Schedule */}
-                    <div className="lg:col-span-2">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-1.5 h-6 bg-blue-600 rounded-full"></div>
-                                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Today's Schedule</h2>
-                            </div>
-                            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                {schedule?.length ?? 0} Classes Today
-                            </div>
-                        </div>
+                    {/* Right Column: Today's Feed */}
+                    <div className="lg:col-span-8">
+                        <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+                            <h2 className="text-[11px] font-bold text-gray-900 uppercase tracking-widest mb-8 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                    Synchronized Activity
+                                </div>
+                                <span className="text-[9px] font-bold text-gray-300">Synchronized realtime</span>
+                            </h2>
 
-                        {schedule?.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {schedule.map((cls) => {
-                                    const isCompleted = cls.status === 'Completed';
-                                    return (
-                                        <div
-                                            key={cls.section_id}
-                                            className={`group relative bg-white rounded-[32px] border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${isCompleted
-                                                ? 'border-green-100 hover:border-green-300'
-                                                : 'border-blue-50 hover:border-blue-200'
-                                                }`}
-                                        >
-                                            <div className="p-8">
-                                                {/* Status Badge */}
-                                                <div className="absolute top-8 right-8">
-                                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isCompleted
-                                                        ? 'bg-green-50 text-green-600'
-                                                        : 'bg-amber-50 text-amber-600 animate-pulse'
-                                                        }`}>
-                                                        {isCompleted ? 'Completed' : 'Upcoming'}
+                            {schedule?.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {schedule.map((slot, index) => (
+                                        <div key={index} className="group p-6 rounded-xl border border-gray-50 bg-gray-50/30 hover:bg-white hover:border-blue-100 transition-all">
+                                            <div className="flex items-start justify-between mb-4">
+                                                <div className="p-2.5 bg-white rounded-lg text-blue-600 border border-gray-100 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                    <AcademicCapIcon className="w-4 h-4" />
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-[8px] font-bold text-gray-300 uppercase tracking-widest block mb-0.5">Session Window</span>
+                                                    <span className="text-[10px] font-bold text-gray-900">{slot.start_time} - {slot.end_time}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight mb-1 group-hover:text-blue-600 transition-colors">
+                                                    {slot.grade_name} &bull; {slot.section_name}
+                                                </h3>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="px-3 py-1 bg-white border border-gray-100 rounded-lg text-[9px] font-bold text-gray-400 uppercase tracking-widest group-hover:border-blue-50 transition-colors">
+                                                        {slot.subject_name}
+                                                    </span>
+                                                    <span className={`px-3 py-1 rounded-lg text-[8px] font-bold uppercase tracking-widest ${slot.status === 'Completed' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
+                                                        {slot.status || 'Upcoming'}
                                                     </span>
                                                 </div>
 
-                                                {/* Class Info */}
-                                                <div className="mb-8">
-                                                    <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1.5">
-                                                        {cls.grade_name} &bull; {cls.section_name}
+                                                {!slot.status || slot.status !== 'Completed' ? (
+                                                    <Link
+                                                        href={route('teacher.attendance.create', { section_id: slot.section_id, subject_id: slot.subject_id })}
+                                                        className="mt-6 flex items-center justify-center w-full py-3 bg-gray-900 text-white rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all"
+                                                    >
+                                                        Record Now
+                                                        <ArrowRightIcon className="w-3 h-3 ml-2" />
+                                                    </Link>
+                                                ) : (
+                                                    <div className="mt-6 py-3 text-center border border-dashed border-gray-100 rounded-lg text-[9px] font-bold text-gray-300 uppercase tracking-widest">
+                                                        Entries Locked
                                                     </div>
-                                                    <h3 className="text-xl font-black text-gray-900 group-hover:text-blue-600 transition-colors">
-                                                        {cls.subject_name}
-                                                    </h3>
-                                                </div>
-
-                                                <div className="flex items-center gap-8 mb-8">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Students</span>
-                                                        <span className="text-sm font-black text-gray-700">{cls.student_count} Total</span>
-                                                    </div>
-                                                    <div className="w-px h-8 bg-gray-100 italic"></div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Period</span>
-                                                        <span className="text-sm font-black text-gray-700 flex items-center gap-2">
-                                                            <ClockIcon className="w-4 h-4 text-blue-500" />
-                                                            Daily
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                <Link
-                                                    href={route('teacher.attendance.create', { section_id: cls.section_id, subject_id: cls.subject_id })}
-                                                    className={`flex items-center justify-center w-full py-4 rounded-2xl font-black text-sm transition-all tracking-widest uppercase ${isCompleted
-                                                        ? 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600'
-                                                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-200'
-                                                        }`}
-                                                >
-                                                    {isCompleted ? 'View Records' : 'Mark Attendance'}
-                                                    {!isCompleted && <ArrowRightIcon className="w-4 h-4 ml-2" />}
-                                                </Link>
+                                                )}
                                             </div>
                                         </div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <div className="bg-white rounded-[32px] border-2 border-dashed border-gray-100 p-20 text-center">
-                                <div className="w-20 h-20 bg-blue-50 text-blue-300 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                                    <ClockIcon className="w-10 h-10" />
+                                    ))}
                                 </div>
-                                <h3 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">All Clear Today!</h3>
-                                <p className="text-gray-500 font-medium max-w-sm mx-auto">
-                                    No classes are scheduled for your attention today. You can relax or catch up on other tasks.
-                                </p>
-                            </div>
-                        )}
+                            ) : (
+                                <div className="py-24 text-center">
+                                    <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                                        <CheckCircleIcon className="w-8 h-8 text-gray-200" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-900 uppercase tracking-tight">Agenda Clear</h3>
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">No further sessions scheduled for today</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                {/* Legend or Information */}
-                <div className="mt-8 bg-amber-50 rounded-[32px] p-8 border border-amber-100 flex items-start gap-5">
-                    <div className="p-3 bg-amber-500 text-white rounded-2xl shadow-xl shadow-amber-200">
-                        <ExclamationCircleIcon className="w-6 h-6" />
+                {/* Advisory Footer */}
+                <div className="mt-12 bg-gray-50 border border-gray-100 rounded-2xl p-8 flex flex-col md:flex-row items-center gap-6">
+                    <div className="p-3 bg-blue-600 text-white rounded-xl shadow-sm">
+                        <ExclamationCircleIcon className="w-5 h-5" />
                     </div>
-                    <div>
-                        <h4 className="text-sm font-black text-amber-900 uppercase tracking-widest mb-1.5">Attendance Lifecycle</h4>
-                        <p className="text-xs font-bold text-amber-800/80 leading-relaxed">
-                            Once attendance is marked and synced, it becomes a permanent record. This data feeds into student reports, parent notifications, and overall school analytics. Please double-check for accuracy before syncing.
+                    <div className="text-center md:text-left flex-1">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
+                            <span className="text-gray-900">Finalization advisory:</span> Attendance records are synchronized with permanent academic logs. Please ensure precision before committing records to the system.
                         </p>
                     </div>
                 </div>
