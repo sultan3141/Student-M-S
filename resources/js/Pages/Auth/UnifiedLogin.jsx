@@ -44,7 +44,7 @@ export default function UnifiedLogin({ status, canResetPassword }) {
 
     return (
         <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100 font-sans">
-            <Head title="Login - Haramaya University" />
+            <Head title="Login - Darul-Ulum School" />
 
             {/* Main Card Container */}
             <div className="w-full max-w-[400px] px-4">
@@ -157,9 +157,11 @@ export default function UnifiedLogin({ status, canResetPassword }) {
                     </form>
                 </div>
 
-                {/* Footer (Optional) */}
-                <div className="mt-6 text-center text-gray-400 text-xs">
-                    &copy; 2026 Haramaya University. All rights reserved.
+                {/* Footer */}
+                <div className="mt-8 text-center text-[13px] whitespace-nowrap">
+                    <span className="font-bold text-gray-900">Copyright © 2026</span>{' '}
+                    <span className="text-[#3c8dbc] font-bold">Darul-Ulum School</span>
+                    <span className="text-gray-900"> . All rights reserved.</span>
                 </div>
             </div>
         </div>
