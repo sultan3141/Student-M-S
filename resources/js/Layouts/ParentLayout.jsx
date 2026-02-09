@@ -16,6 +16,7 @@ import {
     ClipboardDocumentCheckIcon
 } from '@heroicons/react/24/outline';
 import ChangePasswordModal from '@/Components/ChangePasswordModal';
+import Footer from '@/Components/Footer';
 
 export default function ParentLayout({ children }) {
     const { auth, students, student: pageStudent, selectedStudentId } = usePage().props;
@@ -163,20 +164,6 @@ export default function ParentLayout({ children }) {
             {/* Main Content Area */}
             <div className="lg:pl-60 flex flex-col min-h-screen">
 
-<<<<<<< HEAD
-                {/* Compact Top Bar (Mobile) */}
-                <div className="sticky top-0 z-30 lg:hidden bg-white border-b border-gray-200 px-3 py-2 flex items-center justify-between shadow-sm">
-                    <button
-                        onClick={() => setSidebarOpen(true)}
-                        className="text-gray-600 hover:text-navy-900"
-                    >
-                        <Bars3Icon className="h-5 w-5" />
-                    </button>
-                    <h1 className="text-xs font-semibold text-navy-900">Parent Panel</h1>
-                    <Link href="/logout" method="post" as="button" className="text-red-600">
-                        <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                    </Link>
-=======
                 {/* Premium Mobile Top Bar */}
                 <div className="sticky top-0 z-30 lg:hidden bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 h-14 flex items-center shadow-sm">
                     <div className="flex-1 flex items-center">
@@ -204,24 +191,21 @@ export default function ParentLayout({ children }) {
                             <ArrowRightOnRectangleIcon className="h-5 w-5" />
                         </Link>
                     </div>
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                 </div>
 
                 {/* Page Content */}
                 <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
                     {children}
                 </main>
+
+                <Footer />
             </div>
 
             {/* Change Password Modal */}
             <ChangePasswordModal
                 show={showPasswordModal}
                 onClose={() => setShowPasswordModal(false)}
-<<<<<<< HEAD
-                isFirstLogin={auth.user?.first_login || false}
-=======
                 isFirstLogin={auth?.user?.first_login || false}
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
             />
         </div>
     );
