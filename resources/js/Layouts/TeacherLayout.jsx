@@ -12,18 +12,78 @@ import {
     Bars3Icon,
     XMarkIcon,
     BellIcon,
-    MagnifyingGlassIcon
+    MagnifyingGlassIcon,
+    ChevronDownIcon
 } from '@heroicons/react/24/outline';
 
 export default function TeacherLayout({ children }) {
     const { auth } = usePage().props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [expandedMenus, setExpandedMenus] = useState({
+        'declare-result': route().current('teacher.declare-result.*'),
+        'student-results': route().current('teacher.students.manage-results.*'),
+        'teacher-assessments': route().current('teacher.assessments-simple.*'),
+        'class-schedules': route().current('teacher.schedule.*')
+    });
+    const [expandedGrades, setExpandedGrades] = useState(() => {
+        const gradeId = route().params.grade_id;
+        if (gradeId) {
+            return {
+                [`declare-result-${gradeId}`]: route().current('teacher.declare-result.*'),
+                [`student-results-${gradeId}`]: route().current('teacher.students.manage-results.*'),
+                [`teacher-assessments-${gradeId}`]: route().current('teacher.assessments-simple.*'),
+                [`class-schedules-${gradeId}`]: route().current('teacher.schedule.*')
+            };
+        }
+        return {};
+    });
+
+    const toggleMenu = (id) => {
+        setExpandedMenus(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }));
+    };
+
+    const toggleGrade = (gradeId) => {
+        setExpandedGrades(prev => ({
+            ...prev,
+            [gradeId]: !prev[gradeId]
+        }));
+    };
 
     const navigation = [
         { name: 'Dashboard Overview', href: route('teacher.dashboard'), icon: HomeIcon, current: route().current('teacher.dashboard') },
-        { name: 'Declare Result', href: route('teacher.declare-result.index'), icon: ClipboardDocumentCheckIcon, current: route().current('teacher.declare-result.*') },
-        { name: 'Student Results', href: route('teacher.students.manage-results'), icon: ChartBarIcon, current: route().current('teacher.students.manage-results') },
-        { name: 'Assessments', href: route('teacher.assessments-simple.index'), icon: ClipboardDocumentCheckIcon, current: route().current('teacher.assessments-simple.*') || route().current('teacher.custom-assessments.*') },
+        {
+            name: 'Declare Result',
+            icon: ClipboardDocumentCheckIcon,
+            id: 'declare-result',
+            current: route().current('teacher.declare-result.*'),
+            children: auth.teacher_grades?.length > 0 ? auth.teacher_grades : null
+        },
+        {
+            name: 'Student Results',
+            icon: ChartBarIcon,
+            id: 'student-results',
+            current: route().current('teacher.students.manage-results'),
+            children: auth.teacher_grades?.length > 0 ? auth.teacher_grades : null
+        },
+        {
+            name: 'Assessments',
+            icon: ClipboardDocumentCheckIcon,
+            id: 'teacher-assessments',
+            current: route().current('teacher.assessments-simple.*') || route().current('teacher.custom-assessments.*'),
+            children: auth.teacher_grades?.length > 0 ? auth.teacher_grades : null,
+            href: route('teacher.assessments-simple.index')
+        },
+        {
+            name: 'Class Schedules',
+            icon: CalendarDaysIcon,
+            id: 'class-schedules',
+            current: route().current('teacher.schedule'),
+            children: auth.teacher_grades?.length > 0 ? auth.teacher_grades : null,
+            href: route('teacher.schedule')
+        },
         { name: 'Attendance', href: route('teacher.attendance.index'), icon: CalendarDaysIcon, current: route().current('teacher.attendance.*') },
     ];
 
@@ -47,7 +107,6 @@ export default function TeacherLayout({ children }) {
                 {/* Logo Section */}
                 <div className="h-16 flex items-center px-6 border-b border-gray-700/50">
                     <div className="flex items-center space-x-3">
-                        {/* Simple Logo Icon */}
                         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                             <AcademicCapIcon className="w-5 h-5 text-white" />
                         </div>
@@ -60,19 +119,124 @@ export default function TeacherLayout({ children }) {
 
                 <div className="flex flex-col h-[calc(100vh-4rem)] justify-between">
                     {/* Top Navigation */}
-                    <nav className="flex-1 px-4 py-6 space-y-1">
+                    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
                         {navigation.map((item) => (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className={classNames(
-                                    item.current ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-gray-400 hover:bg-white/5 hover:text-white',
-                                    'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200'
+                            <div key={item.name}>
+                                {item.children ? (
+                                    <>
+                                        <div className="flex items-center group mb-1">
+                                            <Link
+                                                href={item.href || '#'}
+                                                className={classNames(
+                                                    item.current ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-gray-400 hover:bg-white/5 hover:text-white',
+                                                    'flex-1 flex items-center px-4 py-3 text-sm font-medium rounded-l-xl transition-all duration-200'
+                                                )}
+                                            >
+                                                <item.icon className={classNames(item.current ? 'text-white' : 'text-gray-400 group-hover:text-white', 'mr-3 flex-shrink-0 h-5 w-5')} />
+                                                <span className="flex-1 text-left">{item.name}</span>
+                                            </Link>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    toggleMenu(item.id);
+                                                }}
+                                                className={classNames(
+                                                    item.current ? 'bg-blue-700 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white border-l border-gray-700/50',
+                                                    'px-3 py-3 rounded-r-xl transition-all duration-200'
+                                                )}
+                                            >
+                                                <ChevronDownIcon className={classNames(
+                                                    expandedMenus[item.id] ? 'rotate-180' : '',
+                                                    'h-4 w-4 transition-transform'
+                                                )} />
+                                            </button>
+                                        </div>
+                                        {expandedMenus[item.id] && (
+                                            <div className="mt-1 mb-2 space-y-1 ml-9">
+                                                {item.children.map((grade) => (
+                                                    <div key={grade.id}>
+                                                        <div className="flex items-center justify-between group py-1">
+                                                            <Link
+                                                                href={item.id === 'declare-result'
+                                                                    ? route('teacher.declare-result.index', { grade_id: grade.id })
+                                                                    : item.id === 'student-results'
+                                                                        ? route('teacher.students.manage-results', { grade_id: grade.id })
+                                                                        : item.id === 'teacher-assessments'
+                                                                            ? route('teacher.assessments-simple.index', { grade_id: grade.id })
+                                                                            : route('teacher.schedule', { grade_id: grade.id })}
+                                                                className={classNames(
+                                                                    (item.id === 'declare-result' && route().current('teacher.declare-result.*') && route().params.grade_id == grade.id) ||
+                                                                        (item.id === 'student-results' && route().current('teacher.students.manage-results') && route().params.grade_id == grade.id) ||
+                                                                        (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && route().params.grade_id == grade.id) ||
+                                                                        (item.id === 'class-schedules' && route().current('teacher.schedule') && route().params.grade_id == grade.id)
+                                                                        ? 'text-blue-400 font-bold'
+                                                                        : 'text-gray-500 hover:text-white',
+                                                                    'flex-1 text-xs transition-colors'
+                                                                )}
+                                                            >
+                                                                {grade.name}
+                                                            </Link>
+                                                            {grade.sections?.length > 0 && (
+                                                                <button
+                                                                    onClick={() => toggleGrade(`${item.id}-${grade.id}`)}
+                                                                    className="text-gray-500 hover:text-white px-2"
+                                                                >
+                                                                    <ChevronDownIcon className={classNames(
+                                                                        expandedGrades[`${item.id}-${grade.id}`] ? 'rotate-180' : '',
+                                                                        'h-3 w-3 transition-transform'
+                                                                    )} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        {expandedGrades[`${item.id}-${grade.id}`] && (
+                                                            <div className="ml-4 mt-1 space-y-1 border-l border-gray-700/50 pl-3">
+                                                                {grade.sections?.map((section) => {
+                                                                    const href = item.id === 'declare-result'
+                                                                        ? route('teacher.declare-result.index', { grade_id: grade.id, section_id: section.id })
+                                                                        : item.id === 'student-results'
+                                                                            ? route('teacher.students.manage-results', { grade_id: grade.id, section_id: section.id })
+                                                                            : item.id === 'teacher-assessments'
+                                                                                ? route('teacher.assessments-simple.index', { grade_id: grade.id, section_id: section.id })
+                                                                                : route('teacher.schedule', { grade_id: grade.id, section_id: section.id });
+
+                                                                    const isSectionCurrent = (item.id === 'declare-result' && route().current('teacher.declare-result.*') && route().params.section_id == section.id) ||
+                                                                        (item.id === 'student-results' && route().current('teacher.students.manage-results') && route().params.section_id == section.id) ||
+                                                                        (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && route().params.section_id == section.id) ||
+                                                                        (item.id === 'class-schedules' && route().current('teacher.schedule') && route().params.section_id == section.id);
+
+                                                                    return (
+                                                                        <Link
+                                                                            key={section.id}
+                                                                            href={href}
+                                                                            className={classNames(
+                                                                                isSectionCurrent ? 'text-blue-300 font-bold' : 'text-gray-600 hover:text-gray-300',
+                                                                                'block py-1 text-[10px] transition-colors'
+                                                                            )}
+                                                                        >
+                                                                            Section {section.name}
+                                                                        </Link>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <Link
+                                        href={item.href}
+                                        className={classNames(
+                                            item.current ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-gray-400 hover:bg-white/5 hover:text-white',
+                                            'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200'
+                                        )}
+                                    >
+                                        <item.icon className={classNames(item.current ? 'text-white' : 'text-gray-400 group-hover:text-white', 'mr-3 flex-shrink-0 h-5 w-5')} />
+                                        {item.name}
+                                    </Link>
                                 )}
-                            >
-                                <item.icon className={classNames(item.current ? 'text-white' : 'text-gray-400 group-hover:text-white', 'mr-3 flex-shrink-0 h-5 w-5')} />
-                                {item.name}
-                            </Link>
+                            </div>
                         ))}
                     </nav>
 
@@ -102,13 +266,13 @@ export default function TeacherLayout({ children }) {
                             Log Out
                         </Link>
                     </div>
-                </div>
-            </div>
+                </div >
+            </div >
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            < div className="flex-1 flex flex-col min-h-0 overflow-hidden" >
                 {/* Top Header */}
-                <header className="bg-white border-b border-gray-200 shadow-sm h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+                < header className="bg-white border-b border-gray-200 shadow-sm h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8" >
                     <div className="flex items-center">
                         <button onClick={() => setSidebarOpen(true)} className="md:hidden text-gray-500 hover:text-gray-700 mr-4">
                             <Bars3Icon className="w-6 h-6" />
@@ -147,13 +311,13 @@ export default function TeacherLayout({ children }) {
                             />
                         </div>
                     </div>
-                </header>
+                </header >
 
                 {/* Main Scrollable Content */}
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50">
+                < main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50" >
                     {children}
-                </main>
-            </div>
-        </div>
+                </main >
+            </div >
+        </div >
     );
 }
