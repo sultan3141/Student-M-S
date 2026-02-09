@@ -19,8 +19,19 @@ class AcademicYearController extends Controller
     public function index()
     {
         $currentYear = AcademicYear::whereRaw('is_current = true')
-            ->with('semesterStatuses.grade')
+            ->with(['semesterStatuses.grade', 'semesterStatuses.academicYear'])
             ->first();
+
+        if ($currentYear) {
+            // Auto-initialize missing semester statuses for current year
+            $currentYear->createDefaultSemesters();
+            
+            // Refresh the currentYear after creation to get all statuses
+            $currentYear->load('semesterStatuses.grade');
+            
+            // Sync overall status
+            $currentYear->update(['status' => $currentYear->getOverallStatus()]);
+        }
 
         $pastYears = AcademicYear::whereRaw('is_current = false')
             ->orderBy('start_date', 'desc')
@@ -77,7 +88,7 @@ class AcademicYearController extends Controller
                 'name' => $currentYear->name,
                 'start_date' => $currentYear->start_date->format('M d, Y'),
                 'end_date' => $currentYear->end_date->format('M d, Y'),
-                'status' => $currentYear->getOverallStatus(),
+                'status' => $currentYear->status,
                 'semesters' => $semesterDetails,
             ] : null,
             'pastYears' => $pastYears,
@@ -243,10 +254,25 @@ class AcademicYearController extends Controller
                 ? "Semester {$request->semester} opened for {$year->name}."
                 : "Semester {$request->semester} closed for {$year->name}.";
 
+            // Clear Teacher Dashboard and global semester cache
+            \Illuminate\Support\Facades\Cache::forget("current_semester_info_year_{$year->id}");
+            \Illuminate\Support\Facades\Cache::forget('current_semester_info_global'); // Legacy key just in case
+
             // Update all semester statuses for this semester (Per Grade)
-            SemesterStatus::where('academic_year_id', $year->id)
-                ->where('semester', $request->semester)
-                ->update(['status' => $newStatus]);
+            // Use updateOrCreate to ensure missing records are created
+            $grades = \App\Models\Grade::all();
+            foreach ($grades as $grade) {
+                SemesterStatus::updateOrCreate(
+                    [
+                        'academic_year_id' => $year->id,
+                        'grade_id' => $grade->id,
+                        'semester' => $request->semester,
+                    ],
+                    [
+                        'status' => $newStatus,
+                    ]
+                );
+            }
 
             // ALSO Update the Global SemesterPeriod (Used by Student Results)
             \App\Models\SemesterPeriod::updateOrCreate(

@@ -93,11 +93,13 @@ class TeacherAttendanceController extends Controller
             }
 
             $isTaken = Attendance::where('section_id', $assignment->section_id)
+                ->where('subject_id', $assignment->subject_id)
                 ->where('date', $today)
                 ->exists();
 
             return [
                 'section_id' => $assignment->section_id,
+                'subject_id' => $assignment->subject_id,
                 'section_name' => $assignment->section->name ?? 'Unknown Section',
                 'grade_name' => $assignment->section->grade->name ?? 'Unknown Grade',
                 'subject_name' => $assignment->subject->name ?? 'Unknown Subject',

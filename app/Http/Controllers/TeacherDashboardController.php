@@ -31,12 +31,37 @@ class TeacherDashboardController extends Controller
         // Fetch upcoming deadlines using the new optimized method
         $upcomingDeadlines = $this->getUpcomingDeadlines($teacher);
 
+        // Get today's schedule for all sections assigned to this teacher
+        $today = Carbon::now()->format('l'); // e.g., "Monday"
+        $todaySchedule = \App\Models\Schedule::whereIn('section_id', function ($query) use ($teacher) {
+            $query->select('section_id')
+                ->from('teacher_assignments')
+                ->where('teacher_id', $teacher->id);
+        })
+            ->where('day_of_week', $today)
+            ->whereRaw('is_active = true')
+            ->with(['section.grade'])
+            ->orderBy('start_time')
+            ->get()
+            ->map(function ($schedule) {
+                return [
+                    'start_time' => Carbon::parse($schedule->start_time)->format('H:i'),
+                    'end_time' => Carbon::parse($schedule->end_time)->format('H:i'),
+                    'grade' => $schedule->section->grade->name ?? 'N/A',
+                    'section' => $schedule->section->name ?? 'N/A',
+                    'activity' => $schedule->activity ?? 'Class',
+                    'location' => $schedule->location ?? 'Classroom',
+                ];
+            });
+
         return Inertia::render('Teacher/Dashboard', [
             'stats' => $stats,
             'recentActivity' => $activities,
             'deadlines' => $upcomingDeadlines,
             'teacher' => $teacher->load('user'),
             'currentSemester' => $currentSemester,
+            'todaySchedule' => $todaySchedule,
+            'today' => Carbon::now()->format('l, F j, Y'),
         ]);
     }
 
@@ -45,17 +70,27 @@ class TeacherDashboardController extends Controller
      */
     private function getStatistics($teacher)
     {
-        return Cache::remember("teacher_stats_{$teacher->id}_v2", 300, function () use ($teacher) {
-            // Count unique students across all assigned sections using a join for better performance
-            $totalStudents = \App\Models\Registration::join('teacher_assignments', 'registrations.section_id', '=', 'teacher_assignments.section_id')
-                ->where('teacher_assignments.teacher_id', $teacher->id)
-                ->distinct('registrations.student_id')
-                ->count('registrations.student_id');
+        $currentYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
+        $yearId = $currentYear ? $currentYear->id : null;
 
-            // Total subjects taught
-            $totalSubjects = $teacher->subjects()->count();
+        return Cache::remember("teacher_stats_{$teacher->id}_year_{$yearId}", 300, function () use ($teacher, $yearId) {
+            // Count unique students across all assigned sections for the current year
+            $totalStudents = \App\Models\Registration::where('academic_year_id', $yearId)
+                ->whereIn('section_id', function ($query) use ($teacher) {
+                    $query->select('section_id')
+                        ->from('teacher_assignments')
+                        ->where('teacher_id', $teacher->id);
+                })
+                ->distinct('student_id')
+                ->count('student_id');
 
-            // Count pending marks
+            // Total subjects taught in current year
+            $totalSubjects = \App\Models\TeacherAssignment::where('teacher_id', $teacher->id)
+                ->where('academic_year_id', $yearId)
+                ->distinct('subject_id')
+                ->count('subject_id');
+
+            // Count pending marks (simplified for now)
             $pendingMarks = 0;
 
             return [
@@ -63,7 +98,10 @@ class TeacherDashboardController extends Controller
                 'totalSubjects' => $totalSubjects,
                 'pendingMarks' => $pendingMarks,
                 'attendanceRate' => 98.5, // Mock for now
-                'activeClasses' => $teacher->assignments()->distinct('section_id')->count(),
+                'activeClasses' => \App\Models\TeacherAssignment::where('teacher_id', $teacher->id)
+                    ->where('academic_year_id', $yearId)
+                    ->distinct('section_id')
+                    ->count('section_id'),
             ];
         });
     }
@@ -112,13 +150,14 @@ class TeacherDashboardController extends Controller
      */
     private function getCurrentSemesterInfo()
     {
-        return Cache::remember('current_semester_info_global', 600, function () {
-            $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
 
-            if (!$academicYear) {
-                return null;
-            }
+        if (!$academicYear) {
+            return null;
+        }
 
+        // Cache per academic year to avoid cross-year leaks
+        return Cache::remember("current_semester_info_year_{$academicYear->id}", 600, function () use ($academicYear) {
             $semester = $academicYear->getCurrentSemester();
 
             // precise status for each semester
@@ -190,7 +229,7 @@ class TeacherDashboardController extends Controller
         $schedule = [];
         if ($selectedSectionId) {
             $schedule = \App\Models\Schedule::where('section_id', $selectedSectionId)
-                ->whereBoolTrue('is_active')
+                ->where('is_active', true)
                 ->orderByRaw("CASE day_of_week 
                     WHEN 'Monday' THEN 1 
                     WHEN 'Tuesday' THEN 2 

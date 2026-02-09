@@ -21,7 +21,7 @@ echo   STARTING NEW SERVERS
 echo ==================================================
 echo.
 
-cd /d C:\Users\Ezedi\Student-M-S\Student-M-S
+cd /d %~dp0
 
 echo [1] Starting Laravel Backend (8000)...
 start "Laravel Server" cmd /k "C:\xampp\php\php.exe artisan serve"

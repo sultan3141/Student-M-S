@@ -9,7 +9,7 @@ import {
     ExclamationTriangleIcon,
     CheckCircleIcon,
     ArrowRightIcon,
-    LayersIcon
+    RectangleStackIcon
 } from '@heroicons/react/24/outline';
 
 export default function Index({ classes }) {

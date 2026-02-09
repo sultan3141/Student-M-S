@@ -355,6 +355,8 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     // Profile
     Route::get('/profile', [\App\Http\Controllers\TeacherProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [\App\Http\Controllers\TeacherProfileController::class, 'update'])->name('profile.update');
+    Route::get('/password', [\App\Http\Controllers\TeacherProfileController::class, 'changePassword'])->name('password.edit');
+    Route::put('/password', [\App\Http\Controllers\TeacherProfileController::class, 'updatePassword'])->name('password.update');
 
     Route::get('/assignments/subjects', [\App\Http\Controllers\TeacherAssignmentController::class, 'getAssignedSubjects']);
 });

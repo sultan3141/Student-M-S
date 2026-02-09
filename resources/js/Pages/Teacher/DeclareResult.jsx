@@ -196,12 +196,36 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
         }
     };
 
-    const handleStudentsConfirmed = () => {
+    const handleStudentsConfirmed = async () => {
         if (selectedStudentIds.length === 0) {
             alert('Please select at least one student.');
             return;
         }
-        setStep(2);
+        
+        // Directly fetch assessments and go to step 2 (marks entry)
+        setLoading(true);
+        try {
+            const response = await fetch(`/teacher/declare-result/assessments?grade_id=${selectedGrade.id}&section_id=${selectedSection.id}&subject_id=${selectedSubject.id}&show_closed=${showClosed ? 1 : 0}`);
+            const assessmentsData = await response.json();
+            setFetchedAssessments(assessmentsData);
+
+            // Fetch existing marks for selected students
+            const marksResponse = await fetch(`/teacher/declare-result/existing-marks?grade_id=${selectedGrade.id}&section_id=${selectedSection.id}&subject_id=${selectedSubject.id}&student_ids=${selectedStudentIds.join(',')}`);
+            const existingMarks = await marksResponse.json();
+
+            if (existingMarks && Object.keys(existingMarks).length > 0) {
+                setData('marks', existingMarks);
+                setSavedMarks(existingMarks);
+            } else {
+                setSavedMarks({});
+            }
+
+            setStep(2); // Go directly to step 2 (marks entry)
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // --- Step 2: Subject Selection ---
@@ -272,8 +296,7 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
     const getStepTitle = () => {
         switch (step) {
             case 1: return "Select Students";
-            case 2: return "Select Subject";
-            case 3: return "Enter Marks";
+            case 2: return "Enter Marks";
             default: return "";
         }
     };
@@ -286,22 +309,22 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
         <TeacherLayout>
             <Head title="Declare Result" />
 
-            {/* Header */}
-            <div className="bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] shadow-sm mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6">
+            {/* Professional Header */}
+            <div className="bg-white border-b border-gray-200 mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-2xl font-semibold text-white mb-1">
+                            <h1 className="text-2xl font-bold text-gray-900 mb-1">
                                 Declare Result
                             </h1>
-                            <p className="text-blue-100 text-sm">
-                                {selectedSection ? `Step ${step} of 3: ${getStepTitle()}` : 'Select a section to begin'}
+                            <p className="text-sm text-gray-600">
+                                {selectedSection && selectedSubject ? `Step ${step} of 2: ${getStepTitle()}` : 'Select grade, section, and subject to begin'}
                             </p>
                         </div>
                         {step > 1 && (
                             <button
                                 onClick={handleBack}
-                                className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-md transition-colors text-sm"
+                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium border border-gray-300"
                             >
                                 ← Back
                             </button>
@@ -312,27 +335,153 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
 
-                {/* Empty State / Initial Landing */}
-                {!selectedSection && (
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-                        <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
-                            <PlusIcon className="w-10 h-10" />
-                        </div>
-                        <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-4">Start Declaring Results</h2>
-                        <p className="text-gray-500 font-medium max-w-md mx-auto mb-8 text-lg">
-                            Please select a <span className="text-blue-600 font-bold">Grade</span> and <span className="text-blue-600 font-bold">Section</span> from the sidebar navigation to begin the result declaration process.
-                        </p>
-                        <div className="flex justify-center gap-4">
-                            <div className="flex items-center gap-2 text-sm text-gray-400 font-bold uppercase tracking-widest">
-                                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                                Waiting for selection
+                {/* Clean Selection Dashboard */}
+                <div className="bg-white rounded-lg border border-gray-200 mb-6">
+                    {/* Header */}
+                    <div className="border-b border-gray-200 px-6 py-4">
+                        <h2 className="text-lg font-semibold text-gray-900">Class Selection</h2>
+                        <p className="text-sm text-gray-600 mt-1">Select grade, section, and subject to view students</p>
+                    </div>
+
+                    {/* Selection Form */}
+                    <div className="p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Grade Selection */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Grade
+                                </label>
+                                <select
+                                    value={selectedGrade?.id || ''}
+                                    onChange={(e) => {
+                                        const gradeId = parseInt(e.target.value);
+                                        const grade = grades.find(g => g.id === gradeId);
+                                        setSelectedGrade(grade || null);
+                                        setSelectedSection(null);
+                                        setSelectedSubject(null);
+                                        setFetchedStudents([]);
+                                        setSubjects([]);
+                                        setData('grade_id', gradeId);
+                                        setData('section_id', '');
+                                        setData('subject_id', '');
+                                        setStep(1);
+                                    }}
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                >
+                                    <option value="">Select Grade</option>
+                                    {grades.map(grade => (
+                                        <option key={grade.id} value={grade.id}>
+                                            {grade.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Section Selection */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Section
+                                </label>
+                                <select
+                                    value={selectedSection?.id || ''}
+                                    onChange={(e) => {
+                                        const sectionId = parseInt(e.target.value);
+                                        const section = selectedGrade?.sections?.find(s => s.id === sectionId);
+                                        setSelectedSection(section || null);
+                                        setSelectedSubject(null);
+                                        setData('section_id', sectionId);
+                                        setData('subject_id', '');
+                                        
+                                        if (section && selectedGrade) {
+                                            fetchStudents(selectedGrade.id, sectionId);
+                                            fetchSubjects(selectedGrade.id, sectionId);
+                                            setStep(1);
+                                        }
+                                    }}
+                                    disabled={!selectedGrade}
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
+                                >
+                                    <option value="">Select Section</option>
+                                    {selectedGrade?.sections?.map(section => (
+                                        <option key={section.id} value={section.id}>
+                                            Section {section.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Subject Selection */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Subject
+                                </label>
+                                <select
+                                    value={selectedSubject?.id || ''}
+                                    onChange={(e) => {
+                                        const subjectId = parseInt(e.target.value);
+                                        const subject = subjects.find(s => s.id === subjectId);
+                                        setSelectedSubject(subject || null);
+                                        setData('subject_id', subjectId);
+                                        
+                                        if (subject && selectedGrade && selectedSection) {
+                                            // Move to step 2 (subject selection complete, ready for student selection)
+                                            setStep(1);
+                                        }
+                                    }}
+                                    disabled={!selectedSection || subjects.length === 0}
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
+                                >
+                                    <option value="">Select Subject</option>
+                                    {subjects.map(subject => (
+                                        <option key={subject.id} value={subject.id}>
+                                            {subject.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
+
+                        {/* Selected Info */}
+                        {selectedGrade && selectedSection && selectedSubject && (
+                            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-sm text-blue-900">
+                                    <span className="font-medium">Selected:</span> {selectedGrade.name} - Section {selectedSection.name} - {selectedSubject.name}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Clean Empty State */}
+                {!selectedSection && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
+                        <div className="w-16 h-16 bg-gray-200 text-gray-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                            <ClipboardDocumentCheckIcon className="w-10 h-10" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Class Selected</h3>
+                        <p className="text-gray-600 max-w-md mx-auto">
+                            Please select a grade, section, and subject above to view students and begin entering marks.
+                        </p>
+                    </div>
+                )}
+
+                {/* Show message when section is selected but no subject */}
+                {selectedSection && !selectedSubject && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-8 text-center">
+                        <div className="w-14 h-14 bg-amber-200 text-amber-600 rounded-lg flex items-center justify-center mx-auto mb-3">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>
+                        <h3 className="text-base font-semibold text-gray-900 mb-2">Select a Subject</h3>
+                        <p className="text-sm text-gray-600">
+                            Please select a subject from the dropdown above to continue.
+                        </p>
                     </div>
                 )}
 
                 {/* Step 1: Student Selection */}
-                {selectedSection && step === 1 && (
+                {selectedSection && selectedSubject && step === 1 && (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-[#1E293B]">
                         <div className="mb-8 flex justify-between items-center">
                             <div>
@@ -397,39 +546,8 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
                     </div>
                 )}
 
-                {/* Step 2: Subject Selection */}
+                {/* Step 2: Marks Entry */}
                 {step === 2 && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-                        <div className="mb-8">
-                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Select Subject</h2>
-                            <p className="text-gray-500 font-medium">{selectedGrade?.name} - Section {selectedSection?.name}</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {subjects.map(subject => (
-                                <button
-                                    key={subject.id}
-                                    onClick={() => handleSubjectSelect(subject)}
-                                    className="p-6 rounded-xl border border-gray-200 hover:border-blue-600 hover:ring-1 hover:ring-blue-600 hover:shadow-md transition-all text-left bg-white group focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 mb-1">
-                                        {subject.name}
-                                    </h3>
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
-                                        {subject.code}
-                                    </p>
-                                </button>
-                            ))}
-                            {subjects.length === 0 && (
-                                <div className="col-span-full py-12 text-center">
-                                    <p className="text-gray-500 font-medium">No subjects found for this class and section.</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 3: Marks Entry */}
-                {step === 3 && (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="p-8 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
