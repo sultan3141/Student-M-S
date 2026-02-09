@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Teacher;
+use App\Models\SemesterStatus;
+use Carbon\Carbon;
 
 class TeacherDashboardController extends Controller
 {
@@ -14,15 +16,15 @@ class TeacherDashboardController extends Controller
     {
         $teacher = Teacher::firstOrCreate(
             ['user_id' => Auth::id()],
-            ['employee_id' => 'EMP'.Auth::id(), 'qualification' => 'PhD', 'specialization' => 'General']
+            ['employee_id' => 'EMP' . Auth::id(), 'qualification' => 'PhD', 'specialization' => 'General']
         );
-        
+
         // Get current semester information
         $currentSemester = $this->getCurrentSemesterInfo();
-        
+
         // Fetch statistics using the new cached method
         $stats = $this->getStatistics($teacher);
-        
+
         // Fetch recent activities using the new optimized method
         $activities = $this->getRecentActivities($teacher);
 
@@ -43,21 +45,18 @@ class TeacherDashboardController extends Controller
      */
     private function getStatistics($teacher)
     {
-        return Cache::remember("teacher_stats_{$teacher->id}", 300, function() use ($teacher) {
-            // Count unique students across all assigned sections
-            $totalStudents = \App\Models\Registration::whereIn('section_id', function($query) use ($teacher) {
-                $query->select('section_id')
-                    ->from('teacher_assignments')
-                    ->where('teacher_id', $teacher->id);
-            })->count();
+        return Cache::remember("teacher_stats_{$teacher->id}_v2", 300, function () use ($teacher) {
+            // Count unique students across all assigned sections using a join for better performance
+            $totalStudents = \App\Models\Registration::join('teacher_assignments', 'registrations.section_id', '=', 'teacher_assignments.section_id')
+                ->where('teacher_assignments.teacher_id', $teacher->id)
+                ->distinct('registrations.student_id')
+                ->count('registrations.student_id');
 
             // Total subjects taught
             $totalSubjects = $teacher->subjects()->count();
 
-            // Count pending marks (this is potentially heavy, can be simplified or cached)
-            // For a more accurate count, you'd need to define what "pending marks" means
-            // e.g., assignments created but not all students have marks entered.
-            $pendingMarks = 0; // Placeholder or simplified logic for now
+            // Count pending marks
+            $pendingMarks = 0;
 
             return [
                 'totalStudents' => $totalStudents,
@@ -74,22 +73,25 @@ class TeacherDashboardController extends Controller
      */
     private function getRecentActivities($teacher)
     {
-        // Assuming 'Mark' model represents grade entries
-        return \App\Models\Mark::where('teacher_id', $teacher->id)
-            ->with(['student.user:id,name', 'subject:id,name']) // Eager load only necessary columns
-            ->latest()
-            ->take(5)
-            ->get()
-            ->map(function ($mark) {
-                return [
-                    'id' => $mark->id,
-                    'type' => 'grade_entry',
-                    'title' => 'Grade Entered',
-                    'description' => "Entered " . ($mark->assessment_type ?? 'mark') . " for " . ($mark->student->user->name ?? 'Student'),
-                    'time' => $mark->created_at->diffForHumans(),
-                    'status' => 'completed'
-                ];
-            });
+        // Cache briefly to avoid spamming the database on refresh
+        return Cache::remember("teacher_recent_activities_{$teacher->id}", 60, function () use ($teacher) {
+            return \App\Models\Mark::where('teacher_id', $teacher->id)
+                ->select(['id', 'student_id', 'subject_id', 'assessment_type', 'created_at'])
+                ->with(['student.user:id,name', 'subject:id,name'])
+                ->latest()
+                ->take(5)
+                ->get()
+                ->map(function ($mark) {
+                    return [
+                        'id' => $mark->id,
+                        'type' => 'grade_entry',
+                        'title' => 'Grade Entered',
+                        'description' => "Entered " . ($mark->assessment_type ?? 'mark') . " for " . ($mark->student->user->name ?? 'Student'),
+                        'time' => $mark->created_at->diffForHumans(),
+                        'status' => 'completed'
+                    ];
+                });
+        });
     }
 
     /**
@@ -97,9 +99,6 @@ class TeacherDashboardController extends Controller
      */
     private function getUpcomingDeadlines($teacher)
     {
-        // This is a placeholder. In a real application, you would fetch this from a database
-        // e.g., from an 'assignments' or 'deadlines' table, filtered by teacher's subjects/sections.
-        // For now, returning the mock data as per the original structure.
         return [
             ['title' => 'Math Midterm Submission', 'subject' => 'Mathematics', 'days_left' => '3'],
             ['title' => 'Science Final Grades', 'subject' => 'Science', 'days_left' => '5'],
@@ -113,51 +112,101 @@ class TeacherDashboardController extends Controller
      */
     private function getCurrentSemesterInfo()
     {
-        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
-        
-        if (!$academicYear) {
-            return null;
-        }
+        return Cache::remember('current_semester_info_global', 600, function () {
+            $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
 
-        $semester = $academicYear->getCurrentSemester();
-        
-        // precise status for each semester
-        $semesters = [];
-        foreach([1, 2] as $semNum) {
-            $statusRecord = \App\Models\SemesterStatus::where('academic_year_id', $academicYear->id)
-                ->where('semester', $semNum)
-                ->first();
-            
-            $semesters[$semNum] = [
-                'semester' => $semNum,
-                'status' => $statusRecord ? $statusRecord->status : 'closed',
+            if (!$academicYear) {
+                return null;
+            }
+
+            $semester = $academicYear->getCurrentSemester();
+
+            // precise status for each semester
+            $semesters = [];
+            foreach ([1, 2] as $semNum) {
+                $statusRecord = \App\Models\SemesterStatus::where('academic_year_id', $academicYear->id)
+                    ->where('semester', $semNum)
+                    ->first();
+
+                $semesters[$semNum] = [
+                    'semester' => $semNum,
+                    'status' => $statusRecord ? $statusRecord->status : 'closed',
+                ];
+            }
+
+            // Logic for "Active" display
+            $status = $semester ? 'open' : 'closed';
+            $displaySemester = $semester ?? ($academicYear->getOverallStatus() === 'completed' ? 2 : 1);
+
+            $daysRemaining = 0;
+            if ($semester) {
+                $startDate = Carbon::parse($academicYear->start_date);
+                $endDate = Carbon::parse($academicYear->end_date);
+
+                $estimatedClose = $semester == 1
+                    ? $startDate->copy()->addMonths(6)
+                    : $endDate;
+                $daysRemaining = max(0, now()->diffInDays($estimatedClose, false));
+            }
+
+            return [
+                'academic_year' => $academicYear->name,
+                'semester' => $displaySemester,
+                'status' => $status,
+                'is_open' => $semester !== null,
+                'can_enter_marks' => $semester !== null,
+                'message' => $semester !== null
+                    ? 'Semester is active. Mark entry is enabled.'
+                    : 'No active semester. Mark entry is disabled.',
+                'days_remaining' => $daysRemaining,
+                'details' => $semesters,
             ];
+        });
+    }
+    public function schedule(Request $request)
+    {
+        $teacher = Teacher::firstOrCreate(
+            ['user_id' => Auth::id()],
+            ['employee_id' => 'EMP' . Auth::id(), 'qualification' => 'PhD', 'specialization' => 'General']
+        );
+
+        // Get sections assigned to this teacher
+        $sections = \App\Models\Section::whereIn('id', function ($query) use ($teacher) {
+            $query->select('section_id')
+                ->from('teacher_assignments')
+                ->where('teacher_id', $teacher->id);
+        })->with('grade')->get();
+
+        $selectedSectionId = $request->section_id;
+
+        // If grade_id is provided but not section_id, pick the first section for that grade
+        if (!$selectedSectionId && $request->grade_id) {
+            $selectedSectionId = $sections->where('grade_id', $request->grade_id)->first()?->id;
         }
 
-        // Logic for "Active" display
-        $status = $semester ? 'open' : 'closed';
-        $displaySemester = $semester ?? ($academicYear->getOverallStatus() === 'completed' ? 2 : 1);
+        // Default to first available section if none selected
+        $selectedSectionId = $selectedSectionId ?? $sections->first()?->id;
 
-        $daysRemaining = 0;
-        if ($semester) {
-             // Simple estimation: End date of year for S2, Mid-point for S1
-             $estimatedClose = $semester == 1 
-                ? $academicYear->start_date->copy()->addMonths(6)
-                : $academicYear->end_date;
-             $daysRemaining = max(0, now()->diffInDays($estimatedClose, false));
+        $schedule = [];
+        if ($selectedSectionId) {
+            $schedule = \App\Models\Schedule::where('section_id', $selectedSectionId)
+                ->whereBoolTrue('is_active')
+                ->orderByRaw("CASE day_of_week 
+                    WHEN 'Monday' THEN 1 
+                    WHEN 'Tuesday' THEN 2 
+                    WHEN 'Wednesday' THEN 3 
+                    WHEN 'Thursday' THEN 4 
+                    WHEN 'Friday' THEN 5 
+                    ELSE 6 END")
+                ->orderBy('start_time')
+                ->get()
+                ->groupBy('day_of_week');
         }
 
-        return [
-            'academic_year' => $academicYear->name,
-            'semester' => $displaySemester,
-            'status' => $status,
-            'is_open' => $semester !== null,
-            'can_enter_marks' => $semester !== null, // Teachers can only enter marks if semester is open
-            'message' => $semester !== null 
-                ? 'Semester is active. Mark entry is enabled.' 
-                : 'No active semester. Mark entry is disabled.',
-            'days_remaining' => $daysRemaining,
-            'details' => $semesters, // Detailed status for S1 and S2
-        ];
+        return Inertia::render('Teacher/Schedule', [
+            'sections' => $sections,
+            'selectedSectionId' => $selectedSectionId,
+            'schedule' => $schedule,
+        ]);
     }
 }
