@@ -31,7 +31,7 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'auth' => fn () => $request->user() ? [
+            'auth' => fn() => $request->user() ? [
                 'user' => [
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
@@ -39,11 +39,23 @@ class HandleInertiaRequests extends Middleware
                     'email' => $request->user()->email,
                     'profile_photo_url' => $request->user()->profile_photo_url ?? null,
                 ],
+                'teacher_grades' => ($request->user()->hasRole('teacher') || $request->user()->teacher()->exists())
+                    ? \App\Models\Grade::with('sections')->orderBy('level')->get(['id', 'level'])->map(function ($g) {
+                        return [
+                            'id' => $g->id,
+                            'name' => "Grade " . $g->level,
+                            'sections' => $g->sections->map(fn($s) => [
+                                'id' => $s->id,
+                                'name' => $s->name
+                            ])
+                        ];
+                    })
+                    : [],
             ] : null,
             'flash' => [
-                'success' => fn () => $request->session()->get('success'),
-                'error' => fn () => $request->session()->get('error'),
-                'credentials' => fn () => $request->session()->get('credentials'),
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
+                'credentials' => fn() => $request->session()->get('credentials'),
             ],
         ];
     }
