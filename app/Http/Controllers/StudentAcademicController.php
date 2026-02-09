@@ -61,33 +61,33 @@ class StudentAcademicController extends Controller
         // Group marks by subject to calculate subject-wise performance
         $subjectPerformance = [];
         $subjects = $marks->groupBy('subject_id');
-        
+
         foreach ($subjects as $subjectId => $subjectMarks) {
             $subject = $subjectMarks->first()->subject;
             $averageScore = $subjectMarks->avg('score_obtained');
-            
+
             // Get detailed assessment breakdown for this subject
-            $assessmentBreakdown = $subjectMarks->map(function($mark) {
+            $assessmentBreakdown = $subjectMarks->map(function ($mark) {
                 return [
-                    'assessment_type' => $mark->assessment_type,
+                    'assessment_type' => $mark->assessmentType->name ?? 'Grade Entry',
                     'semester' => $mark->semester,
                     'score' => $mark->score_obtained,
                     'max_score' => $mark->max_score ?? 100,
                     'date' => $mark->created_at->format('Y-m-d'),
                 ];
             });
-            
+
             $subjectPerformance[] = [
                 'subject' => $subject,
                 'average_score' => round($averageScore, 2),
                 'assessments' => $assessmentBreakdown,
             ];
         }
-        
+
         // Calculate trend data (average score per semester)
-        $trendData = $marks->groupBy(function($mark) {
+        $trendData = $marks->groupBy(function ($mark) {
             return $mark->academicYear->name . ' - ' . $mark->semester;
-        })->map(function($periodMarks, $period) {
+        })->map(function ($periodMarks, $period) {
             return [
                 'period' => $period,
                 'average' => round($periodMarks->avg('score_obtained'), 2),
@@ -142,7 +142,7 @@ class StudentAcademicController extends Controller
         $student = $user->student;
         $academicYear = \App\Models\AcademicYear::where('status', 'active')->first();
 
-        $courses = \App\Models\Subject::where('grade_id', $student->grade_id)->get()->map(function($subject) use ($student, $academicYear) {
+        $courses = \App\Models\Subject::where('grade_id', $student->grade_id)->get()->map(function ($subject) use ($student, $academicYear) {
             // Find teacher for this subject in student's section
             $teacherAssignment = \App\Models\TeacherAssignment::where('subject_id', $subject->id)
                 ->where('section_id', $student->section_id)

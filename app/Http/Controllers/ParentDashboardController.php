@@ -337,7 +337,7 @@ class ParentDashboardController extends Controller
             $allMarks = \App\Models\Mark::where('student_id', $student->id)
                 ->where('semester', (string) $semester)
                 ->where('academic_year_id', $academicYearId)
-                ->with(['subject', 'assessment.assessmentType'])
+                ->with(['subject', 'assessment', 'assessmentType'])
                 ->get();
 
             $subjectRecords = $allMarks->groupBy('subject_id')->map(function ($subjectMarks) use ($teacherAssignments) {
@@ -347,16 +347,17 @@ class ParentDashboardController extends Controller
                     return [
                         'id' => $mark->id,
                         'score' => $mark->score,
-                        'assessment_name' => $mark->assessment?->name ?? $mark->assessment_type ?? 'Grade Entry',
+                        'assessment_name' => $mark->assessment?->name ?? $mark->assessmentType->name ?? 'Grade Entry',
                         'max_score' => $mark->max_score ?? 100,
                         'weight' => $mark->assessment?->weight_percentage ?? 0,
-                        'type' => $mark->assessment?->assessmentType->name ?? 'General',
+                        'type' => $mark->assessmentType->name ?? $mark->assessment?->assessmentType->name ?? 'General',
                         'is_submitted' => $mark->is_submitted ?? true,
                     ];
                 });
 
                 $totalScore = $subjectMarks->sum('score');
                 $totalMax = $subjectMarks->sum('max_score') ?: ($subjectMarks->count() * 100);
+
 
                 return [
                     'subject' => [

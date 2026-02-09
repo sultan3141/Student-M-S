@@ -115,9 +115,9 @@ class Mark extends Model
         return $query->where('semester', $semester);
     }
 
-    public function scopeByAssessment($query, $type)
+    public function scopeByAssessment($query, $typeId)
     {
-        return $query->where('assessment_type', $type);
+        return $query->where('assessment_type_id', $typeId);
     }
 
     public function scopeLocked($query)

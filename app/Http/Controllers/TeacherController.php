@@ -10,7 +10,7 @@ class TeacherController extends Controller
     {
         $user = auth()->user();
         // Ensure user has teacher role check hidden in middleware usually
-        
+
         // Detailed teacher profile if needed
         // $teacher = $user->teacher; 
 
@@ -25,7 +25,7 @@ class TeacherController extends Controller
         // Ideally: $teacher->sections / $teacher->subjects
         // For demo: Fetch all sections
         $sections = \App\Models\Section::with('grade')->get();
-        
+
         return inertia('Teacher/Marks/Index', [
             'sections' => $sections,
         ]);
@@ -35,7 +35,7 @@ class TeacherController extends Controller
     {
         $section = \App\Models\Section::with(['grade', 'grade.subjects'])->findOrFail($request->section_id);
         $subject = \App\Models\Subject::findOrFail($request->subject_id);
-        
+
         // Fetch students in this section
         $students = \App\Models\Student::where('section_id', $section->id)
             ->with('user')
@@ -56,7 +56,7 @@ class TeacherController extends Controller
             'section_id' => 'required',
             'subject_id' => 'required',
             'semester' => 'required',
-            'assessment_type' => 'required',
+            'assessment_type_id' => 'required|exists:assessment_types,id',
             'marks' => 'required|array', // [student_id => score]
             'marks.*' => 'nullable|numeric|min:0|max:100',
         ]);
@@ -67,11 +67,11 @@ class TeacherController extends Controller
             if ($score !== null) {
                 \App\Models\Mark::updateOrCreate(
                     [
-                        'student_id' => $studentId, 
+                        'student_id' => $studentId,
                         'subject_id' => $validated['subject_id'],
                         'academic_year_id' => $academicYear->id,
                         'semester' => $validated['semester'],
-                        'assessment_type' => $validated['assessment_type'],
+                        'assessment_type_id' => $validated['assessment_type_id'],
                     ],
                     ['score_obtained' => $score, 'max_score' => 100]
                 );

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SemesterStatus;
-use App\Models\Admission;
 
 class StudentController extends Controller
 {
@@ -37,7 +36,7 @@ class StudentController extends Controller
         // Get marks for the current academic year
         $recentMarks = \App\Models\Mark::where('student_id', $student->id)
             ->where('academic_year_id', $academicYear->id)
-            ->with(['subject:id,name', 'assessment:id,name'])
+            ->with(['subject:id,name', 'assessment:id,name', 'assessmentType:id,name'])
             ->latest()
             ->take(5)
             ->get();
@@ -51,7 +50,7 @@ class StudentController extends Controller
                 return [
                     'id' => $mark->id,
                     'subject' => $mark->subject->name ?? 'Unknown',
-                    'assessment' => $mark->assessment->name ?? $mark->assessment_type ?? 'Grade Entry',
+                    'assessment' => $mark->assessment->name ?? $mark->assessmentType->name ?? 'Grade Entry',
                     'score' => $mark->score,
                     'maxScore' => $mark->max_score ?? 100,
                     'percentage' => $mark->max_score > 0 ? round(($mark->score / $mark->max_score) * 100, 1) . '%' : 'N/A',
@@ -64,9 +63,9 @@ class StudentController extends Controller
 
         // Trend Data for Charts
         $allMarks = \App\Models\Mark::where('student_id', $student->id)
-            ->with(['academicYear:id,name'])
+            ->with(['academicYear:id,name', 'assessmentType:id,name'])
             ->get();
-            
+
         $trendData = $allMarks->groupBy(function ($mark) {
             return $mark->academicYear->name ?? 'Unknown';
         })->map(function ($yearMarks, $yearName) {
@@ -94,10 +93,10 @@ class StudentController extends Controller
         ];
 
         // Assessment Distribution for Donut Chart
-        $assessmentCounts = $allMarks->groupBy('assessment_type')->map(fn($group) => $group->count());
+        $assessmentCounts = $allMarks->groupBy('assessment_type_id')->map(fn($group) => count($group));
         $totalAssessments = $assessmentCounts->sum();
         $assessmentDistribution = [
-            'labels' => $assessmentCounts->keys()->toArray(),
+            'labels' => collect($allMarks->groupBy('assessment_type_id'))->map(fn($group) => $group->first()->assessmentType->name ?? 'Unknown')->values()->toArray(),
             'values' => $assessmentCounts->values()->toArray(),
             'total' => $totalAssessments,
             'percentages' => $assessmentCounts->map(fn($count) => $totalAssessments > 0 ? round(($count / $totalAssessments) * 100) : 0)->toArray()
@@ -178,7 +177,7 @@ class StudentController extends Controller
             // Check if student has any marks for this semester (results available)
             $hasMarks = \App\Models\Mark::where('student_id', $student->id)
                 ->where('academic_year_id', $academicYear->id)
-                ->where('semester', (string)$status->semester)
+                ->where('semester', (string) $status->semester)
                 ->exists();
 
             return [
@@ -423,7 +422,7 @@ class StudentController extends Controller
             // Get detailed assessment breakdown for this subject
             $assessmentBreakdown = $subjectMarks->map(function ($mark) {
                 return [
-                    'assessment_type' => $mark->assessment_type,
+                    'assessment_type' => $mark->assessmentType->name ?? 'Grade Entry',
                     'semester' => $mark->semester,
                     'score' => $mark->score,
                     'max_score' => $mark->max_score ?? 100,
@@ -464,44 +463,15 @@ class StudentController extends Controller
         ]);
     }
 
-    // FR-02: Admission Application
+    // FR-02: Admission Application (Disabled due to missing model)
     public function admissionForm()
     {
-        $grades = \App\Models\Grade::all();
-        return inertia('Student/AdmissionApplication', [
-            'grades' => $grades,
-        ]);
+        return redirect()->route('student.dashboard')->with('error', 'Admission feature is currently unavailable.');
     }
 
     public function admissionStore(Request $request)
     {
-        $validated = $request->validate([
-            'full_name' => 'required|string|max:255',
-            'dob' => 'required|date',
-            'gender' => 'required|in:male,female',
-            'grade_applying' => 'required|exists:grades,id',
-            'previous_school' => 'nullable|string|max:255',
-            'parent_name' => 'required|string|max:255',
-            'parent_phone' => 'required|string|max:20',
-            'parent_email' => 'nullable|email',
-            'address' => 'required|string',
-        ]);
-
-        // Create admission record
-        \App\Models\Admission::create([
-            'full_name' => $validated['full_name'],
-            'dob' => $validated['dob'],
-            'gender' => $validated['gender'],
-            'grade_applying' => $validated['grade_applying'],
-            'previous_school' => $validated['previous_school'],
-            'parent_name' => $validated['parent_name'],
-            'parent_phone' => $validated['parent_phone'],
-            'parent_email' => $validated['parent_email'],
-            'address' => $validated['address'],
-            'status' => 'submitted',
-        ]);
-
-        return redirect()->route('student.dashboard')->with('success', 'Application submitted successfully!');
+        return redirect()->route('student.dashboard')->with('error', 'Admission feature is currently unavailable.');
     }
 
     // FR-04, FR-05: Annual Registration
@@ -606,7 +576,6 @@ class StudentController extends Controller
             'gradeHistory' => $gradeHistory,
         ]);
     }
-<<<<<<< HEAD
     // FR-07: View Schedule
     public function schedule()
     {
@@ -633,7 +602,8 @@ class StudentController extends Controller
         return inertia('Student/Schedule', [
             'student' => $student->load('grade', 'section'),
             'schedule' => $schedule,
-=======
+        ]);
+    }
 
     public function attendance()
     {
@@ -645,7 +615,7 @@ class StudentController extends Controller
         }
 
         // Get current academic year
-        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first() 
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first()
             ?? \App\Models\AcademicYear::orderBy('id', 'desc')->first();
 
         // Get all attendance records for the student
@@ -661,7 +631,7 @@ class StudentController extends Controller
         $absentCount = $attendanceRecords->where('status', 'Absent')->count();
         $lateCount = $attendanceRecords->where('status', 'Late')->count();
         $excusedCount = $attendanceRecords->where('status', 'Excused')->count();
-        
+
         $attendanceRate = $totalRecords > 0 ? round(($presentCount / $totalRecords) * 100, 1) : 100;
 
         // Group by month for better visualization
@@ -675,8 +645,8 @@ class StudentController extends Controller
                 'absent' => $monthRecords->where('status', 'Absent')->count(),
                 'late' => $monthRecords->where('status', 'Late')->count(),
                 'excused' => $monthRecords->where('status', 'Excused')->count(),
-                'rate' => $monthRecords->count() > 0 
-                    ? round(($monthRecords->where('status', 'Present')->count() / $monthRecords->count()) * 100, 1) 
+                'rate' => $monthRecords->count() > 0
+                    ? round(($monthRecords->where('status', 'Present')->count() / $monthRecords->count()) * 100, 1)
                     : 100,
             ];
         })->values();
@@ -706,7 +676,6 @@ class StudentController extends Controller
             ],
             'recordsByMonth' => $recordsByMonth,
             'records' => $formattedRecords,
->>>>>>> ed32a0d2f967cd7a39df994b3bb777da139bee7f
         ]);
     }
 }

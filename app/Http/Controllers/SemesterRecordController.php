@@ -224,7 +224,7 @@ class SemesterRecordController extends Controller
                     'id' => $mark->id,
                     'assessment_id' => null,
                     'score' => $mark->score,
-                    'assessment_name' => $mark->assessment_type ?? 'Grade Entry',
+                    'assessment_name' => $mark->assessmentType->name ?? 'Grade Entry',
                     'max_score' => $mark->max_score ?? 100,
                     'weight' => 0,
                     'type' => 'General',

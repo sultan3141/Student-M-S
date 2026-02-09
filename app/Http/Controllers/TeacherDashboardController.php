@@ -76,8 +76,8 @@ class TeacherDashboardController extends Controller
         // Cache briefly to avoid spamming the database on refresh
         return Cache::remember("teacher_recent_activities_{$teacher->id}", 60, function () use ($teacher) {
             return \App\Models\Mark::where('teacher_id', $teacher->id)
-                ->select(['id', 'student_id', 'subject_id', 'assessment_type', 'created_at'])
-                ->with(['student.user:id,name', 'subject:id,name'])
+                ->select(['id', 'student_id', 'subject_id', 'assessment_type_id', 'created_at'])
+                ->with(['student.user:id,name', 'subject:id,name', 'assessmentType:id,name'])
                 ->latest()
                 ->take(5)
                 ->get()
@@ -86,7 +86,7 @@ class TeacherDashboardController extends Controller
                         'id' => $mark->id,
                         'type' => 'grade_entry',
                         'title' => 'Grade Entered',
-                        'description' => "Entered " . ($mark->assessment_type ?? 'mark') . " for " . ($mark->student->user->name ?? 'Student'),
+                        'description' => "Entered " . ($mark->assessmentType->name ?? 'mark') . " for " . ($mark->student->user->name ?? 'Student'),
                         'time' => $mark->created_at->diffForHumans(),
                         'status' => 'completed'
                     ];
