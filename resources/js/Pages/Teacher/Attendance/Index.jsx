@@ -108,16 +108,16 @@ export default function Index({ auth, schedule, todayDate, stats }) {
                             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
                                 <div className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Completed</div>
                                 <div className="text-2xl font-black text-white leading-none">
-                                    {stats.todayCompleted} <span className="text-xs font-medium text-white/50">/ {stats.totalClasses}</span>
+                                    {stats?.todayCompleted ?? 0} <span className="text-xs font-medium text-white/50">/ {stats?.totalClasses ?? 0}</span>
                                 </div>
                             </div>
                             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
                                 <div className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Weekly Rate</div>
-                                <div className="text-2xl font-black text-white leading-none">{stats.weekRate}%</div>
+                                <div className="text-2xl font-black text-white leading-none">{stats?.weekRate ?? 0}%</div>
                             </div>
                             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hidden sm:block">
                                 <div className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Pending</div>
-                                <div className="text-2xl font-black text-white leading-none">{stats.totalClasses - stats.todayCompleted}</div>
+                                <div className="text-2xl font-black text-white leading-none">{(stats?.totalClasses ?? 0) - (stats?.todayCompleted ?? 0)}</div>
                             </div>
                         </div>
                     </div>
@@ -207,11 +207,11 @@ export default function Index({ auth, schedule, todayDate, stats }) {
                                 <h2 className="text-2xl font-black text-gray-900 tracking-tight">Today's Schedule</h2>
                             </div>
                             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                {schedule.length} Classes Today
+                                {schedule?.length ?? 0} Classes Today
                             </div>
                         </div>
 
-                        {schedule.length > 0 ? (
+                        {schedule?.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {schedule.map((cls) => {
                                     const isCompleted = cls.status === 'Completed';
