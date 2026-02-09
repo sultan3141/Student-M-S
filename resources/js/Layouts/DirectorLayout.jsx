@@ -19,27 +19,26 @@ import {
     LockClosedIcon,
 } from '@heroicons/react/24/outline';
 
+const navigation = [
+    { name: 'Dashboard', href: '/director/dashboard', icon: HomeIcon },
+    // Revised "Semester Management" Section
+    { name: 'Academic Years', href: '/director/academic-years', icon: CalendarIcon },
+    { name: 'Students', href: '/director/students', icon: UserCircleIcon },
+    { name: 'Parents', href: '/director/parents', icon: UsersIcon },
+    { name: 'Teachers', href: '/director/teachers', icon: UsersIcon },
+    { name: 'Teacher Assignments', href: '/director/teacher-assignments', icon: ClipboardDocumentListIcon },
+    { name: 'Academic', href: '/director/academic/overview', icon: AcademicCapIcon },
+    { name: 'Schedule', href: '/director/schedule', icon: CalendarIcon },
+    { name: 'Profile', href: '/director/profile', icon: UserCircleIcon },
+    { name: 'Registration', href: '/director/registration/status', icon: ChartBarIcon },
+    { name: 'Documents', href: '/director/documents', icon: DocumentTextIcon },
+    { name: 'Communication', href: '/director/announcements', icon: ChatBubbleLeftRightIcon },
+    { name: 'Audit Log', href: '/director/audit', icon: Cog6ToothIcon },
+];
+
 export default function DirectorLayout({ children }) {
     const { auth } = usePage().props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
-
-    const navigation = [
-        { name: 'Dashboard', href: '/director/dashboard', icon: HomeIcon },
-        // Revised "Semester Management" Section
-        { name: 'Academic Years', href: '/director/academic-years', icon: CalendarIcon },
-        { name: 'Students', href: '/director/students', icon: UserCircleIcon },
-        { name: 'Parents', href: '/director/parents', icon: UsersIcon },
-        { name: 'Teachers', href: '/director/teachers', icon: UsersIcon },
-        { name: 'Teacher Assignments', href: '/director/teacher-assignments', icon: ClipboardDocumentListIcon },
-        { name: 'Academic', href: '/director/academic/overview', icon: AcademicCapIcon },
-        { name: 'Schedule', href: '/director/schedule', icon: CalendarIcon },
-        { name: 'Profile', href: '/director/profile', icon: UserCircleIcon },
-        { name: 'Registration', href: '/director/registration/status', icon: ChartBarIcon },
-        { name: 'Documents', href: '/director/documents', icon: DocumentTextIcon },
-        { name: 'Communication', href: '/director/announcements', icon: ChatBubbleLeftRightIcon },
-        { name: 'Audit Log', href: '/director/audit', icon: Cog6ToothIcon },
-    ];
-
     const currentPath = window.location.pathname;
 
     return (
