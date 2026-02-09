@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Models\AcademicYear;
+use App\Models\SemesterPeriod;
+use Carbon\Carbon;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
@@ -30,7 +33,7 @@ class DirectorDashboardController extends Controller
      */
     private function getStatistics()
     {
-        return cache()->remember('director_stats', 600, function() {
+        return cache()->remember('director_stats_overview', 300, function () {
             // Total student counts
             $totalStudents = Student::count();
             $maleStudents = Student::where('gender', 'Male')->count();
@@ -61,24 +64,27 @@ class DirectorDashboardController extends Controller
      */
     private function getRecentData()
     {
-        return [
-            'recentStudents' => Student::query()
-                ->select(['students.id', 'students.user_id', 'students.grade_id', 'students.section_id', 'students.student_id', 'students.created_at'])
-                ->with([
-                    'user:id,name', 
-                    'grade:id,name', 
-                    'section:id,name', 
-                    'parents:id'
-                ])
-                ->join('users', 'students.user_id', '=', 'users.id')
-                ->orderBy('users.name', 'asc')
-                ->take(50)
-                ->get(),
-            'recentParents' => \App\Models\ParentProfile::with(['user:id,name', 'students:id'])
-                ->latest()
-                ->take(5)
-                ->get(),
-        ];
+        // Cache for 60 seconds since this updates more frequently
+        return cache()->remember('director_recent_data', 60, function () {
+            return [
+                'recentStudents' => Student::query()
+                    ->select(['students.id', 'students.user_id', 'students.grade_id', 'students.section_id', 'students.student_id', 'students.created_at'])
+                    ->with([
+                        'user:id,name',
+                        'grade:id,name',
+                        'section:id,name',
+                        'parents:id'
+                    ])
+                    ->join('users', 'students.user_id', '=', 'users.id')
+                    ->orderBy('users.name', 'asc')
+                    ->take(10) // Reduced from 50 for faster dashboard load
+                    ->get(),
+                'recentParents' => \App\Models\ParentProfile::with(['user:id,name', 'students:id'])
+                    ->latest()
+                    ->take(5)
+                    ->get(),
+            ];
+        });
     }
 
     /**
@@ -88,14 +94,41 @@ class DirectorDashboardController extends Controller
     {
         // PostgreSQL-compatible boolean query
         $currentAcademicYear = \App\Models\AcademicYear::whereRaw("is_current = true")->first();
-        
+
         if (!$currentAcademicYear) {
-            return null;
+            // If no current academic year, return default empty status for semesters
+            $semesters = [];
+            foreach ([1, 2] as $semNum) {
+                // If there's no current academic year, we can't fetch SemesterPeriod data for it.
+                // We can return a default "closed" or "unavailable" status.
+                $semesters[] = [
+                    'semester' => $semNum,
+                    'status' => 'unavailable',
+                    'is_open' => false,
+                    'is_closed' => true,
+                ];
+            }
+            return [
+                'academicYear' => 'N/A',
+                'semesters' => $semesters,
+            ];
         }
 
         $semesters = \App\Models\SemesterPeriod::where('academic_year_id', $currentAcademicYear->id)
             ->get()
-            ->map(function ($semester) {
+            ->map(function ($semester) use ($currentAcademicYear) {
+                $daysRemaining = 0;
+                // Assuming 'semester' property is 1 for first semester, 2 for second
+                if ($semester->semester) {
+                    $startDate = Carbon::parse($currentAcademicYear->start_date);
+                    $endDate = Carbon::parse($currentAcademicYear->end_date);
+
+                    $estimatedClose = $semester->semester == 1
+                        ? $startDate->copy()->addMonths(6) // Assuming first semester is roughly 6 months
+                        : $endDate; // Assuming second semester ends with the academic year
+                    $daysRemaining = max(0, Carbon::now()->diffInDays($estimatedClose, false));
+                }
+
                 return [
                     'semester' => $semester->semester,
                     'status' => $semester->status,
