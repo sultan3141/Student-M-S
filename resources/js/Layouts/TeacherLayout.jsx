@@ -14,7 +14,9 @@ import {
     Cog6ToothIcon,
     ArrowRightOnRectangleIcon,
     Bars3Icon,
-    ChevronDownIcon
+    ChevronDownIcon,
+    XMarkIcon,
+    BellIcon
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 

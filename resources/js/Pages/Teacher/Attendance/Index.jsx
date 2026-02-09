@@ -124,7 +124,7 @@ export default function Index({ auth, schedule, todayDate, stats }) {
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Active Cohorts</p>
-                                <p className="text-2xl font-bold text-gray-900">{stats?.total_sections ?? 0}</p>
+                                <p className="text-2xl font-bold text-gray-900">{stats?.totalClasses ?? 0}</p>
                             </div>
                         </div>
                     </div>
@@ -136,7 +136,7 @@ export default function Index({ auth, schedule, todayDate, stats }) {
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Today's Progress</p>
-                                <p className="text-2xl font-bold text-gray-900">{stats?.today_completed ?? 0}%</p>
+                                <p className="text-2xl font-bold text-gray-900">{stats?.todayCompleted ?? 0}%</p>
                             </div>
                         </div>
                     </div>
