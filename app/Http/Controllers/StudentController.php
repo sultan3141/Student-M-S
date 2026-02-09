@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\SemesterStatus;
+use App\Models\Admission;
 
 class StudentController extends Controller
 {
@@ -19,14 +21,14 @@ class StudentController extends Controller
         }
 
         // Get current academic year
-        $academicYear = cache()->remember('current_academic_year', 3600, function() {
-            return \App\Models\AcademicYear::whereRaw('is_current = true')->first() 
+        $academicYear = cache()->remember('current_academic_year', 3600, function () {
+            return \App\Models\AcademicYear::whereRaw('is_current = true')->first()
                 ?? \App\Models\AcademicYear::orderBy('id', 'desc')->first();
         });
-        
+
         // Get current semester information - Use Grade Specific Status
         $currentSemester = $this->getCurrentSemesterInfoForStudent($student, $academicYear);
-        
+
         // Use Fast calculation methods
         $average = $this->calculateGPAFast($student->id, $academicYear->id);
         $rank = $this->getCurrentRankFast($student->id, $student->grade_id, $academicYear->id) ?? 'N/A';
@@ -77,15 +79,15 @@ class StudentController extends Controller
         // Today's Schedule - Use day of week
         $today = now()->format('l');
         $schedule = \App\Models\Schedule::where('grade_id', $student->grade_id)
-            ->where(function($q) use ($student) {
+            ->where(function ($q) use ($student) {
                 $q->where('section_id', $student->section_id)
-                  ->orWhereNull('section_id');
+                    ->orWhereNull('section_id');
             })
             ->where('day_of_week', $today)
-            ->where('is_active', true)
+            ->whereBoolTrue('is_active')
             ->orderBy('start_time')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
                     'id' => $item->id,
                     'activity' => $item->activity,
@@ -97,16 +99,16 @@ class StudentController extends Controller
 
         // Notifications/Announcements
         $notifications = \App\Models\Announcement::where('status', 'sent')
-            ->where(function($q) use ($student) {
+            ->where(function ($q) use ($student) {
                 $q->where('recipient_type', 'all_students')
-                  ->orWhere('recipient_type', 'grade_' . $student->grade_id)
-                  ->orWhere('recipient_type', 'specific')
-                  ->whereJsonContains('recipient_ids', (string)$student->user_id);
+                    ->orWhere('recipient_type', 'grade_' . $student->grade_id)
+                    ->orWhere('recipient_type', 'specific')
+                    ->whereJsonContains('recipient_ids', (string) $student->user_id);
             })
             ->latest()
             ->take(5)
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
                     'id' => $item->id,
                     'title' => $item->subject,
@@ -132,7 +134,8 @@ class StudentController extends Controller
      */
     private function getCurrentSemesterInfoForStudent($student, $academicYear)
     {
-        if (!$academicYear) return null;
+        if (!$academicYear)
+            return null;
 
         // Check for any open semester for this specific grade
         $status = \App\Models\SemesterStatus::where('academic_year_id', $academicYear->id)
@@ -147,15 +150,15 @@ class StudentController extends Controller
                 ->where('academic_year_id', $academicYear->id)
                 ->where('semester', $status->semester)
                 ->exists();
-            
+
             return [
                 'semester' => $status->semester,
                 'status' => 'active',
                 'is_open' => true,
                 'can_view_results' => $hasMarks,
                 'is_declared' => $hasMarks,
-                'message' => $hasMarks 
-                    ? 'Academic results are available for viewing.' 
+                'message' => $hasMarks
+                    ? 'Academic results are available for viewing.'
                     : 'Academic results will be available as teachers enter marks.'
             ];
         }
@@ -570,6 +573,34 @@ class StudentController extends Controller
         return inertia('Student/GradeAudit', [
             'student' => $student,
             'gradeHistory' => $gradeHistory,
+        ]);
+    }
+    // FR-07: View Schedule
+    public function schedule()
+    {
+        $user = auth()->user();
+        $student = $user->student;
+
+        $schedule = \App\Models\Schedule::where('grade_id', $student->grade_id)
+            ->where(function ($q) use ($student) {
+                $q->where('section_id', $student->section_id)
+                    ->orWhereNull('section_id');
+            })
+            ->whereBoolTrue('is_active')
+            ->orderByRaw("CASE day_of_week 
+                WHEN 'Monday' THEN 1 
+                WHEN 'Tuesday' THEN 2 
+                WHEN 'Wednesday' THEN 3 
+                WHEN 'Thursday' THEN 4 
+                WHEN 'Friday' THEN 5 
+                ELSE 6 END")
+            ->orderBy('start_time')
+            ->get()
+            ->groupBy('day_of_week');
+
+        return inertia('Student/Schedule', [
+            'student' => $student->load('grade', 'section'),
+            'schedule' => $schedule,
         ]);
     }
 }
