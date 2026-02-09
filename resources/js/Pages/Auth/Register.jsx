@@ -23,7 +23,12 @@ export default function Register() {
 
     return (
         <GuestLayout>
-            <Head title="Register" />
+            <Head title="Create Account" />
+
+            <div className="mb-8">
+                <h2 className="text-2xl font-bold text-[#0F172A]">Create Account</h2>
+                <p className="text-gray-500 mt-1">Join Darul-Ulum Education Portal</p>
+            </div>
 
             <form onSubmit={submit}>
                 <div>
