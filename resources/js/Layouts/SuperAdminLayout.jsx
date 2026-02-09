@@ -12,10 +12,10 @@ import {
     ShieldCheckIcon,
     ArrowRightOnRectangleIcon,
     Bars3Icon,
-    XMarkIcon,
     BellIcon,
     LockClosedIcon
 } from '@heroicons/react/24/outline';
+import Footer from '@/Components/Footer';
 
 export default function SuperAdminLayout({ children }) {
     const { auth } = usePage().props;
@@ -152,22 +152,13 @@ export default function SuperAdminLayout({ children }) {
 
                         <div className="flex items-center">
                             <div className="text-right mr-3 hidden sm:block">
-<<<<<<< HEAD
-                                <span className="block text-sm font-bold text-gray-900">{auth.user.name}</span>
-=======
                                 <span className="block text-sm font-bold text-gray-900">{auth?.user?.name || 'Super Admin'}</span>
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                                 <span className="block text-xs text-indigo-600 font-medium">Super Admin</span>
                             </div>
                             <img
                                 className="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-100"
-<<<<<<< HEAD
-                                src={auth.user.profile_photo_url || `https://ui-avatars.com/api/?name=${auth.user.name}&background=4F46E5&color=fff`}
-                                alt={auth.user.name}
-=======
                                 src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Admin'}&background=4F46E5&color=fff`}
                                 alt={auth?.user?.name || 'Admin'}
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                             />
                         </div>
                     </div>
@@ -176,14 +167,12 @@ export default function SuperAdminLayout({ children }) {
                 {/* Main Scrollable Content */}
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50">
                     <div className="mb-6">
-<<<<<<< HEAD
-                        <p className="text-sm text-gray-500">Welcome, {auth.user.name}</p>
-=======
                         <p className="text-sm text-gray-500">Welcome, {auth?.user?.name || 'Admin'}</p>
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                     </div>
                     {children}
                 </main>
+
+                <Footer />
             </div>
         </div>
     );
