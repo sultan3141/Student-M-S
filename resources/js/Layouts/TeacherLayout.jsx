@@ -16,6 +16,8 @@ import {
     ChevronDownIcon
 } from '@heroicons/react/24/outline';
 
+const classNames = (...classes) => classes.filter(Boolean).join(' ');
+
 export default function TeacherLayout({ children }) {
     const { auth } = usePage().props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -88,18 +90,17 @@ export default function TeacherLayout({ children }) {
     ];
 
     const bottomNavigation = [
-        { name: 'Settings', href: route('teacher.profile.edit'), icon: Cog6ToothIcon, current: route().current('teacher.profile.*') },
+        { name: 'Profile Settings', href: route('teacher.profile.edit'), icon: Cog6ToothIcon, current: route().current('teacher.profile.edit') },
     ];
 
-    function classNames(...classes) {
-        return classes.filter(Boolean).join(' ');
-    }
-
     return (
-        <div className="min-h-screen bg-gray-50 flex">
-            {/* Mobile Sidebar Overlay */}
+        <div className="min-h-screen bg-gray-50">
+            {/* Mobile sidebar backdrop */}
             {sidebarOpen && (
-                <div className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm md:hidden" onClick={() => setSidebarOpen(false)}></div>
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                ></div>
             )}
 
             {/* Main Sidebar */}
@@ -262,17 +263,17 @@ export default function TeacherLayout({ children }) {
                             as="button"
                             className="w-full group flex items-center px-4 py-3 text-sm font-medium text-gray-400 rounded-xl hover:bg-white/5 hover:text-white transition-all duration-200"
                         >
-                            <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-white" />
-                            Log Out
+                            <ArrowRightOnRectangleIcon className="h-5 w-5 mr-3" />
+                            <span>Logout</span>
                         </Link>
                     </div>
-                </div >
-            </div >
+                </div>
+            </div>
 
             {/* Main Content Area */}
-            < div className="flex-1 flex flex-col min-h-0 overflow-hidden" >
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                 {/* Top Header */}
-                < header className="bg-white border-b border-gray-200 shadow-sm h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8" >
+                <header className="bg-white border-b border-gray-200 shadow-sm h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center">
                         <button onClick={() => setSidebarOpen(true)} className="md:hidden text-gray-500 hover:text-gray-700 mr-4">
                             <Bars3Icon className="w-6 h-6" />
@@ -281,18 +282,6 @@ export default function TeacherLayout({ children }) {
                     </div>
 
                     <div className="flex items-center space-x-4">
-                        {/* Search Bar */}
-                        <div className="hidden md:block relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                                type="text"
-                                className="block w-64 pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
-                                placeholder="Search..."
-                            />
-                        </div>
-
                         {/* Notifications */}
                         <button className="relative p-2 text-gray-400 hover:text-blue-600 transition-colors">
                             <BellIcon className="w-6 h-6" />
@@ -311,13 +300,13 @@ export default function TeacherLayout({ children }) {
                             />
                         </div>
                     </div>
-                </header >
+                </header>
 
                 {/* Main Scrollable Content */}
-                < main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50" >
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50">
                     {children}
-                </main >
-            </div >
-        </div >
+                </main>
+            </div>
+        </div>
     );
 }

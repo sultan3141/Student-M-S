@@ -24,7 +24,7 @@ class ParentDashboardController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        // Cache students data for 30 minutes (increased from 5)
+        // Cache students data for 30 minutes
         $cacheKey = "parent_{$user->id}_students";
         $students = cache()->remember($cacheKey, 1800, function () use ($user) {
             return $user->parentProfile->students()
@@ -34,21 +34,122 @@ class ParentDashboardController extends Controller
                     'section:id,name',
                     'currentRegistration',
                     'reports' => function ($query) {
-                        $query->orderBy('reported_at', 'desc')->limit(10);
+                        $query->orderBy('reported_at', 'desc')->limit(5);
                     }
                 ])
                 ->get();
         });
 
-        // Get selected student ID from request, default to first student
-        $selectedStudentId = $request->get('student', $students->first()?->id);
+        // Get selected student ID from session or default to first student
+        $selectedStudentId = session('selected_student_id', $students->first()?->id);
+
+        $student = null;
+        $attendanceData = null;
+
+        if ($selectedStudentId) {
+            $student = $students->firstWhere('id', $selectedStudentId) ?? $students->first();
+
+            if ($student) {
+                $academicYear = \App\Models\AcademicYear::whereRaw("is_current = true")->first()
+                    ?? \App\Models\AcademicYear::orderBy('id', 'desc')->first();
+                if ($academicYear) {
+                    $attendanceData = $this->calculateAttendanceStats($student->id, $academicYear->id);
+                }
+            }
+        }
 
         return Inertia::render('Parent/Dashboard', [
-            'students' => $students,
-            'selectedStudentId' => $selectedStudentId,
+            'parentName' => $user->name,
+            'selectedStudent' => $student,
+            'attendance' => $attendanceData,
         ])->withViewData([
                     'title' => 'Parent Dashboard'
                 ]);
+    }
+
+    public function children(Request $request)
+    {
+        $user = Auth::user();
+        $students = $user->parentProfile->students()
+            ->with(['user:id,name', 'grade:id,name', 'section:id,name', 'currentRegistration'])
+            ->get();
+
+        return Inertia::render('Parent/Children', [
+            'students' => $students,
+            'selectedStudentId' => session('selected_student_id'),
+        ]);
+    }
+
+    public function selectChild(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id'
+        ]);
+
+        $user = Auth::user();
+        // Verify ownership
+        $exists = $user->parentProfile->students()->where('students.id', $request->student_id)->exists();
+
+        if (!$exists) {
+            abort(403, 'Unauthorized access to student record.');
+        }
+
+        session(['selected_student_id' => $request->student_id]);
+
+        return redirect()->route('parent.dashboard')->with('success', 'Student selected successfully.');
+    }
+
+    private function calculateAttendanceStats($studentId, $academicYearId)
+    {
+        $cacheKey = "parent_attendance_{$studentId}_{$academicYearId}";
+
+        return cache()->remember($cacheKey, 300, function () use ($studentId, $academicYearId) {
+            $total = \App\Models\Attendance::where('student_id', $studentId)
+                ->where('academic_year_id', $academicYearId)
+                ->count();
+
+            if ($total === 0) {
+                return [
+                    'rate' => 100,
+                    'present' => 0,
+                    'absent' => 0,
+                    'late' => 0,
+                    'excused' => 0,
+                    'total' => 0,
+                ];
+            }
+
+            $present = \App\Models\Attendance::where('student_id', $studentId)
+                ->where('academic_year_id', $academicYearId)
+                ->where('status', 'Present')
+                ->count();
+
+            $absent = \App\Models\Attendance::where('student_id', $studentId)
+                ->where('academic_year_id', $academicYearId)
+                ->where('status', 'Absent')
+                ->count();
+
+            $late = \App\Models\Attendance::where('student_id', $studentId)
+                ->where('academic_year_id', $academicYearId)
+                ->where('status', 'Late')
+                ->count();
+
+            $excused = \App\Models\Attendance::where('student_id', $studentId)
+                ->where('academic_year_id', $academicYearId)
+                ->where('status', 'Excused')
+                ->count();
+
+            $rate = round(($present / $total) * 100, 1);
+
+            return [
+                'rate' => $rate,
+                'present' => $present,
+                'absent' => $absent,
+                'late' => $late,
+                'excused' => $excused,
+                'total' => $total,
+            ];
+        });
     }
 
     public function profile($studentId)
@@ -127,7 +228,7 @@ class ParentDashboardController extends Controller
                     $hasMarks = \App\Models\Mark::where('student_id', $student->id)
                         ->where('academic_year_id', $reg->academic_year_id)
                         ->where('grade_id', $reg->grade_id)
-                        ->where('semester', $semesterNum)
+                        ->where('semester', (string) $semesterNum)
                         ->exists();
 
                     if (!$hasMarks)
@@ -161,7 +262,7 @@ class ParentDashboardController extends Controller
             return [
                 'id' => $reg->id,
                 'grade' => $reg->grade,
-                'academic_year' => $reg->academic_year,
+                'academic_year' => $reg->academicYear,
                 'section' => $reg->section,
                 'semesters' => $semestersData
             ];
@@ -186,7 +287,7 @@ class ParentDashboardController extends Controller
             $sectionStudents = \App\Models\Student::where('section_id', $sectionId)->pluck('id');
 
             return \App\Models\Mark::whereIn('student_id', $sectionStudents)
-                ->where('semester', $semester)
+                ->where('semester', (string) $semester)
                 ->where('academic_year_id', $academicYearId)
                 ->get()
                 ->groupBy('student_id')
@@ -234,7 +335,7 @@ class ParentDashboardController extends Controller
                 ->keyBy('subject_id');
 
             $allMarks = \App\Models\Mark::where('student_id', $student->id)
-                ->where('semester', $semester)
+                ->where('semester', (string) $semester)
                 ->where('academic_year_id', $academicYearId)
                 ->with(['subject', 'assessment.assessmentType'])
                 ->get();
@@ -489,6 +590,76 @@ class ParentDashboardController extends Controller
 
         return Inertia::render('Parent/SchoolContact', [
             'contacts' => $contacts,
+        ]);
+    }
+
+    public function attendance($studentId)
+    {
+        $student = $this->getAuthorizedStudent($studentId);
+        $student->load(['grade:id,name', 'section:id,name', 'user']);
+
+        // Get current academic year
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first()
+            ?? \App\Models\AcademicYear::orderBy('id', 'desc')->first();
+
+        // Get all attendance records for the student
+        $attendanceRecords = \App\Models\Attendance::where('student_id', $student->id)
+            ->where('academic_year_id', $academicYear->id)
+            ->with(['subject:id,name'])
+            ->orderBy('date', 'desc')
+            ->get();
+
+        // Calculate statistics
+        $totalRecords = $attendanceRecords->count();
+        $presentCount = $attendanceRecords->where('status', 'Present')->count();
+        $absentCount = $attendanceRecords->where('status', 'Absent')->count();
+        $lateCount = $attendanceRecords->where('status', 'Late')->count();
+        $excusedCount = $attendanceRecords->where('status', 'Excused')->count();
+
+        $attendanceRate = $totalRecords > 0 ? round(($presentCount / $totalRecords) * 100, 1) : 100;
+
+        // Group by month for better visualization
+        $recordsByMonth = $attendanceRecords->groupBy(function ($record) {
+            return \Carbon\Carbon::parse($record->date)->format('F Y');
+        })->map(function ($monthRecords, $month) {
+            return [
+                'month' => $month,
+                'total' => $monthRecords->count(),
+                'present' => $monthRecords->where('status', 'Present')->count(),
+                'absent' => $monthRecords->where('status', 'Absent')->count(),
+                'late' => $monthRecords->where('status', 'Late')->count(),
+                'excused' => $monthRecords->where('status', 'Excused')->count(),
+                'rate' => $monthRecords->count() > 0
+                    ? round(($monthRecords->where('status', 'Present')->count() / $monthRecords->count()) * 100, 1)
+                    : 100,
+            ];
+        })->values();
+
+        // Format records for display
+        $formattedRecords = $attendanceRecords->map(function ($record) {
+            return [
+                'id' => $record->id,
+                'date' => \Carbon\Carbon::parse($record->date)->format('M d, Y'),
+                'day' => \Carbon\Carbon::parse($record->date)->format('l'),
+                'subject' => $record->subject->name ?? 'General',
+                'status' => $record->status,
+                'remarks' => $record->remarks,
+            ];
+        });
+
+        return Inertia::render('Parent/Attendance/Index', [
+            'student' => $student,
+            'academicYear' => $academicYear,
+            'statistics' => [
+                'total' => $totalRecords,
+                'present' => $presentCount,
+                'absent' => $absentCount,
+                'late' => $lateCount,
+                'excused' => $excusedCount,
+                'rate' => $attendanceRate,
+            ],
+            'recordsByMonth' => $recordsByMonth,
+            'records' => $formattedRecords,
         ]);
     }
 

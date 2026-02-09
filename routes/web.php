@@ -201,6 +201,8 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/password', [\App\Http\Controllers\StudentProfileController::class, 'editPassword'])->name('password.edit');
     Route::patch('/password', [\App\Http\Controllers\StudentProfileController::class, 'updatePassword'])->name('password.update');
 
+    // Attendance
+    Route::get('/attendance', [\App\Http\Controllers\StudentController::class, 'attendance'])->name('attendance');
 
     // Semester Academic Records
     Route::get('/academic/semesters', [\App\Http\Controllers\SemesterRecordController::class, 'index'])->name('academic.semesters');
@@ -216,6 +218,8 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
 
 Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\ParentDashboardController::class, 'index'])->name('parent.dashboard');
+    Route::get('/children', [\App\Http\Controllers\ParentDashboardController::class, 'children'])->name('parent.children');
+    Route::post('/children/select', [\App\Http\Controllers\ParentDashboardController::class, 'selectChild'])->name('parent.children.select');
     Route::get('/student/{studentId}', [\App\Http\Controllers\ParentDashboardController::class, 'profile'])->name('parent.student.profile');
 
     // Registration
@@ -224,6 +228,7 @@ Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () 
 
     Route::get('/student/{studentId}/marks', [\App\Http\Controllers\ParentDashboardController::class, 'marks'])->name('parent.student.marks');
     Route::get('/student/{studentId}/progress', [\App\Http\Controllers\ParentDashboardController::class, 'progress'])->name('parent.student.progress');
+    Route::get('/student/{studentId}/attendance', [\App\Http\Controllers\ParentDashboardController::class, 'attendance'])->name('parent.student.attendance');
     Route::get('/student/{studentId}/payments', [\App\Http\Controllers\ParentDashboardController::class, 'paymentHistory'])->name('parent.student.payments');
     Route::get('/notifications', [\App\Http\Controllers\ParentDashboardController::class, 'notifications'])->name('parent.notifications');
     Route::get('/school-contact', [\App\Http\Controllers\ParentDashboardController::class, 'schoolContact'])->name('parent.school-contact');
@@ -281,7 +286,10 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     // Attendance Management (NEW)
     Route::prefix('attendance')->name('attendance.')->group(function () {
         Route::get('/', [\App\Http\Controllers\TeacherAttendanceController::class, 'index'])->name('index');
-        Route::get('/create/{section}', [\App\Http\Controllers\TeacherAttendanceController::class, 'create'])->name('create');
+        Route::get('/grades', [\App\Http\Controllers\TeacherAttendanceController::class, 'getGrades'])->name('grades');
+        Route::get('/sections', [\App\Http\Controllers\TeacherAttendanceController::class, 'getSections'])->name('sections');
+        Route::get('/subjects', [\App\Http\Controllers\TeacherAttendanceController::class, 'getSubjects'])->name('subjects');
+        Route::get('/create', [\App\Http\Controllers\TeacherAttendanceController::class, 'create'])->name('create');
         Route::post('/store', [\App\Http\Controllers\TeacherAttendanceController::class, 'store'])->name('store');
         Route::get('/history', [\App\Http\Controllers\TeacherAttendanceController::class, 'history'])->name('history');
     });

@@ -9,12 +9,14 @@ import {
     UserIcon,
     InformationCircleIcon,
     CheckIcon,
-    XMarkIcon
+    XMarkIcon,
+    CalendarIcon
 } from '@heroicons/react/24/outline';
 
-export default function Create({ auth, section, students, date, formattedDate }) {
+export default function Create({ auth, section, subject, grade, students, date, formattedDate }) {
     const { data, setData, post, processing, errors } = useForm({
         section_id: section.id,
+        subject_id: subject.id,
         date: date,
         students: students.map(s => ({
             id: s.id,
@@ -68,7 +70,7 @@ export default function Create({ auth, section, students, date, formattedDate })
 
     return (
         <TeacherLayout>
-            <Head title={`Mark Attendance - ${section.name}`} />
+            <Head title={`Mark Attendance - ${subject.name}`} />
 
             <div className="max-w-5xl mx-auto pb-12">
                 {/* Back Button & Header */}
@@ -114,6 +116,15 @@ export default function Create({ auth, section, students, date, formattedDate })
                         >
                             All Absent
                         </button>
+                    </div>
+                </div>
+
+                {/* Info Banner */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start">
+                    <CheckIcon className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-800">
+                        <p className="font-medium">Important: Once saved, this attendance record will be locked and cannot be edited.</p>
+                        <p className="mt-1 text-blue-700">Please review all entries carefully before submitting.</p>
                     </div>
                 </div>
 

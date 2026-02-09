@@ -1,16 +1,18 @@
 import { Head, Link } from '@inertiajs/react';
 import TeacherLayout from '@/Layouts/TeacherLayout';
 import SemesterWidget from '@/Components/SemesterWidget';
-import SemesterStatusGrid from '@/Components/SemesterStatusGrid';
 import {
     UserGroupIcon,
     AcademicCapIcon,
     ClipboardDocumentCheckIcon,
     DocumentTextIcon,
-    PlusIcon,
+    ClockIcon,
     UserPlusIcon,
+    CalendarIcon,
+    ChartBarIcon,
+    PlusIcon,
     ArrowDownTrayIcon,
-    ClockIcon
+    UserCircleIcon
 } from '@heroicons/react/24/outline';
 
 export default function Dashboard({ stats, recentActivity, deadlines, teacher, currentSemester }) {
@@ -54,14 +56,14 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher, c
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                         {[
-                            { label: 'Total Students', value: stats.totalStudents || 120, icon: UserGroupIcon, color: 'blue' },
-                            { label: 'Active Classes', value: stats.activeClasses || 4, icon: AcademicCapIcon, color: 'indigo' },
-                            { label: 'Pending Marks', value: stats.pendingMarks || 25, icon: ClipboardDocumentCheckIcon, color: 'amber' },
+                            { label: 'Total Students', value: stats.totalStudents || 0, icon: UserGroupIcon, color: 'blue' },
+                            { label: 'Active Classes', value: stats.activeClasses || 0, icon: AcademicCapIcon, color: 'indigo' },
+                            { label: 'Pending Marks', value: stats.pendingMarks || 0, icon: ClipboardDocumentCheckIcon, color: 'amber' },
                             { label: 'Avg Attendance', value: '94.2%', icon: ClockIcon, color: 'green' }
                         ].map((stat, i) => (
                             <div key={i} className="bg-white p-6 rounded-2xl shadow-xl shadow-gray-200/40 border border-gray-100 hover:scale-[1.02] transition-all duration-300 group">
-                                <div className={`w-12 h-12 rounded-xl bg-${stat.color}-50 flex items-center justify-center mb-4 group-hover:rotate-6 transition-transform`}>
-                                    <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
+                                <div className={`w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4 group-hover:rotate-6 transition-transform`}>
+                                    <stat.icon className={`w-6 h-6 text-blue-600`} />
                                 </div>
                                 <div className="text-3xl font-black text-gray-900 tracking-tight mb-1">{stat.value}</div>
                                 <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">{stat.label}</div>
@@ -72,6 +74,13 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher, c
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Feed / Activity */}
                         <div className="lg:col-span-2 space-y-8">
+                            {/* Semester Status Widget */}
+                            {currentSemester && (
+                                <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden mb-8">
+                                    <SemesterWidget semester={currentSemester} userType="teacher" />
+                                </div>
+                            )}
+
                             <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8">
                                 <div className="flex items-center justify-between mb-8">
                                     <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Recent Activity</h2>
@@ -86,8 +95,8 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher, c
                                         { title: 'Written Assignments graded', time: '39 min ago', icon: DocumentTextIcon, color: 'green' }
                                     ].map((item, i) => (
                                         <div key={i} className="relative flex items-center gap-6 group">
-                                            <div className={`relative z-10 w-12 h-12 rounded-xl bg-${item.color}-50 flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                                                <item.icon className={`w-6 h-6 text-${item.color}-600`} />
+                                            <div className={`relative z-10 w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                                                <item.icon className={`w-6 h-6 text-gray-600`} />
                                             </div>
                                             <div>
                                                 <h4 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{item.title}</h4>
@@ -97,13 +106,6 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher, c
                                     ))}
                                 </div>
                             </div>
-
-                            {/* Semester Status Widget Integration point if needed */}
-                            {currentSemester && (
-                                <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
-                                    <SemesterWidget semester={currentSemester} userType="teacher" />
-                                </div>
-                            )}
                         </div>
 
                         {/* Quick Actions Sidebar */}
@@ -125,25 +127,25 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher, c
                                 </Link>
 
                                 <Link
-                                    href={route('teacher.students.manage-results')}
+                                    href={route('teacher.marks.wizard.index')}
                                     className="group bg-white rounded-2xl shadow-xl shadow-gray-200/40 border border-gray-100 p-6 transition-all hover:translate-y-[-4px] hover:shadow-2xl"
                                 >
                                     <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                         <AcademicCapIcon className="w-6 h-6 text-indigo-600" />
                                     </div>
-                                    <h3 className="text-lg font-black text-gray-900 leading-tight mb-1 uppercase tracking-tight">Manage<br />Results</h3>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Audit student performance</p>
+                                    <h3 className="text-lg font-black text-gray-900 leading-tight mb-1 uppercase tracking-tight">Enter<br />Marks</h3>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Quick mark entry</p>
                                 </Link>
 
                                 <Link
-                                    href={route('teacher.students.index')}
+                                    href={route('teacher.attendance.index')}
                                     className="group bg-white rounded-2xl shadow-xl shadow-gray-200/40 border border-gray-100 p-6 transition-all hover:translate-y-[-4px] hover:shadow-2xl"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <UserGroupIcon className="w-6 h-6 text-green-600" />
+                                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <CalendarIcon className="w-6 h-6 text-emerald-600" />
                                     </div>
-                                    <h3 className="text-lg font-black text-gray-900 leading-tight mb-1 uppercase tracking-tight">View<br />Directory</h3>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Connect with students</p>
+                                    <h3 className="text-lg font-black text-gray-900 leading-tight mb-1 uppercase tracking-tight">Mark<br />Attendance</h3>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Daily check-in</p>
                                 </Link>
 
                                 <Link
@@ -156,6 +158,28 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher, c
                                     <h3 className="text-lg font-black text-gray-900 leading-tight mb-1 uppercase tracking-tight">Export<br />Reports</h3>
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Generate documentation</p>
                                 </Link>
+                            </div>
+
+                            {/* Class Overview Card */}
+                            <div className="bg-white border-2 border-gray-50 rounded-3xl p-6 shadow-lg shadow-gray-200/20">
+                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Class Overview</h3>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-bold text-gray-500">Attendance Rate</span>
+                                        <span className="text-sm font-black text-emerald-600 italic">94%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-50 h-1.5 rounded-full overflow-hidden">
+                                        <div className="bg-emerald-500 h-full w-[94%]"></div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center mt-6">
+                                        <span className="text-sm font-bold text-gray-500">Avg. Performance</span>
+                                        <span className="text-sm font-black text-blue-600 italic">87%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-50 h-1.5 rounded-full overflow-hidden">
+                                        <div className="bg-blue-500 h-full w-[87%]"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
