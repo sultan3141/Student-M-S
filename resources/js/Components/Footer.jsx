@@ -1,3 +1,7 @@
+/**
+ * Global Footer Component
+ * Displays copyright and system version information.
+ */
 import React from 'react';
 
 export default function Footer() {
