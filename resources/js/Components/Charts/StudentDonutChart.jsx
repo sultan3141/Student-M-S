@@ -1,3 +1,7 @@
+/**
+ * Student Donut Chart Component
+ * Visualizes academic assessment distribution using dynamic data.
+ */
 import {
     PieChart,
     Pie,
