@@ -110,20 +110,13 @@ class StudentController extends Controller
             'percentages' => $assessmentCounts->map(fn($count) => $totalAssessments > 0 ? round(($count / $totalAssessments) * 100) : 0)->toArray()
         ];
 
-<<<<<<< Updated upstream
         // Full Weekly Schedule
-=======
->>>>>>> Stashed changes
         $schedule = \App\Models\Schedule::where('grade_id', $student->grade_id)
             ->where(function ($q) use ($student) {
                 $q->where('section_id', $student->section_id)
                     ->orWhereNull('section_id');
             })
-<<<<<<< Updated upstream
             ->whereRaw('is_active = true')
-=======
-            ->whereBoolTrue('is_active')
->>>>>>> Stashed changes
             ->orderByRaw("CASE day_of_week 
                 WHEN 'Monday' THEN 1 
                 WHEN 'Tuesday' THEN 2 
