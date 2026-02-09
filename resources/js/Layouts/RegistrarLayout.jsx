@@ -8,10 +8,10 @@ import {
     ChartBarIcon,
     ArrowRightOnRectangleIcon,
     UsersIcon,
-    Bars3Icon,
     XMarkIcon,
     ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
+import Footer from '@/Components/Footer';
 
 export default function RegistrarLayout({ user, children }) {
     const { auth } = usePage().props;
@@ -41,14 +41,8 @@ export default function RegistrarLayout({ user, children }) {
 
             {/* Compact Sidebar */}
             <aside
-<<<<<<< HEAD
-                className={`fixed top-0 left-0 z-50 h-screen w-60 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-                    sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                } registrar-sidebar`}
-=======
                 className={`fixed top-0 left-0 z-50 h-screen w-60 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     } registrar-sidebar`}
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
             >
                 {/* Sidebar Header */}
                 <div className="p-4 border-b border-white border-opacity-20">
@@ -76,18 +70,10 @@ export default function RegistrarLayout({ user, children }) {
                             <Link
                                 key={item.name}
                                 href={item.href}
-<<<<<<< HEAD
-                                className={`flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                                    isActive
-                                        ? 'bg-white bg-opacity-20 text-white shadow-sm'
-                                        : 'text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
-                                }`}
-=======
                                 className={`flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-all ${isActive
-                                        ? 'bg-white bg-opacity-20 text-white shadow-sm'
-                                        : 'text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
+                                    ? 'bg-white bg-opacity-20 text-white shadow-sm'
+                                    : 'text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
                                     }`}
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                             >
                                 <Icon className="h-4 w-4 flex-shrink-0" />
                                 <span className="truncate">{item.name}</span>
@@ -125,20 +111,6 @@ export default function RegistrarLayout({ user, children }) {
             {/* Main Content Area */}
             <div className="lg:pl-60 flex flex-col min-h-screen">
 
-<<<<<<< HEAD
-                {/* Ultra Compact Top Bar (Mobile) */}
-                <div className="sticky top-0 z-30 lg:hidden bg-white border-b border-gray-200 px-3 py-2 flex items-center justify-between shadow-sm">
-                    <button
-                        onClick={() => setSidebarOpen(true)}
-                        className="text-gray-600 hover:text-navy-900"
-                    >
-                        <Bars3Icon className="h-5 w-5" />
-                    </button>
-                    <h1 className="text-xs font-semibold text-navy-900">Registrar Panel</h1>
-                    <Link href="/logout" method="post" as="button" className="text-red-600">
-                        <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                    </Link>
-=======
                 {/* Premium Mobile Top Bar */}
                 <div className="sticky top-0 z-30 lg:hidden bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 h-14 flex items-center shadow-sm">
                     <div className="flex-1 flex items-center">
@@ -166,13 +138,14 @@ export default function RegistrarLayout({ user, children }) {
                             <ArrowRightOnRectangleIcon className="h-5 w-5" />
                         </Link>
                     </div>
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                 </div>
 
-                {/* Ultra Compact Page Content */}
+                {/* Page Content */}
                 <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
                     {children}
                 </main>
+
+                <Footer />
             </div>
         </div>
     );
