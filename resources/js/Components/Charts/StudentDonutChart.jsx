@@ -11,6 +11,11 @@ import {
     Tooltip,
 } from 'recharts';
 
+/**
+ * Functional component for the dynamic assessment donut chart.
+ * @param {Object} props - The component props.
+ * @returns {JSX.Element} The rendered chart component.
+ */
 export default function StudentDonutChart({ data, title = "Assessment Distribution" }) {
     const COLORS = [
         '#6366F1', // Indigo
