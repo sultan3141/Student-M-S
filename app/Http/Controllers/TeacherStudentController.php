@@ -7,6 +7,15 @@ use Inertia\Inertia;
 use App\Models\User;
 use App\Models\Mark;
 use App\Models\Ranking;
+use App\Models\Student;
+use App\Models\Grade;
+use App\Models\Section;
+use App\Models\Subject;
+use App\Models\Assessment;
+use App\Models\AcademicYear;
+use App\Models\TeacherAssignment;
+use App\Models\SemesterStatus;
+use App\Models\Attendance;
 
 class TeacherStudentController extends Controller
 {
@@ -54,13 +63,14 @@ class TeacherStudentController extends Controller
 
     public function show($studentId)
     {
-        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
-        if (!$academicYear) $academicYear = \App\Models\AcademicYear::orderBy('id', 'desc')->first();
-        
-        $student = \App\Models\Student::with(['user', 'grade', 'section'])->findOrFail($studentId);
-        
+        $academicYear = AcademicYear::whereRaw('is_current = true')->first();
+        if (!$academicYear)
+            $academicYear = AcademicYear::orderBy('id', 'desc')->first();
+
+        $student = Student::with(['user', 'grade', 'section'])->findOrFail($studentId);
+
         // Get all marks for this student
-        $allMarks = \App\Models\Mark::where('student_id', $studentId)
+        $allMarks = Mark::where('student_id', $studentId)
             ->where('academic_year_id', $academicYear->id)
             ->with(['subject', 'assessment'])
             ->get();
@@ -68,9 +78,9 @@ class TeacherStudentController extends Controller
         // Calculate subject performance vs Class Average
         $subjectPerformance = $allMarks->groupBy('subject_id')->map(function ($subjectMarks) use ($student, $academicYear) {
             $subject = $subjectMarks->first()->subject;
-            
+
             // Student Subject Average
-            $studentSubjectTotals = $subjectMarks->groupBy('subject_id')->map(function($m) {
+            $studentSubjectTotals = $subjectMarks->groupBy('subject_id')->map(function ($m) {
                 $score = $m->sum('score');
                 $max = $m->sum('max_score') ?: (count($m) * 100);
                 return $max > 0 ? ($score / $max) * 100 : 0;
@@ -78,15 +88,15 @@ class TeacherStudentController extends Controller
             $avg = $studentSubjectTotals->first() ?? 0;
 
             // Section Subject Average
-            $sectionStudents = \App\Models\Student::where('section_id', $student->section_id)->pluck('id');
-            $sectionMarks = \App\Models\Mark::whereIn('student_id', $sectionStudents)
+            $sectionStudents = Student::where('section_id', $student->section_id)->pluck('id');
+            $sectionMarks = Mark::whereIn('student_id', $sectionStudents)
                 ->where('subject_id', $subject->id)
                 ->where('academic_year_id', $academicYear->id)
                 ->get();
-            
+
             $sectionAvg = 0;
             if ($sectionMarks->isNotEmpty()) {
-                $sectionScoresByStudent = $sectionMarks->groupBy('student_id')->map(function($sm) {
+                $sectionScoresByStudent = $sectionMarks->groupBy('student_id')->map(function ($sm) {
                     $s = $sm->sum('score');
                     $m = $sm->sum('max_score') ?: (count($sm) * 100);
                     return $m > 0 ? ($s / $m) * 100 : 0;
@@ -107,8 +117,8 @@ class TeacherStudentController extends Controller
             ->sortBy('created_at')
             ->map(function ($mark) use ($student) {
                 // Get class average for this specific assessment
-                $assessmentAvg = \App\Models\Mark::where('assessment_id', $mark->assessment_id)
-                    ->whereIn('student_id', \App\Models\Student::where('section_id', $student->section_id)->pluck('id'))
+                $assessmentAvg = Mark::where('assessment_id', $mark->assessment_id)
+                    ->whereIn('student_id', Student::where('section_id', $student->section_id)->pluck('id'))
                     ->avg('score');
 
                 return [
@@ -123,12 +133,12 @@ class TeacherStudentController extends Controller
         $overallAverage = $subjectPerformance->avg('score');
 
         // Attendance Stats
-        $attendance = \App\Models\Attendance::where('student_id', $studentId)
+        $attendance = Attendance::where('student_id', $studentId)
             ->where('academic_year_id', $academicYear->id)
             ->get();
-        
+
         $attendanceStats = [
-            'rate' => $attendance->count() > 0 
+            'rate' => $attendance->count() > 0
                 ? round(($attendance->where('status', 'Present')->count() / $attendance->count()) * 100, 1)
                 : 100,
             'present' => $attendance->where('status', 'Present')->count(),
@@ -159,12 +169,18 @@ class TeacherStudentController extends Controller
         ]);
     }
 
-    private function calculateGrade($score) {
-        if ($score >= 90) return 'A+';
-        if ($score >= 80) return 'A';
-        if ($score >= 70) return 'B';
-        if ($score >= 60) return 'C';
-        if ($score >= 50) return 'D';
+    private function calculateGrade($score)
+    {
+        if ($score >= 90)
+            return 'A+';
+        if ($score >= 80)
+            return 'A';
+        if ($score >= 70)
+            return 'B';
+        if ($score >= 60)
+            return 'C';
+        if ($score >= 50)
+            return 'D';
         return 'F';
     }
 
@@ -174,18 +190,18 @@ class TeacherStudentController extends Controller
     public function manageResults(Request $request)
     {
         $teacher = auth()->user()->teacher;
-        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
+        $academicYear = AcademicYear::whereRaw('is_current = true')->first();
 
         if (!$teacher || !$academicYear) {
             return redirect()->back()->with('error', 'Teacher profile or academic year not found.');
         }
 
         // Get grades teacher teaches
-        $grades = \App\Models\Grade::whereIn('level', [9, 10, 11, 12])
+        $grades = Grade::whereIn('level', [9, 10, 11, 12])
             ->orderBy('level')
             ->get()
             ->map(function ($grade) use ($teacher, $academicYear) {
-                $sections = \App\Models\TeacherAssignment::with(['section.stream'])
+                $sections = TeacherAssignment::with(['section.stream'])
                     ->where('teacher_id', $teacher->id)
                     ->where('grade_id', $grade->id)
                     ->where('academic_year_id', $academicYear->id)
@@ -212,118 +228,121 @@ class TeacherStudentController extends Controller
         $selectedSection = null;
         $subjects = [];
 
-        if ($request->has('grade_id') && $request->has('section_id')) {
+        if ($request->has('grade_id')) {
             $gradeId = $request->grade_id;
-            $sectionId = $request->section_id;
-            $semesterFilter = $request->input('semester');
+            $selectedGrade = Grade::find($gradeId);
 
-            $selectedGrade = \App\Models\Grade::find($gradeId);
-            $selectedSection = \App\Models\Section::find($sectionId);
+            if ($request->has('section_id')) {
+                $sectionId = $request->section_id;
+                $semesterFilter = $request->input('semester');
 
-            // Get subjects teacher teaches for this grade/section
-            $subjects = \App\Models\TeacherAssignment::with('subject')
-                ->where('teacher_id', $teacher->id)
-                ->where('grade_id', $gradeId)
-                ->where('section_id', $sectionId)
-                ->get()
-                ->pluck('subject')
-                ->unique('id')
-                ->map(function ($subject) {
-                    return [
-                        'id' => $subject->id,
-                        'name' => $subject->name,
-                        'code' => $subject->code,
-                    ];
-                })
-                ->values();
+                $selectedSection = Section::find($sectionId);
 
-            // Get students in this section
-            $students = \App\Models\Student::with('user')
-                ->where('grade_id', $gradeId)
-                ->where('section_id', $sectionId)
-                ->orderBy('student_id')
-                ->get();
-
-            // Get assessments for each subject
-            $assessmentsBySubject = [];
-            foreach ($subjects as $subject) {
-                $assessmentsQuery = \App\Models\Assessment::where('grade_id', $gradeId)
+                // Get subjects teacher teaches for this grade/section
+                $subjects = TeacherAssignment::with('subject')
+                    ->where('teacher_id', $teacher->id)
+                    ->where('grade_id', $gradeId)
                     ->where('section_id', $sectionId)
-                    ->where('subject_id', $subject['id'])
-                    ->where('academic_year_id', $academicYear->id);
+                    ->get()
+                    ->pluck('subject')
+                    ->unique('id')
+                    ->map(function ($subject) {
+                        return [
+                            'id' => $subject->id,
+                            'name' => $subject->name,
+                            'code' => $subject->code,
+                        ];
+                    })
+                    ->values();
 
-                if ($semesterFilter) {
-                    $assessmentsQuery->where('semester', $semesterFilter);
-                }
+                // Get students in this section
+                $students = Student::with('user')
+                    ->where('grade_id', $gradeId)
+                    ->where('section_id', $sectionId)
+                    ->orderBy('student_id')
+                    ->get();
 
-                $assessments = $assessmentsQuery->get();
-                
-                $assessmentsBySubject[$subject['id']] = $assessments;
-            }
-
-            // Get all marks for these students
-            $marksQuery = \App\Models\Mark::whereIn('student_id', $students->pluck('id'))
-                ->where('grade_id', $gradeId)
-                ->where('section_id', $sectionId)
-                ->whereNotNull('assessment_id');
-
-            if ($semesterFilter) {
-                $marksQuery->where('semester', $semesterFilter);
-            }
-
-            $marks = $marksQuery->get()
-                ->groupBy('student_id');
-
-            // Get semester statuses for the selected grade
-            $semesterStatuses = [
-                1 => \App\Models\SemesterStatus::isOpen($gradeId, 1),
-                2 => \App\Models\SemesterStatus::isOpen($gradeId, 2),
-            ];
-
-            // Build student data with result status
-            $studentsData = $students->map(function ($student) use ($subjects, $marks, $assessmentsBySubject, $semesterStatuses) {
-                $studentMarks = $marks->get($student->id, collect());
-                
-                $subjectStatus = [];
-                $totalFilled = 0;
-                $totalAssessments = 0;
-
+                // Get assessments for each subject
+                $assessmentsBySubject = [];
                 foreach ($subjects as $subject) {
-                    $subjectAssessments = $assessmentsBySubject[$subject['id']] ?? collect();
-                    $assessmentCount = $subjectAssessments->count();
-                    $totalAssessments += $assessmentCount;
+                    $assessmentsQuery = Assessment::where('grade_id', $gradeId)
+                        ->where('section_id', $sectionId)
+                        ->where('subject_id', $subject['id'])
+                        ->where('academic_year_id', $academicYear->id);
 
-                    $filledCount = $studentMarks->where('subject_id', $subject['id'])->count();
-                    $totalFilled += $filledCount;
-
-                    // Check if ANY assessment for this subject is in an open semester
-                    $isEditable = false;
-                    foreach ($subjectAssessments as $assessment) {
-                        if (isset($semesterStatuses[$assessment->semester]) && $semesterStatuses[$assessment->semester]) {
-                            $isEditable = true;
-                            break;
-                        }
+                    if ($semesterFilter) {
+                        $assessmentsQuery->where('semester', $semesterFilter);
                     }
 
-                    $subjectStatus[$subject['id']] = [
-                        'filled' => $filledCount,
-                        'total' => $assessmentCount,
-                        'percentage' => $assessmentCount > 0 ? round(($filledCount / $assessmentCount) * 100) : 0,
-                        'is_editable' => $isEditable,
-                    ];
+                    $assessments = $assessmentsQuery->get();
+
+                    $assessmentsBySubject[$subject['id']] = $assessments;
                 }
 
-                return [
-                    'id' => $student->id,
-                    'student_id' => $student->student_id,
-                    'name' => $student->user->name ?? 'Unknown',
-                    'gender' => $student->gender,
-                    'subject_status' => $subjectStatus,
-                    'total_filled' => $totalFilled,
-                    'total_assessments' => $totalAssessments,
-                    'completion_percentage' => $totalAssessments > 0 ? round(($totalFilled / $totalAssessments) * 100) : 0,
+                // Get all marks for these students
+                $marksQuery = Mark::whereIn('student_id', $students->pluck('id'))
+                    ->where('grade_id', $gradeId)
+                    ->where('section_id', $sectionId)
+                    ->whereNotNull('assessment_id');
+
+                if ($semesterFilter) {
+                    $marksQuery->where('semester', $semesterFilter);
+                }
+
+                $marks = $marksQuery->get()
+                    ->groupBy('student_id');
+
+                // Get semester statuses for the selected grade
+                $semesterStatuses = [
+                    1 => SemesterStatus::isOpen($gradeId, 1),
+                    2 => SemesterStatus::isOpen($gradeId, 2),
                 ];
-            });
+
+                // Build student data with result status
+                $studentsData = $students->map(function ($student) use ($subjects, $marks, $assessmentsBySubject, $semesterStatuses) {
+                    $studentMarks = $marks->get($student->id, collect());
+
+                    $subjectStatus = [];
+                    $totalFilled = 0;
+                    $totalAssessments = 0;
+
+                    foreach ($subjects as $subject) {
+                        $subjectAssessments = $assessmentsBySubject[$subject['id']] ?? collect();
+                        $assessmentCount = $subjectAssessments->count();
+                        $totalAssessments += $assessmentCount;
+
+                        $filledCount = $studentMarks->where('subject_id', $subject['id'])->count();
+                        $totalFilled += $filledCount;
+
+                        // Check if ANY assessment for this subject is in an open semester
+                        $isEditable = false;
+                        foreach ($subjectAssessments as $assessment) {
+                            if (isset($semesterStatuses[$assessment->semester]) && $semesterStatuses[$assessment->semester]) {
+                                $isEditable = true;
+                                break;
+                            }
+                        }
+
+                        $subjectStatus[$subject['id']] = [
+                            'filled' => $filledCount,
+                            'total' => $assessmentCount,
+                            'percentage' => $assessmentCount > 0 ? round(($filledCount / $assessmentCount) * 100) : 0,
+                            'is_editable' => $isEditable,
+                        ];
+                    }
+
+                    return [
+                        'id' => $student->id,
+                        'student_id' => $student->student_id,
+                        'name' => $student->user->name ?? 'Unknown',
+                        'gender' => $student->gender,
+                        'subject_status' => $subjectStatus,
+                        'total_filled' => $totalFilled,
+                        'total_assessments' => $totalAssessments,
+                        'completion_percentage' => $totalAssessments > 0 ? round(($totalFilled / $totalAssessments) * 100) : 0,
+                    ];
+                });
+            }
         }
 
         return Inertia::render('Teacher/Students/ManageResults', [
@@ -345,12 +364,12 @@ class TeacherStudentController extends Controller
         $teacher = auth()->user()->teacher;
         $student = \App\Models\Student::with('user')->findOrFail($studentId);
         $subject = \App\Models\Subject::findOrFail($subjectId);
-        
+
         // Security check: Ensure teacher has access to this student/subject
         // (Simplified check for now, can be expanded to check actual assignments)
-        
+
         $currentAcademicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
-        
+
         if (!$currentAcademicYear) {
             return redirect()->back()->with('error', 'No active academic year.');
         }
@@ -362,7 +381,7 @@ class TeacherStudentController extends Controller
             ->where('academic_year_id', $currentAcademicYear->id)
             ->with('assessmentType')
             ->get();
-            
+
         // Get existing marks
         $marks = Mark::where('student_id', $studentId)
             ->where('subject_id', $subjectId)
@@ -372,14 +391,14 @@ class TeacherStudentController extends Controller
 
         // Check semester status for each assessment
         $assessmentsWithStatus = $assessments->map(function ($assessment) use ($student) {
-             return [
+            return [
                 'id' => $assessment->id,
                 'name' => $assessment->name,
                 'type' => $assessment->assessmentType?->name ?? 'General',
                 'max_score' => $assessment->max_score,
                 'semester' => $assessment->semester,
                 'is_open' => \App\Models\SemesterStatus::isOpen($student->grade_id, $assessment->semester),
-             ];
+            ];
         });
 
         return Inertia::render('Teacher/Students/EditResult', [
@@ -405,7 +424,7 @@ class TeacherStudentController extends Controller
         $teacher = auth()->user()->teacher;
         $student = \App\Models\Student::findOrFail($studentId);
         $currentAcademicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
-        
+
         if (!$currentAcademicYear) {
             return back()->withErrors(['error' => 'No active academic year.']);
         }
@@ -413,10 +432,11 @@ class TeacherStudentController extends Controller
         \DB::beginTransaction();
         try {
             foreach ($request->marks as $assessmentId => $score) {
-                if ($score === null || $score === '') continue;
+                if ($score === null || $score === '')
+                    continue;
 
                 $assessment = \App\Models\Assessment::findOrFail($assessmentId);
-                
+
                 // Semester Status Check
                 if (!\App\Models\SemesterStatus::isOpen($student->grade_id, $assessment->semester)) {
                     throw new \Exception("Cannot update marks for Semester {$assessment->semester} (Closed).");
@@ -446,22 +466,23 @@ class TeacherStudentController extends Controller
                         'submitted_at' => now(),
                     ]
                 );
-                
+
                 // Logging could be added here similar to DeclareResult
             }
 
             \DB::commit();
-            
+
             // Invalidate semester rankings cache for all semesters affected
             $processedSemesters = collect();
             foreach ($request->marks as $assessmentId => $score) {
-                if ($score === null || $score === '') continue;
+                if ($score === null || $score === '')
+                    continue;
                 $assessment = \App\Models\Assessment::find($assessmentId);
                 if ($assessment) {
                     $processedSemesters->push($assessment->semester);
                 }
             }
-            
+
             // Invalidate cache for each unique semester
             foreach ($processedSemesters->unique() as $semester) {
                 \App\Http\Controllers\SemesterRecordController::invalidateSemesterRankings(
@@ -470,9 +491,9 @@ class TeacherStudentController extends Controller
                     $currentAcademicYear->id
                 );
             }
-            
+
             return redirect()->route('teacher.students.manage-results', [
-                'grade_id' => $student->grade_id, 
+                'grade_id' => $student->grade_id,
                 'section_id' => $student->section_id
             ])->with('success', 'Marks updated successfully.');
 
