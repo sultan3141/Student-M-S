@@ -19,6 +19,7 @@ class AcademicYearController extends Controller
     public function index()
     {
         $currentYear = AcademicYear::whereRaw('is_current = true')
+<<<<<<< HEAD
             ->with(['semesterStatuses.grade', 'semesterStatuses.academicYear'])
             ->first();
 
@@ -33,6 +34,11 @@ class AcademicYearController extends Controller
             $currentYear->update(['status' => $currentYear->getOverallStatus()]);
         }
 
+=======
+            ->with('semesterStatuses.grade')
+            ->first();
+
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         $pastYears = AcademicYear::whereRaw('is_current = false')
             ->orderBy('start_date', 'desc')
             ->with('semesterStatuses')
@@ -88,7 +94,11 @@ class AcademicYearController extends Controller
                 'name' => $currentYear->name,
                 'start_date' => $currentYear->start_date->format('M d, Y'),
                 'end_date' => $currentYear->end_date->format('M d, Y'),
+<<<<<<< HEAD
                 'status' => $currentYear->status,
+=======
+                'status' => $currentYear->getOverallStatus(),
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                 'semesters' => $semesterDetails,
             ] : null,
             'pastYears' => $pastYears,
@@ -254,6 +264,7 @@ class AcademicYearController extends Controller
                 ? "Semester {$request->semester} opened for {$year->name}."
                 : "Semester {$request->semester} closed for {$year->name}.";
 
+<<<<<<< HEAD
             // Clear Teacher Dashboard and global semester cache
             \Illuminate\Support\Facades\Cache::forget("current_semester_info_year_{$year->id}");
             \Illuminate\Support\Facades\Cache::forget('current_semester_info_global'); // Legacy key just in case
@@ -273,6 +284,12 @@ class AcademicYearController extends Controller
                     ]
                 );
             }
+=======
+            // Update all semester statuses for this semester (Per Grade)
+            SemesterStatus::where('academic_year_id', $year->id)
+                ->where('semester', $request->semester)
+                ->update(['status' => $newStatus]);
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
 
             // ALSO Update the Global SemesterPeriod (Used by Student Results)
             \App\Models\SemesterPeriod::updateOrCreate(

@@ -12,7 +12,11 @@ import {
     ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 
+<<<<<<< HEAD
 export default function Dashboard({ parentName, selectedStudent, attendance }) {
+=======
+export default function Dashboard({ parentName, selectedStudent, attendance, schedule }) {
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
     // Mock payment data - in production this would come from controller
     const paymentInfo = useMemo(() => ({
         status: 'Partial',
@@ -110,6 +114,10 @@ export default function Dashboard({ parentName, selectedStudent, attendance }) {
                             </div>
                         </div>
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                         {/* Reports Section */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-2 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
@@ -128,8 +136,13 @@ export default function Dashboard({ parentName, selectedStudent, attendance }) {
                                             {selectedStudent.reports.map((report) => (
                                                 <div key={report.id} className="flex gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition border border-transparent hover:border-gray-200">
                                                     <div className={`p-2 rounded-lg h-fit ${report.report_type === 'disciplinary' ? 'bg-red-100 text-red-600' :
+<<<<<<< HEAD
                                                             report.report_type === 'academic' ? 'bg-blue-100 text-blue-600' :
                                                                 'bg-gray-100 text-gray-600'
+=======
+                                                        report.report_type === 'academic' ? 'bg-blue-100 text-blue-600' :
+                                                            'bg-gray-100 text-gray-600'
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                                                         }`}>
                                                         <DocumentTextIcon className="h-5 w-5" />
                                                     </div>

@@ -31,6 +31,7 @@ class TeacherDashboardController extends Controller
         // Fetch upcoming deadlines using the new optimized method
         $upcomingDeadlines = $this->getUpcomingDeadlines($teacher);
 
+<<<<<<< HEAD
         // Get today's schedule for all sections assigned to this teacher
         $today = Carbon::now()->format('l'); // e.g., "Monday"
         $todaySchedule = \App\Models\Schedule::whereIn('section_id', function ($query) use ($teacher) {
@@ -54,14 +55,19 @@ class TeacherDashboardController extends Controller
                 ];
             });
 
+=======
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         return Inertia::render('Teacher/Dashboard', [
             'stats' => $stats,
             'recentActivity' => $activities,
             'deadlines' => $upcomingDeadlines,
             'teacher' => $teacher->load('user'),
             'currentSemester' => $currentSemester,
+<<<<<<< HEAD
             'todaySchedule' => $todaySchedule,
             'today' => Carbon::now()->format('l, F j, Y'),
+=======
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         ]);
     }
 
@@ -70,6 +76,7 @@ class TeacherDashboardController extends Controller
      */
     private function getStatistics($teacher)
     {
+<<<<<<< HEAD
         $currentYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
         $yearId = $currentYear ? $currentYear->id : null;
 
@@ -91,6 +98,19 @@ class TeacherDashboardController extends Controller
                 ->count('subject_id');
 
             // Count pending marks (simplified for now)
+=======
+        return Cache::remember("teacher_stats_{$teacher->id}_v2", 300, function () use ($teacher) {
+            // Count unique students across all assigned sections using a join for better performance
+            $totalStudents = \App\Models\Registration::join('teacher_assignments', 'registrations.section_id', '=', 'teacher_assignments.section_id')
+                ->where('teacher_assignments.teacher_id', $teacher->id)
+                ->distinct('registrations.student_id')
+                ->count('registrations.student_id');
+
+            // Total subjects taught
+            $totalSubjects = $teacher->subjects()->count();
+
+            // Count pending marks
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
             $pendingMarks = 0;
 
             return [
@@ -98,10 +118,14 @@ class TeacherDashboardController extends Controller
                 'totalSubjects' => $totalSubjects,
                 'pendingMarks' => $pendingMarks,
                 'attendanceRate' => 98.5, // Mock for now
+<<<<<<< HEAD
                 'activeClasses' => \App\Models\TeacherAssignment::where('teacher_id', $teacher->id)
                     ->where('academic_year_id', $yearId)
                     ->distinct('section_id')
                     ->count('section_id'),
+=======
+                'activeClasses' => $teacher->assignments()->distinct('section_id')->count(),
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
             ];
         });
     }
@@ -150,6 +174,7 @@ class TeacherDashboardController extends Controller
      */
     private function getCurrentSemesterInfo()
     {
+<<<<<<< HEAD
         $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
 
         if (!$academicYear) {
@@ -158,6 +183,15 @@ class TeacherDashboardController extends Controller
 
         // Cache per academic year to avoid cross-year leaks
         return Cache::remember("current_semester_info_year_{$academicYear->id}", 600, function () use ($academicYear) {
+=======
+        return Cache::remember('current_semester_info_global', 600, function () {
+            $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
+
+            if (!$academicYear) {
+                return null;
+            }
+
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
             $semester = $academicYear->getCurrentSemester();
 
             // precise status for each semester
@@ -229,7 +263,11 @@ class TeacherDashboardController extends Controller
         $schedule = [];
         if ($selectedSectionId) {
             $schedule = \App\Models\Schedule::where('section_id', $selectedSectionId)
+<<<<<<< HEAD
                 ->where('is_active', true)
+=======
+                ->whereBoolTrue('is_active')
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                 ->orderByRaw("CASE day_of_week 
                     WHEN 'Monday' THEN 1 
                     WHEN 'Tuesday' THEN 2 

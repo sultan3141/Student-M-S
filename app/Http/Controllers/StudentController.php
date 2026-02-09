@@ -15,6 +15,17 @@ class StudentController extends Controller
             ->with(['grade:id,name', 'section:id,name', 'parent:id'])
             ->first();
 
+<<<<<<< HEAD
+=======
+        // Admin/Director Preview Mode
+        if (!$student && ($user->hasRole('admin') || $user->hasRole('school_director'))) {
+            $student = \App\Models\Student::with(['grade:id,name', 'section:id,name', 'parent:id'])
+                ->whereHas('grade')
+                ->whereHas('section')
+                ->first();
+        }
+
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         if (!$student) {
             return redirect()->route('student.profile.edit')->with('error', 'Student record not found.');
         }
@@ -102,26 +113,83 @@ class StudentController extends Controller
             'percentages' => $assessmentCounts->map(fn($count) => $totalAssessments > 0 ? round(($count / $totalAssessments) * 100) : 0)->toArray()
         ];
 
+<<<<<<< HEAD
         // Today's Schedule - Use day of week
         $today = now()->format('l');
+=======
+        // Full Weekly Schedule
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         $schedule = \App\Models\Schedule::where('grade_id', $student->grade_id)
             ->where(function ($q) use ($student) {
                 $q->where('section_id', $student->section_id)
                     ->orWhereNull('section_id');
             })
+<<<<<<< HEAD
             ->where('day_of_week', $today)
             ->whereRaw('is_active = true')
+=======
+            ->whereBoolTrue('is_active')
+            ->orderByRaw("CASE day_of_week 
+                WHEN 'Monday' THEN 1 
+                WHEN 'Tuesday' THEN 2 
+                WHEN 'Wednesday' THEN 3 
+                WHEN 'Thursday' THEN 4 
+                WHEN 'Friday' THEN 5 
+                ELSE 6 END")
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
             ->orderBy('start_time')
             ->get()
             ->map(function ($item) {
                 return [
                     'id' => $item->id,
+<<<<<<< HEAD
                     'activity' => $item->activity,
                     'time' => $item->start_time->format('H:i') . ' - ' . $item->end_time->format('H:i'),
                     'location' => $item->location,
                     'type' => $item->activity === 'Break' ? 'break' : 'class',
                 ];
             });
+=======
+                    'day_of_week' => $item->day_of_week,
+                    'activity' => $item->activity,
+                    'start_time' => $item->start_time->format('H:i'),
+                    'end_time' => $item->end_time->format('H:i'),
+                    'location' => $item->location,
+                    'type' => $item->activity === 'Break' ? 'break' : 'class',
+                ];
+            })
+            ->groupBy('day_of_week');
+
+        // Section & School Statistics for Director-style Graphics
+        $graphData = cache()->remember("student_graph_data_{$student->section_id}", 3600, function () use ($student) {
+            $sectionStudents = \App\Models\Student::where('section_id', $student->section_id)->get();
+            $totalInSection = $sectionStudents->count();
+            $male = $sectionStudents->where('gender', 'Male')->count();
+            $female = $sectionStudents->where('gender', 'Female')->count();
+
+            // School-wide stats for the Bar Chart
+            $totalStudentsGlobal = \App\Models\Student::count();
+            $maleGlobal = \App\Models\Student::where('gender', 'Male')->count();
+            $femaleGlobal = \App\Models\Student::where('gender', 'Female')->count();
+            $totalInstructors = \App\Models\User::role('teacher')->count();
+
+            return [
+                'section' => [
+                    'total' => $totalInSection,
+                    'male' => $male,
+                    'female' => $female,
+                    'malePercent' => $totalInSection > 0 ? round(($male / $totalInSection) * 100) : 0,
+                    'femalePercent' => $totalInSection > 0 ? round(($female / $totalInSection) * 100) : 0,
+                ],
+                'school' => [
+                    'total' => $totalStudentsGlobal,
+                    'male' => $maleGlobal,
+                    'female' => $femaleGlobal,
+                    'totalInstructors' => $totalInstructors,
+                ]
+            ];
+        });
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
 
         // Notifications/Announcements
         $notifications = \App\Models\Announcement::where('status', 'sent')
@@ -155,6 +223,11 @@ class StudentController extends Controller
             'trendData' => $trendData,
             'pendingAssignments' => $pendingAssignments,
             'assessmentDistribution' => $assessmentDistribution,
+<<<<<<< HEAD
+=======
+            'sectionStats' => $graphData['section'],
+            'schoolStats' => $graphData['school'],
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         ]);
     }
 

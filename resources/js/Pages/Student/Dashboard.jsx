@@ -3,6 +3,11 @@ import { Head, Link } from '@inertiajs/react';
 import StudentLayout from '@/Layouts/StudentLayout';
 import StudentPerformanceChart from '@/Components/Charts/StudentPerformanceChart';
 import StudentAttendanceChart from '@/Components/Charts/StudentAttendanceChart';
+<<<<<<< HEAD
+=======
+import StudentDonutChart from '@/Components/Charts/StudentDonutChart';
+import StudentBarChart from '@/Components/Charts/StudentBarChart';
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
 import {
     AcademicCapIcon,
     CalendarDaysIcon,
@@ -11,7 +16,19 @@ import {
     TrophyIcon,
 } from '@heroicons/react/24/outline';
 
+<<<<<<< HEAD
 export default function Dashboard({ student, attendance, marks, currentSemester }) {
+=======
+export default function Dashboard({
+    student,
+    attendance,
+    marks,
+    currentSemester,
+    schedule,
+    sectionStats,
+    schoolStats
+}) {
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
     // Calculate real stats from data
     const currentAverage = marks?.average || 0;
     const currentRank = marks?.rank || '-';
@@ -34,6 +51,7 @@ export default function Dashboard({ student, attendance, marks, currentSemester 
         <StudentLayout>
             <Head title="Dashboard" />
 
+<<<<<<< HEAD
             {/* Compact Page Header - Responsive */}
             <div className="mb-3 md:mb-4">
                 <h1 className="text-xl md:text-2xl font-bold text-navy-900" style={{ color: '#0F172A' }}>
@@ -80,6 +98,9 @@ export default function Dashboard({ student, attendance, marks, currentSemester 
                     </div>
                 </div>
             )}
+=======
+
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
 
             {/* Compact Summary Cards - Responsive Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3 mb-3 md:mb-4">
@@ -149,15 +170,24 @@ export default function Dashboard({ student, attendance, marks, currentSemester 
                 </div>
             </div>
 
+<<<<<<< HEAD
             {/* Analysis Section with Charts - Responsive */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
                 {/* Performance Chart */}
                 <StudentPerformanceChart 
+=======
+
+            {/* Analysis Section with Charts - Director Style Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
+                {/* Performance Chart (Existing) */}
+                <StudentPerformanceChart
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                     marks={formattedMarks}
                     currentAverage={currentAverage}
                     currentRank={currentRank}
                 />
 
+<<<<<<< HEAD
                 {/* Attendance Chart */}
                 <StudentAttendanceChart 
                     attendanceRate={attendanceRate}
@@ -200,6 +230,36 @@ export default function Dashboard({ student, attendance, marks, currentSemester 
                     </div>
                 </div>
             )}
+=======
+                <div className="grid grid-cols-1 gap-3 md:gap-4">
+                    {/* School Population Chart - Director style */}
+                    {schoolStats && (
+                        <StudentBarChart
+                            total={schoolStats.total}
+                            male={schoolStats.male}
+                            female={schoolStats.female}
+                        />
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                        {/* Attendance Chart */}
+                        <StudentAttendanceChart
+                            attendanceRate={attendanceRate}
+                            recentAttendance={recentAttendance}
+                        />
+
+                        {/* Section Gender Distribution */}
+                        {sectionStats && (
+                            <StudentDonutChart
+                                data={sectionStats}
+                                title="Section Composition"
+                            />
+                        )}
+                    </div>
+                </div>
+            </div>
+
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         </StudentLayout>
     );
 }

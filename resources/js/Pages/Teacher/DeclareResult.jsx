@@ -196,11 +196,16 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
         }
     };
 
+<<<<<<< HEAD
     const handleStudentsConfirmed = async () => {
+=======
+    const handleStudentsConfirmed = () => {
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         if (selectedStudentIds.length === 0) {
             alert('Please select at least one student.');
             return;
         }
+<<<<<<< HEAD
         
         // Directly fetch assessments and go to step 2 (marks entry)
         setLoading(true);
@@ -226,6 +231,9 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
         } finally {
             setLoading(false);
         }
+=======
+        setStep(2);
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
     };
 
     // --- Step 2: Subject Selection ---
@@ -296,7 +304,12 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
     const getStepTitle = () => {
         switch (step) {
             case 1: return "Select Students";
+<<<<<<< HEAD
             case 2: return "Enter Marks";
+=======
+            case 2: return "Select Subject";
+            case 3: return "Enter Marks";
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
             default: return "";
         }
     };
@@ -309,6 +322,7 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
         <TeacherLayout>
             <Head title="Declare Result" />
 
+<<<<<<< HEAD
             {/* Professional Header */}
             <div className="bg-white border-b border-gray-200 mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6">
                 <div className="max-w-7xl mx-auto">
@@ -319,12 +333,28 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
                             </h1>
                             <p className="text-sm text-gray-600">
                                 {selectedSection && selectedSubject ? `Step ${step} of 2: ${getStepTitle()}` : 'Select grade, section, and subject to begin'}
+=======
+            {/* Header */}
+            <div className="bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] shadow-sm mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-semibold text-white mb-1">
+                                Declare Result
+                            </h1>
+                            <p className="text-blue-100 text-sm">
+                                {selectedSection ? `Step ${step} of 3: ${getStepTitle()}` : 'Select a section to begin'}
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                             </p>
                         </div>
                         {step > 1 && (
                             <button
                                 onClick={handleBack}
+<<<<<<< HEAD
                                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium border border-gray-300"
+=======
+                                className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-md transition-colors text-sm"
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                             >
                                 ← Back
                             </button>
@@ -335,6 +365,7 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
 
+<<<<<<< HEAD
                 {/* Clean Selection Dashboard */}
                 <div className="bg-white rounded-lg border border-gray-200 mb-6">
                     {/* Header */}
@@ -477,11 +508,33 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
                         <p className="text-sm text-gray-600">
                             Please select a subject from the dropdown above to continue.
                         </p>
+=======
+                {/* Empty State / Initial Landing */}
+                {!selectedSection && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+                        <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
+                            <PlusIcon className="w-10 h-10" />
+                        </div>
+                        <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-4">Start Declaring Results</h2>
+                        <p className="text-gray-500 font-medium max-w-md mx-auto mb-8 text-lg">
+                            Please select a <span className="text-blue-600 font-bold">Grade</span> and <span className="text-blue-600 font-bold">Section</span> from the sidebar navigation to begin the result declaration process.
+                        </p>
+                        <div className="flex justify-center gap-4">
+                            <div className="flex items-center gap-2 text-sm text-gray-400 font-bold uppercase tracking-widest">
+                                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                                Waiting for selection
+                            </div>
+                        </div>
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                     </div>
                 )}
 
                 {/* Step 1: Student Selection */}
+<<<<<<< HEAD
                 {selectedSection && selectedSubject && step === 1 && (
+=======
+                {selectedSection && step === 1 && (
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-[#1E293B]">
                         <div className="mb-8 flex justify-between items-center">
                             <div>
@@ -546,8 +599,44 @@ export default function DeclareResult({ grades, currentSemester = 1, initialStep
                     </div>
                 )}
 
+<<<<<<< HEAD
                 {/* Step 2: Marks Entry */}
                 {step === 2 && (
+=======
+                {/* Step 2: Subject Selection */}
+                {step === 2 && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                        <div className="mb-8">
+                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Select Subject</h2>
+                            <p className="text-gray-500 font-medium">{selectedGrade?.name} - Section {selectedSection?.name}</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {subjects.map(subject => (
+                                <button
+                                    key={subject.id}
+                                    onClick={() => handleSubjectSelect(subject)}
+                                    className="p-6 rounded-xl border border-gray-200 hover:border-blue-600 hover:ring-1 hover:ring-blue-600 hover:shadow-md transition-all text-left bg-white group focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 mb-1">
+                                        {subject.name}
+                                    </h3>
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
+                                        {subject.code}
+                                    </p>
+                                </button>
+                            ))}
+                            {subjects.length === 0 && (
+                                <div className="col-span-full py-12 text-center">
+                                    <p className="text-gray-500 font-medium">No subjects found for this class and section.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Step 3: Marks Entry */}
+                {step === 3 && (
+>>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="p-8 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

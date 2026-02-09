@@ -183,7 +183,7 @@ Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(functi
     Route::get('/assessment-types/subjects', [\App\Http\Controllers\RegistrarAssessmentTypeController::class, 'getSubjects'])->name('registrar.assessment-types.subjects');
 });
 
-Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
+Route::middleware(['auth', 'role:student|admin|school_director'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\StudentController::class, 'dashboard'])->name('dashboard');
 
     // Annual Registration
@@ -355,8 +355,6 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     // Profile
     Route::get('/profile', [\App\Http\Controllers\TeacherProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [\App\Http\Controllers\TeacherProfileController::class, 'update'])->name('profile.update');
-    Route::get('/password', [\App\Http\Controllers\TeacherProfileController::class, 'changePassword'])->name('password.edit');
-    Route::put('/password', [\App\Http\Controllers\TeacherProfileController::class, 'updatePassword'])->name('password.update');
 
     Route::get('/assignments/subjects', [\App\Http\Controllers\TeacherAssignmentController::class, 'getAssignedSubjects']);
 });
