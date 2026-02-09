@@ -6,9 +6,11 @@ import {
     XCircleIcon,
     ClockIcon,
     ArrowLeftIcon,
-    UserIcon
-} from '@heroicons/react/24/outline'; // Using outline for consistent style
-import { CheckIcon } from '@heroicons/react/24/solid'; // Using solid for checked state
+    UserIcon,
+    InformationCircleIcon,
+    CheckIcon,
+    XMarkIcon
+} from '@heroicons/react/24/outline';
 
 export default function Create({ auth, section, students, date, formattedDate }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -43,20 +45,23 @@ export default function Create({ auth, section, students, date, formattedDate })
         post(route('teacher.attendance.store'));
     };
 
-    const StatusButton = ({ currentStatus, targetStatus, icon: Icon, label, color, onClick }) => {
+    const StatusToggle = ({ currentStatus, targetStatus, label, color, onClick }) => {
         const isActive = currentStatus === targetStatus;
+
+        const colors = {
+            green: isActive ? 'bg-green-600 text-white shadow-lg shadow-green-100' : 'bg-gray-50 text-gray-400 hover:bg-green-50 hover:text-green-600',
+            red: isActive ? 'bg-red-600 text-white shadow-lg shadow-red-100' : 'bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600',
+            amber: isActive ? 'bg-amber-500 text-white shadow-lg shadow-amber-100' : 'bg-gray-50 text-gray-400 hover:bg-amber-50 hover:text-amber-600'
+        };
+
         return (
             <button
                 type="button"
                 onClick={onClick}
-                className={`flex items-center justify-center p-2 rounded-lg transition-all border ${isActive
-                        ? `bg-${color}-50 border-${color}-500 text-${color}-700 ring-1 ring-${color}-500`
-                        : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
-                    }`}
-                title={label}
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${colors[color]}`}
             >
-                <Icon className={`w-5 h-5 ${isActive ? 'scale-110' : ''}`} />
-                <span className="ml-2 text-sm font-medium hidden sm:inline">{label}</span>
+                {isActive && <CheckIcon className="w-3 h-3 stroke-[4]" />}
+                {label}
             </button>
         );
     };
@@ -65,127 +70,154 @@ export default function Create({ auth, section, students, date, formattedDate })
         <TeacherLayout>
             <Head title={`Mark Attendance - ${section.name}`} />
 
-            <form onSubmit={submit} className="space-y-6 max-w-5xl mx-auto">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center space-x-4">
+            <div className="max-w-5xl mx-auto pb-12">
+                {/* Back Button & Header */}
+                <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div className="flex items-start gap-5">
                         <Link
                             href={route('teacher.attendance.index')}
-                            className="p-2 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+                            className="mt-1 p-3 rounded-2xl bg-white border-2 border-gray-100 text-gray-400 hover:text-blue-600 hover:border-blue-100 hover:bg-blue-50/50 transition-all group lg:shadow-sm"
                         >
-                            <ArrowLeftIcon className="w-5 h-5" />
+                            <ArrowLeftIcon className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                         </Link>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Mark Attendance</h1>
-                            <p className="text-sm text-gray-500">
-                                {formattedDate} • {section.grade.name} - {section.name}
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-black text-blue-600 uppercase tracking-widest">{section.grade.name}</span>
+                                <span className="text-gray-300 italic">&bull;</span>
+                                <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Section {section.name}</span>
+                            </div>
+                            <h1 className="text-4xl font-black text-gray-900 tracking-tight leading-none">
+                                MARK <span className="text-blue-600">ATTENDANCE</span>
+                            </h1>
+                            <p className="mt-2 text-sm font-bold text-gray-400 flex items-center gap-2">
+                                <CalendarIcon className="w-4 h-4 text-blue-500" />
+                                {formattedDate}
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center space-x-3">
-                        <span className="text-sm font-medium text-gray-500">Mark All:</span>
+                    {/* Batch Actions Container */}
+                    <div className="bg-white p-2 rounded-2xl border-2 border-gray-100 shadow-sm flex items-center gap-2">
+                        <span className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Batch Actions</span>
+                        <div className="w-px h-6 bg-gray-100"></div>
                         <button
                             type="button"
                             onClick={() => markAll('Present')}
-                            className="px-3 py-1.5 rounded-md bg-green-50 text-green-700 text-sm font-medium hover:bg-green-100 transition-colors"
+                            className="px-4 py-2 rounded-xl bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest hover:bg-green-600 hover:text-white transition-all"
                         >
-                            Present
+                            All Present
                         </button>
                         <button
                             type="button"
                             onClick={() => markAll('Absent')}
-                            className="px-3 py-1.5 rounded-md bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-colors"
+                            className="px-4 py-2 rounded-xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all"
                         >
-                            Absent
+                            All Absent
                         </button>
                     </div>
                 </div>
 
-                {/* List */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        <div className="col-span-4 sm:col-span-3">Student</div>
-                        <div className="col-span-8 sm:col-span-5 text-center">Status</div>
-                        <div className="col-span-12 sm:col-span-4">Remarks</div>
-                    </div>
-
-                    <div className="divide-y divide-gray-100">
+                <form onSubmit={submit} className="space-y-6">
+                    {/* Student Records Layer */}
+                    <div className="space-y-4">
                         {students.map((student, index) => (
-                            <div key={student.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50/50 transition-colors">
-                                {/* Student Info */}
-                                <div className="col-span-4 sm:col-span-3">
-                                    <div className="flex items-center">
-                                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-xs ring-2 ring-white shadow-sm">
-                                            {student.name.substring(0, 2).toUpperCase()}
+                            <div
+                                key={student.id}
+                                className="group bg-white rounded-[24px] border-2 border-gray-50 p-6 transition-all hover:border-blue-100 hover:shadow-xl hover:shadow-blue-50/50"
+                            >
+                                <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                                    {/* Student Identity */}
+                                    <div className="flex items-center gap-4 min-w-[240px]">
+                                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-gray-400 group-hover:from-blue-50 group-hover:to-blue-100 group-hover:text-blue-600 transition-all duration-500 font-black text-xl border-2 border-white shadow-sm overflow-hidden">
+                                            {student.profile_photo_url ? (
+                                                <img src={student.profile_photo_url} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                student.name.substring(0, 2).toUpperCase()
+                                            )}
                                         </div>
-                                        <div className="ml-3">
-                                            <p className="text-sm font-medium text-gray-900">{student.name}</p>
-                                            <p className="text-xs text-gray-500">ID: {student.student_id}</p>
+                                        <div>
+                                            <h3 className="text-lg font-black text-gray-900 leading-tight mb-0.5">{student.name}</h3>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">ID: {student.student_id}</p>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Status Buttons */}
-                                <div className="col-span-8 sm:col-span-5 flex justify-center space-x-2">
-                                    <StatusButton
-                                        currentStatus={data.students[index].status}
-                                        targetStatus="Present"
-                                        icon={CheckCircleIcon}
-                                        label="Present"
-                                        color="green"
-                                        onClick={() => updateStatus(index, 'Present')}
-                                    />
-                                    <StatusButton
-                                        currentStatus={data.students[index].status}
-                                        targetStatus="Absent"
-                                        icon={XCircleIcon}
-                                        label="Absent"
-                                        color="red"
-                                        onClick={() => updateStatus(index, 'Absent')}
-                                    />
-                                    <StatusButton
-                                        currentStatus={data.students[index].status}
-                                        targetStatus="Late"
-                                        icon={ClockIcon}
-                                        label="Late"
-                                        color="yellow"
-                                        onClick={() => updateStatus(index, 'Late')}
-                                    />
-                                </div>
+                                    {/* Status Toggles */}
+                                    <div className="flex flex-wrap items-center gap-2 lg:mx-auto">
+                                        <StatusToggle
+                                            currentStatus={data.students[index].status}
+                                            targetStatus="Present"
+                                            label="Present"
+                                            color="green"
+                                            onClick={() => updateStatus(index, 'Present')}
+                                        />
+                                        <StatusToggle
+                                            currentStatus={data.students[index].status}
+                                            targetStatus="Absent"
+                                            label="Absent"
+                                            color="red"
+                                            onClick={() => updateStatus(index, 'Absent')}
+                                        />
+                                        <StatusToggle
+                                            currentStatus={data.students[index].status}
+                                            targetStatus="Late"
+                                            label="Late"
+                                            color="amber"
+                                            onClick={() => updateStatus(index, 'Late')}
+                                        />
+                                    </div>
 
-                                {/* Remarks */}
-                                <div className="col-span-12 sm:col-span-4 mt-2 sm:mt-0">
-                                    <input
-                                        type="text"
-                                        value={data.students[index].remarks || ''}
-                                        onChange={(e) => updateRemarks(index, e.target.value)}
-                                        placeholder="Add note..."
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm bg-gray-50 focus:bg-white text-gray-700"
-                                    />
+                                    {/* Remarks Field */}
+                                    <div className="lg:w-64">
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={data.students[index].remarks || ''}
+                                                onChange={(e) => updateRemarks(index, e.target.value)}
+                                                placeholder="Add a remark..."
+                                                className="w-full bg-gray-50 border-none rounded-xl py-3 px-4 text-sm font-bold text-gray-700 placeholder:text-gray-300 focus:ring-2 focus:ring-blue-100 transition-all"
+                                            />
+                                            {data.students[index].remarks && (
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
-                </div>
 
-                {/* Footer / Actions */}
-                <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
-                    <Link
-                        href={route('teacher.attendance.index')}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                        Cancel
-                    </Link>
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    >
-                        {processing ? 'Saving...' : 'Save Attendance'}
-                    </button>
-                </div>
-            </form>
+                    {/* Submission Board */}
+                    <div className="sticky bottom-8 bg-white/80 backdrop-blur-xl rounded-[32px] border-2 border-gray-100 p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl shadow-blue-900/10 transition-all">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                                <InformationCircleIcon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-black text-gray-900 leading-none mb-1 uppercase tracking-tight">Ready to sync?</h4>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                    {data.students.filter(s => s.status === 'Present').length} Present &bull; {data.students.filter(s => s.status === 'Absent').length} Absent
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <Link
+                                href={route('teacher.attendance.index')}
+                                className="flex-1 sm:flex-none px-8 py-4 rounded-2xl text-sm font-black text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all text-center uppercase tracking-widest"
+                            >
+                                Discard
+                            </Link>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="flex-1 sm:flex-none px-10 py-4 bg-blue-600 text-white rounded-2xl text-sm font-black shadow-xl shadow-blue-200 hover:bg-blue-700 disabled:opacity-50 transition-all uppercase tracking-widest"
+                            >
+                                {processing ? 'Syncing...' : 'Sync Records'}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </TeacherLayout>
     );
 }
