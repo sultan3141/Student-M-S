@@ -1,3 +1,7 @@
+/**
+ * Authenticated Layout Component
+ * Base layout for all authenticated sessions.
+ */
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
