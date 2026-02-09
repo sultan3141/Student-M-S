@@ -1,3 +1,7 @@
+/**
+ * Parent Layout Component
+ * Layout for Guardian users to monitor their children's progress.
+ */
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
