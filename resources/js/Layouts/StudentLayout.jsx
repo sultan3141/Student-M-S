@@ -12,7 +12,8 @@ import {
     ClipboardDocumentCheckIcon,
     KeyIcon,
     DocumentChartBarIcon,
-    TrophyIcon
+    TrophyIcon,
+    CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 
 export default function StudentLayout({ children }) {
@@ -40,6 +41,13 @@ export default function StudentLayout({ children }) {
             icon: TrophyIcon,
             current: route().current('student.academic.year.current') || route().current('student.academic.year.show'),
             description: 'Yearly average & Final Rank'
+        },
+        {
+            name: 'My Schedule',
+            href: route('student.schedule'),
+            icon: CalendarDaysIcon,
+            current: route().current('student.schedule'),
+            description: 'Weekly Timetable'
         },
     ];
 
