@@ -20,10 +20,5 @@ createInertiaApp({
 
         root.render(<App {...props} />);
     },
-    progress: {
-        delay: 0, // Show progress bar immediately
-        color: '#4F46E5', // Indigo color
-        includeCSS: true,
-        showSpinner: true, // Show spinner for better feedback
-    },
+    progress: false,
 });
