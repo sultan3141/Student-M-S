@@ -4,13 +4,10 @@ import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import Footer from '@/Components/Footer';
 
 export default function AuthenticatedLayout({ header, children }) {
-<<<<<<< HEAD
-    const user = usePage().props.auth.user;
-=======
     const user = usePage().props.auth?.user || {};
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
@@ -219,6 +216,7 @@ export default function AuthenticatedLayout({ header, children }) {
             )}
 
             <main>{children}</main>
+            <Footer />
         </div>
     );
 }
