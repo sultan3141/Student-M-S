@@ -94,7 +94,7 @@ export default function TeacherLayout({ children }) {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 flex">
             {/* Mobile sidebar backdrop */}
             {sidebarOpen && (
                 <div
@@ -273,31 +273,37 @@ export default function TeacherLayout({ children }) {
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                 {/* Top Header */}
-                <header className="bg-white border-b border-gray-200 shadow-sm h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center">
-                        <button onClick={() => setSidebarOpen(true)} className="md:hidden text-gray-500 hover:text-gray-700 mr-4">
+                <header className="bg-gradient-to-r from-[#1E40AF] via-[#3B82F6] to-[#1D4ED8] shadow-lg sticky top-0 z-40 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 border-b border-white/10">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setSidebarOpen(true)} className="md:hidden text-white/80 hover:text-white transition-colors">
                             <Bars3Icon className="w-6 h-6" />
                         </button>
-                        {/* Breadcrumbs or Title could go here */}
+                        <div className="hidden md:flex items-center gap-2">
+                            <HomeIcon className="w-5 h-5 text-white/60" />
+                            <span className="text-xs font-black text-white uppercase tracking-[0.3em]">Dashboard</span>
+                        </div>
                     </div>
 
                     <div className="flex items-center space-x-4">
                         {/* Notifications */}
-                        <button className="relative p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                        <button className="relative p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all">
                             <BellIcon className="w-6 h-6" />
-                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-400 rounded-full ring-2 ring-[#3B82F6]"></span>
                         </button>
 
-                        <div className="h-8 w-px bg-gray-200 mx-2"></div>
+                        <div className="h-8 w-px bg-white/20 mx-2"></div>
 
                         {/* Profile Dropdown */}
-                        <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-700 mr-2 hidden sm:block">{auth.user.name}</span>
-                            <img
-                                className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm"
-                                src={auth.user.profile_photo_url || `https://ui-avatars.com/api/?name=${auth.user.name}&background=random`}
-                                alt={auth.user.name}
-                            />
+                        <div className="flex items-center group cursor-pointer">
+                            <span className="text-sm font-bold text-white mr-3 hidden sm:block group-hover:text-blue-100 transition-colors uppercase tracking-wider">{auth.user.name}</span>
+                            <div className="relative">
+                                <img
+                                    className="w-9 h-9 rounded-full object-cover ring-2 ring-white/50 shadow-md group-hover:ring-white transition-all"
+                                    src={auth.user.profile_photo_url || `https://ui-avatars.com/api/?name=${auth.user.name}&background=random`}
+                                    alt={auth.user.name}
+                                />
+                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-[#1D4ED8] rounded-full"></div>
+                            </div>
                         </div>
                     </div>
                 </header>

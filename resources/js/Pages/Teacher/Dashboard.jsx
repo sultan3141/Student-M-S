@@ -25,18 +25,18 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher, c
                     {/* Welcome Section */}
                     <div className="relative overflow-hidden bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8 mb-8 group">
                         <div className="absolute top-0 right-0 -m-8 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl group-hover:bg-blue-600/10 transition-colors duration-500"></div>
-                        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <span className="px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-full">
-                                        Academic Portal
-                                    </span>
-                                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                </div>
-                                <h1 className="text-4xl font-black text-gray-900 tracking-tight leading-none">
+                        <div className="relative flex flex-col md:flex-row md:items-end justify-between gap-6">
+                            <div className="flex-1">
+                                <h1 className="text-4xl font-black text-gray-900 tracking-tight leading-none mb-3">
                                     WELCOME BACK, <span className="text-blue-600 uppercase">{teacher?.user?.name?.split(' ')[0] || 'TEACHER'}</span>
+                                    <span className="ml-4 inline-flex items-center gap-2">
+                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-black uppercase tracking-widest rounded-full align-middle">
+                                            Academic Portal
+                                        </span>
+                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                                    </span>
                                 </h1>
-                                <p className="mt-3 text-gray-500 font-medium max-w-lg">
+                                <p className="text-gray-500 font-medium max-w-2xl">
                                     You have <span className="text-blue-600 font-bold">{stats.pendingMarks || 0} pending marks</span> to declare this week. Your performance across your classes is currently standing at <span className="text-green-600 font-bold">88.5% average</span>.
                                 </p>
                             </div>
@@ -53,27 +53,9 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher, c
                         </div>
                     </div>
 
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                        {[
-                            { label: 'Total Students', value: stats.totalStudents || 0, icon: UserGroupIcon, color: 'blue' },
-                            { label: 'Active Classes', value: stats.activeClasses || 0, icon: AcademicCapIcon, color: 'indigo' },
-                            { label: 'Pending Marks', value: stats.pendingMarks || 0, icon: ClipboardDocumentCheckIcon, color: 'amber' },
-                            { label: 'Avg Attendance', value: '94.2%', icon: ClockIcon, color: 'green' }
-                        ].map((stat, i) => (
-                            <div key={i} className="bg-white p-6 rounded-2xl shadow-xl shadow-gray-200/40 border border-gray-100 hover:scale-[1.02] transition-all duration-300 group">
-                                <div className={`w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4 group-hover:rotate-6 transition-transform`}>
-                                    <stat.icon className={`w-6 h-6 text-blue-600`} />
-                                </div>
-                                <div className="text-3xl font-black text-gray-900 tracking-tight mb-1">{stat.value}</div>
-                                <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">{stat.label}</div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Feed / Activity */}
-                        <div className="lg:col-span-2 space-y-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* Main Content (Left) */}
+                        <div className="lg:col-span-8 space-y-8">
                             {/* Semester Status Widget */}
                             {currentSemester && (
                                 <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden mb-8">
@@ -108,76 +90,78 @@ export default function Dashboard({ stats, recentActivity, deadlines, teacher, c
                             </div>
                         </div>
 
-                        {/* Quick Actions Sidebar */}
-                        <div className="space-y-6">
-                            <h2 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] px-2">Essential Tasks</h2>
-                            <div className="grid grid-cols-1 gap-4">
-                                <Link
-                                    href={route('teacher.declare-result.index')}
-                                    className="group relative bg-blue-600 rounded-2xl shadow-lg shadow-blue-200 border border-blue-500 p-6 overflow-hidden transition-all hover:translate-y-[-4px] hover:shadow-2xl"
-                                >
-                                    <div className="absolute top-0 right-0 -m-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"></div>
-                                    <div className="relative">
-                                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-4">
-                                            <PlusIcon className="w-6 h-6 text-white" />
+                        {/* Sidebar (Right) */}
+                        <div className="lg:col-span-4 space-y-8">
+                            {/* Key Stats in Sidebar Style */}
+                            <div className="grid grid-cols-2 gap-4">
+                                {[
+                                    { label: 'Students', value: stats.totalStudents || 0, icon: UserGroupIcon },
+                                    { label: 'Classes', value: stats.activeClasses || 0, icon: AcademicCapIcon },
+                                    { label: 'Pending', value: stats.pendingMarks || 0, icon: ClipboardDocumentCheckIcon },
+                                    { label: 'Attendance', value: '94%', icon: ClockIcon }
+                                ].map((stat, i) => (
+                                    <div key={i} className="bg-white p-4 rounded-2xl shadow-lg shadow-gray-200/40 border border-gray-100">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center mb-2">
+                                            <stat.icon className="w-4 h-4 text-blue-600" />
                                         </div>
-                                        <h3 className="text-lg font-black text-white leading-tight mb-1 uppercase tracking-tight">Declare<br />Result</h3>
-                                        <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Post new marks</p>
+                                        <div className="text-xl font-black text-gray-900 tracking-tight">{stat.value}</div>
+                                        <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</div>
                                     </div>
-                                </Link>
+                                ))}
+                            </div>
 
-                                <Link
-                                    href={route('teacher.marks.wizard.index')}
-                                    className="group bg-white rounded-2xl shadow-xl shadow-gray-200/40 border border-gray-100 p-6 transition-all hover:translate-y-[-4px] hover:shadow-2xl"
-                                >
-                                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <AcademicCapIcon className="w-6 h-6 text-indigo-600" />
-                                    </div>
-                                    <h3 className="text-lg font-black text-gray-900 leading-tight mb-1 uppercase tracking-tight">Enter<br />Marks</h3>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Quick mark entry</p>
-                                </Link>
+                            <div className="space-y-4">
+                                <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-2">Quick Actions</h2>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <Link
+                                        href={route('teacher.declare-result.index')}
+                                        className="group relative bg-blue-600 rounded-2xl shadow-lg shadow-blue-200 border border-blue-500 p-5 overflow-hidden transition-all hover:translate-y-[-2px]"
+                                    >
+                                        <div className="absolute top-0 right-0 -m-4 w-20 h-20 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                                        <div className="relative flex items-center gap-4">
+                                            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                                                <PlusIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-black text-white uppercase tracking-tight">Declare Result</h3>
+                                            </div>
+                                        </div>
+                                    </Link>
 
-                                <Link
-                                    href={route('teacher.attendance.index')}
-                                    className="group bg-white rounded-2xl shadow-xl shadow-gray-200/40 border border-gray-100 p-6 transition-all hover:translate-y-[-4px] hover:shadow-2xl"
-                                >
-                                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <CalendarIcon className="w-6 h-6 text-emerald-600" />
-                                    </div>
-                                    <h3 className="text-lg font-black text-gray-900 leading-tight mb-1 uppercase tracking-tight">Mark<br />Attendance</h3>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Daily check-in</p>
-                                </Link>
-
-                                <Link
-                                    href={route('teacher.reports.index')}
-                                    className="group bg-white rounded-2xl shadow-xl shadow-gray-200/40 border border-gray-100 p-6 transition-all hover:translate-y-[-4px] hover:shadow-2xl"
-                                >
-                                    <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <ArrowDownTrayIcon className="w-6 h-6 text-orange-600" />
-                                    </div>
-                                    <h3 className="text-lg font-black text-gray-900 leading-tight mb-1 uppercase tracking-tight">Export<br />Reports</h3>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Generate documentation</p>
-                                </Link>
+                                    <Link
+                                        href={route('teacher.attendance.index')}
+                                        className="group bg-white rounded-2xl shadow-xl shadow-gray-200/40 border border-gray-100 p-5 transition-all hover:translate-y-[-2px]"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <CalendarIcon className="w-5 h-5 text-emerald-600" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">Take Attendance</h3>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </div>
                             </div>
 
                             {/* Class Overview Card */}
                             <div className="bg-white border-2 border-gray-50 rounded-3xl p-6 shadow-lg shadow-gray-200/20">
-                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Class Overview</h3>
+                                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Insight Overview</h3>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-sm font-bold text-gray-500">Attendance Rate</span>
-                                        <span className="text-sm font-black text-emerald-600 italic">94%</span>
+                                        <span className="text-[11px] font-bold text-gray-500 uppercase">Attendance</span>
+                                        <span className="text-[11px] font-black text-emerald-600">94.2%</span>
                                     </div>
-                                    <div className="w-full bg-gray-50 h-1.5 rounded-full overflow-hidden">
+                                    <div className="w-full bg-gray-50 h-1 rounded-full overflow-hidden">
                                         <div className="bg-emerald-500 h-full w-[94%]"></div>
                                     </div>
 
                                     <div className="flex justify-between items-center mt-6">
-                                        <span className="text-sm font-bold text-gray-500">Avg. Performance</span>
-                                        <span className="text-sm font-black text-blue-600 italic">87%</span>
+                                        <span className="text-[11px] font-bold text-gray-500 uppercase">Performance</span>
+                                        <span className="text-[11px] font-black text-blue-600">88.5%</span>
                                     </div>
-                                    <div className="w-full bg-gray-50 h-1.5 rounded-full overflow-hidden">
-                                        <div className="bg-blue-500 h-full w-[87%]"></div>
+                                    <div className="w-full bg-gray-50 h-1 rounded-full overflow-hidden">
+                                        <div className="bg-blue-500 h-full w-[88%]"></div>
                                     </div>
                                 </div>
                             </div>
