@@ -4,6 +4,10 @@
  */
 import React from 'react';
 
+/**
+ * Functional component for the global application footer.
+ * @returns {JSX.Element} The rendered footer component.
+ */
 export default function Footer() {
     const currentYear = new Date().getFullYear();
 
