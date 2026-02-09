@@ -1,3 +1,7 @@
+/**
+ * Director Layout Component
+ * Executive layout for School Directors and high-level management.
+ */
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
