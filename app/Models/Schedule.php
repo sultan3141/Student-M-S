@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\PostgresCompatible;
 
 class Schedule extends Model
 {
+    use PostgresCompatible;
+
     protected $fillable = [
         'academic_year_id',
         'name',
@@ -47,7 +50,7 @@ class Schedule extends Model
     public static function getByDay($day, $academicYearId = null)
     {
         $query = self::where('day_of_week', $day)
-            ->where('is_active', true)
+            ->whereBoolTrue('is_active')
             ->orderBy('start_time');
 
         if ($academicYearId) {
@@ -78,7 +81,7 @@ class Schedule extends Model
     public static function getByGrade($gradeId, $academicYearId = null)
     {
         $query = self::where('grade_id', $gradeId)
-            ->where('is_active', true)
+            ->whereBoolTrue('is_active')
             ->orderBy('day_of_week')
             ->orderBy('start_time');
 
