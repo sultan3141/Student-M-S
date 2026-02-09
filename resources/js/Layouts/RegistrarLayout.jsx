@@ -1,3 +1,7 @@
+/**
+ * Registrar Layout Component
+ * Layout for Registrar staff focusing on admissions and student management.
+ */
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
