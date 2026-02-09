@@ -8,6 +8,7 @@ import {
     LockClosedIcon,
     ArrowRightIcon
 } from '@heroicons/react/24/outline';
+import UserDistributionBarChart from '@/Components/Charts/UserDistributionBarChart';
 
 export default function Dashboard({ stats, gradeDistribution }) {
     const coreMenus = [

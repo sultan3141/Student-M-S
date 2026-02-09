@@ -83,10 +83,9 @@ class TeacherAttendanceController extends Controller
         // Fetch distinct sections assigned to the teacher
         $assignments = TeacherAssignment::where('teacher_id', $teacher->id)
             ->with(['section.grade', 'subject'])
-            ->get()
-            ->unique('section_id');
+            ->get();
 
-        // Check status for each section
+        // Check status for each section/subject combination
         $schedule = $assignments->map(function ($assignment) use ($today) {
             if (!$assignment->section || !$assignment->subject) {
                 return null;

@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import TeacherLayout from '@/Layouts/TeacherLayout';
+import SemesterWidget from '@/Components/SemesterWidget';
 import {
     UserGroupIcon,
     AcademicCapIcon,
@@ -9,6 +10,12 @@ import {
     ArrowRightIcon,
     BookOpenIcon,
     ChartPieIcon,
+    DocumentTextIcon,
+    UserPlusIcon,
+    ChartBarIcon,
+    PlusIcon,
+    ArrowDownTrayIcon,
+    UserCircleIcon
 } from '@heroicons/react/24/outline';
 
 export default function Dashboard({ stats = {}, recentActivity = [], deadlines = [], teacher = {}, currentSemester = null, todaySchedule = [], today = '' }) {
@@ -35,28 +42,10 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
                 </div>
             </div>
 
-            {/* Clean Semester Banner */}
+            {/* Semester Status Widget */}
             {currentSemester && (
-                <div className="mb-10 bg-white rounded-2xl border border-gray-100 p-6 flex items-center justify-between group hover:border-blue-100 transition-colors">
-                    <div className="flex items-center gap-6">
-                        <div className="p-4 bg-blue-50 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                            <CalendarIcon className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Active Semester</span>
-                                <span className="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[8px] font-bold uppercase tracking-widest">
-                                    {currentSemester.status}
-                                </span>
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 uppercase tracking-tight">
-                                {currentSemester.academic_year} &mdash; <span className="text-blue-600">Semester {currentSemester.semester}</span>
-                            </h3>
-                            {currentSemester.message && (
-                                <p className="text-gray-400 text-[10px] font-bold mt-1 uppercase tracking-widest opacity-60">System: {currentSemester.message}</p>
-                            )}
-                        </div>
-                    </div>
+                <div className="mb-10 bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+                    <SemesterWidget semester={currentSemester} userType="teacher" />
                 </div>
             )}
 
@@ -115,7 +104,7 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
 
             {/* Minimalist Schedule Feed */}
             {todaySchedule && todaySchedule.length > 0 && (
-                <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-10 overflow-hidden">
+                <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-10 overflow-hidden shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-[11px] font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
@@ -149,7 +138,7 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
                                             {slot.grade} &bull; {slot.section}
                                         </h3>
                                         <div className="flex items-center gap-2">
-                                            <span className={`px-3 py-1 border border-gray-100 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-colors ${isBreak ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-white text-gray-400 group-hover:border-blue-50'}`}>
+                                            <span className={`px-3 py-1 border border-gray-100 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-colors ${isBreak ? 'bg-amber-50 text-amber-700' : 'bg-white text-gray-400 group-hover:border-blue-50'}`}>
                                                 {slot.activity}
                                             </span>
                                             {slot.location && (
@@ -168,7 +157,7 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Link
                     href={route('teacher.declare-result.index')}
-                    className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-600 hover:bg-blue-50/10 transition-all group"
+                    className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-600 hover:bg-blue-50/10 transition-all group shadow-sm"
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -185,7 +174,7 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
 
                 <Link
                     href={route('teacher.attendance.index')}
-                    className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-600 hover:bg-blue-50/10 transition-all group"
+                    className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-600 hover:bg-blue-50/10 transition-all group shadow-sm"
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -202,7 +191,7 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
 
                 <Link
                     href={route('teacher.assessments-simple.index')}
-                    className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-600 hover:bg-blue-50/10 transition-all group"
+                    className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-600 hover:bg-blue-50/10 transition-all group shadow-sm"
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">

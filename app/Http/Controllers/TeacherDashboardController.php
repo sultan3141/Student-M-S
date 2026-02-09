@@ -229,7 +229,11 @@ class TeacherDashboardController extends Controller
         $schedule = [];
         if ($selectedSectionId) {
             $schedule = \App\Models\Schedule::where('section_id', $selectedSectionId)
+<<<<<<< Updated upstream
                 ->whereRaw('is_active = true')
+=======
+                ->where('is_active', true)
+>>>>>>> Stashed changes
                 ->orderByRaw("CASE day_of_week 
                     WHEN 'Monday' THEN 1 
                     WHEN 'Tuesday' THEN 2 
