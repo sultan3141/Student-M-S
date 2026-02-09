@@ -1,3 +1,7 @@
+/**
+ * Teacher Layout Component
+ * Manages the sidebar and navigation for the Teacher Portal.
+ */
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
