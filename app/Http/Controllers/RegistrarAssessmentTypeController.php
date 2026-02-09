@@ -94,7 +94,7 @@ class RegistrarAssessmentTypeController extends Controller
             ->join('subjects', 'grade_subject.subject_id', '=', 'subjects.id')
             ->where('grade_subject.grade_id', $request->grade_id)
             ->where('grade_subject.section_id', $request->section_id)
-            ->where('grade_subject.is_active', true)
+            ->whereRaw('grade_subject.is_active = true')
             ->select('subjects.id', 'subjects.name', 'subjects.code')
             ->get();
 

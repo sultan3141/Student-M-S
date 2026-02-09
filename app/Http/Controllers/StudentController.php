@@ -635,7 +635,7 @@ class StudentController extends Controller
                 $q->where('section_id', $student->section_id)
                     ->orWhereNull('section_id');
             })
-            ->where('is_active', true)
+            ->whereBoolTrue('is_active')
             ->orderByRaw("CASE day_of_week 
                 WHEN 'Monday' THEN 1 
                 WHEN 'Tuesday' THEN 2 
