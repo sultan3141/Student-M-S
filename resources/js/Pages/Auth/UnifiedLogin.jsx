@@ -1,3 +1,7 @@
+/**
+ * Unified Login Page
+ * Intelligent authentication portal for all school roles.
+ */
 import { useState, useEffect } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import RoleBadge from '@/Components/Auth/RoleBadge';
