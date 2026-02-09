@@ -10,7 +10,8 @@ import {
     DocumentChartBarIcon,
     TrophyIcon,
     Bars3Icon,
-    XMarkIcon
+    XMarkIcon,
+    CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 import ChangePasswordModal from '@/Components/ChangePasswordModal';
 import { useEffect } from 'react';
@@ -43,6 +44,13 @@ export default function ParentLayout({ children }) {
             icon: TrophyIcon,
             description: 'Yearly average & Final Rank',
             current: route().current('parent.academic.year.current') || route().current('parent.academic.year.show')
+        },
+        {
+            name: 'Class Schedule',
+            href: route('parent.student.schedule', activeStudentId),
+            icon: CalendarDaysIcon,
+            description: 'Weekly Timetable',
+            current: route().current('parent.student.schedule')
         },
         {
             name: 'Payment Info',
