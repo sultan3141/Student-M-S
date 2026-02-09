@@ -10,7 +10,13 @@ This project includes a comprehensive **Director Module** designed for high-leve
 *   **Executive Widgets**: Dashboard now serves as the primary statistics hub, replacing the old separate statistics page.
 *   **Premium Design**: Navy & Gold "Director Theme" with glassmorphism effects and refined typography.
 
-### 2. Academic Command Center (`/director/academic/overview`)
+### 2. Premium Teacher Portal (`/teacher/dashboard`)
+*   **Advanced Analytics**: Premium, card-based dashboard with real-time class statistics and performance indicators.
+*   **Attendance Command Center**: Modernized interface for daily check-ins and comprehensive historical tracking.
+*   **Smart Mark Entry**: Intelligent wizard for rapid result declaration with grade-specific navigation.
+*   **Dynamic Sidebar**: Real-time grade/section dropdowns for effortless context switching.
+
+### 3. Academic Command Center (`/director/academic/overview`)
 *   **Performance Metrics**: Live tracking of Average Scores, Pass Rates, and Top Performing Sections per grade.
 *   **Subject Heatmap**: Visual grid showing component performance (Math, English, etc.) across all grade levels (9-12).
 *   **Trend Analysis**: Automated indicators showing if performance is "Improving", "Stable", or "Declining".
