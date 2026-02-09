@@ -9,10 +9,10 @@ import {
     DocumentTextIcon,
     ArrowRightOnRectangleIcon,
     Bars3Icon,
-    XMarkIcon,
     BellIcon,
     MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
+import Footer from '@/Components/Footer';
 
 export default function AdminLayout({ children }) {
     const { auth } = usePage().props;
@@ -106,18 +106,6 @@ export default function AdminLayout({ children }) {
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-<<<<<<< HEAD
-                {/* Top Header */}
-                <header className="bg-white border-b border-gray-200 shadow-sm h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center">
-                        <button onClick={() => setSidebarOpen(true)} className="md:hidden text-gray-500 hover:text-gray-700 mr-4">
-                            <Bars3Icon className="w-6 h-6" />
-                        </button>
-                        <h2 className="text-xl font-bold text-gray-800 hidden sm:block">Administration</h2>
-                    </div>
-
-                    <div className="flex items-center space-x-4">
-=======
                 {/* Premium Header - Centered Branding for Mobile */}
                 <header className="bg-white/80 backdrop-blur-md h-16 flex items-center shadow-sm border-b border-gray-100 sticky top-0 z-40">
                     {/* Mobile Menu Button - Left */}
@@ -141,18 +129,13 @@ export default function AdminLayout({ children }) {
 
                     {/* Right Side Content (Search/Notifications/Profile) */}
                     <div className="flex items-center px-4 md:px-8 space-x-4 flex-1 justify-end">
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                         <div className="hidden md:block relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
                             </div>
                             <input
                                 type="text"
-<<<<<<< HEAD
-                                className="block w-64 pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors"
-=======
                                 className="block w-64 pl-10 pr-3 py-2 border border-gray-100 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors shadow-inner"
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                                 placeholder="Search system..."
                             />
                         </div>
@@ -162,19 +145,6 @@ export default function AdminLayout({ children }) {
                             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
                         </button>
 
-<<<<<<< HEAD
-                        <div className="h-8 w-px bg-gray-200 mx-2"></div>
-
-                        <div className="flex items-center">
-                            <div className="text-right mr-3 hidden sm:block">
-                                <span className="block text-sm font-bold text-gray-900">{auth.user.name}</span>
-                                <span className="block text-xs text-amber-600 font-semibold uppercase">Super Admin</span>
-                            </div>
-                            <img
-                                className="w-9 h-9 rounded-lg object-cover ring-2 ring-amber-500/50 shadow-sm"
-                                src={auth.user.profile_photo_url || `https://ui-avatars.com/api/?name=${auth.user.name}&background=F59E0B&color=fff`}
-                                alt={auth.user.name}
-=======
                         <div className="h-8 w-px bg-gray-100 mx-2"></div>
 
                         <div className="flex items-center group cursor-pointer">
@@ -186,7 +156,6 @@ export default function AdminLayout({ children }) {
                                 className="w-9 h-9 rounded-xl object-cover ring-2 ring-amber-500/20 shadow-sm group-hover:ring-amber-500 transition-all"
                                 src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Admin'}&background=F59E0B&color=fff`}
                                 alt={auth?.user?.name || 'Admin'}
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                             />
                         </div>
                     </div>
@@ -196,6 +165,8 @@ export default function AdminLayout({ children }) {
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50">
                     {children}
                 </main>
+
+                <Footer />
             </div>
         </div>
     );
