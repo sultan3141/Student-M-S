@@ -42,15 +42,9 @@ class ParentDashboardController extends Controller
 
         // Get selected student ID from session or default to first student
         $selectedStudentId = session('selected_student_id', $students->first()?->id);
-<<<<<<< HEAD
-
-        $student = null;
-        $attendanceData = null;
-=======
         $schedule = null;
         $attendanceData = null;
         $student = null;
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
 
         if ($selectedStudentId) {
             $student = $students->firstWhere('id', $selectedStudentId) ?? $students->first();
@@ -61,8 +55,6 @@ class ParentDashboardController extends Controller
                 if ($academicYear) {
                     $attendanceData = $this->calculateAttendanceStats($student->id, $academicYear->id);
                 }
-<<<<<<< HEAD
-=======
 
                 // Fetch Full Weekly Schedule for the student
                 $schedule = \App\Models\Schedule::where('grade_id', $student->grade_id)
@@ -70,7 +62,7 @@ class ParentDashboardController extends Controller
                         $q->where('section_id', $student->section_id)
                             ->orWhereNull('section_id');
                     })
-                    ->whereBoolTrue('is_active')
+                    ->whereRaw('is_active = true')
                     ->orderByRaw("CASE day_of_week 
                         WHEN 'Monday' THEN 1 
                         WHEN 'Tuesday' THEN 2 
@@ -91,7 +83,6 @@ class ParentDashboardController extends Controller
                         ];
                     })
                     ->groupBy('day_of_week');
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
             }
         }
 
@@ -99,10 +90,7 @@ class ParentDashboardController extends Controller
             'parentName' => $user->name,
             'selectedStudent' => $student,
             'attendance' => $attendanceData,
-<<<<<<< HEAD
-=======
             'schedule' => $schedule,
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
         ])->withViewData([
                     'title' => 'Parent Dashboard'
                 ]);
