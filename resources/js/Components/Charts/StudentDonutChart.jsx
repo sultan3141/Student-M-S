@@ -7,107 +7,94 @@ import {
     Tooltip,
 } from 'recharts';
 
-export default function StudentDonutChart({ data, title }) {
-    const COLORS = {
-        Male: '#3B82F6',    // Blue
-        Female: '#EC4899',  // Pink
-    };
-
-<<<<<<< HEAD
-    const total = data.male + data.female;
-
-    const chartData = [
-        { name: 'Male', value: data.male, percent: data.malePercent },
-        { name: 'Female', value: data.female, percent: data.femalePercent },
+export default function StudentDonutChart({ data, title = "Assessment Distribution" }) {
+    const COLORS = [
+        '#6366F1', // Indigo
+        '#10B981', // Emerald
+        '#F59E0B', // Amber
+        '#EF4444', // Red
+        '#8B5CF6', // Purple
+        '#EC4899', // Pink
     ];
 
-    const renderLabel = (entry) => {
-        return `${entry.value} (${entry.percent}%)`;
-=======
-    // Robust null guards for data
-    const maleCount = data?.male || 0;
-    const femaleCount = data?.female || 0;
-    const malePerc = data?.malePercent || 0;
-    const femalePerc = data?.femalePercent || 0;
-    const total = maleCount + femaleCount;
+    // Handle dynamic data from assessmentDistribution
+    const chartData = (data?.labels || []).map((label, index) => ({
+        name: label,
+        value: data?.values?.[index] || 0,
+        percentage: data?.percentages?.[index] || 0
+    })).filter(item => item.value > 0);
 
-    const chartData = [
-        { name: 'Male', value: maleCount, percent: malePerc },
-        { name: 'Female', value: femaleCount, percent: femalePerc },
-    ];
-
-    const renderLabel = (entry) => {
-        return `${entry.value} (${entry.percent || 0}%)`;
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
-    };
+    const total = data?.total || 0;
 
     return (
-        <div className="executive-card">
-            <h3 className="text-lg font-semibold text-navy-900 mb-4" style={{ color: '#0F172A' }}>
-                {title}
-            </h3>
-
-            <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                    <Pie
-                        data={chartData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={2}
-                        dataKey="value"
-                        label={renderLabel}
-                        labelLine={{ stroke: '#9CA3AF', strokeWidth: 1 }}
-                    >
-                        {chartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[entry.name]} />
-                        ))}
-                    </Pie>
-                    <Tooltip
-                        contentStyle={{
-                            backgroundColor: '#FFFFFF',
-                            border: '1px solid #E5E7EB',
-                            borderRadius: '8px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        }}
-                        formatter={(value, name) => [`${value} students`, name]}
-                    />
-                    <Legend
-                        iconType="circle"
-                        wrapperStyle={{ paddingTop: '10px' }}
-                    />
-                </PieChart>
-            </ResponsiveContainer>
-
-            {/* Center Stats */}
-            <div className="mt-4 text-center pt-4 border-t border-gray-200">
-                <div className="text-3xl font-bold text-navy-900" style={{ color: '#0F172A' }}>
-                    {total}
+        <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden" style={{ minHeight: '400px' }}>
+            {/* Red Premium Header */}
+            <div className="flex items-center justify-between px-4 py-2" style={{ backgroundColor: '#D33724' }}>
+                <h3 className="text-white text-base font-normal">
+                    Donut Chart [ {title} ]
+                </h3>
+                <div className="flex items-center space-x-2 text-white opacity-80">
+                    <button className="hover:opacity-100 transition-opacity">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                        </svg>
+                    </button>
+                    <button className="hover:opacity-100 transition-opacity">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
-                <div className="text-xs text-gray-600 mt-1">Total Students</div>
-                <div className="mt-2 flex justify-center space-x-4 text-sm">
-                    <div className="flex items-center space-x-1">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.Male }}></div>
-<<<<<<< HEAD
-                        <span className="font-medium">{data.male}</span>
-                        <span className="text-gray-500">({data.malePercent}%)</span>
+            </div>
+
+            <div className="p-6">
+                {chartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                            <Legend
+                                verticalAlign="top"
+                                align="center"
+                                iconType="rect"
+                                iconSize={12}
+                                wrapperStyle={{ paddingBottom: '20px' }}
+                                formatter={(value) => (
+                                    <span className="text-xs text-gray-600 ml-1">{value}</span>
+                                )}
+                            />
+                            <Pie
+                                data={chartData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={70}
+                                outerRadius={110}
+                                paddingAngle={2}
+                                dataKey="value"
+                                stroke="none"
+                            >
+                                {chartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip
+                                contentStyle={{
+                                    backgroundColor: '#FFFFFF',
+                                    border: '1px solid #E5E7EB',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                }}
+                                formatter={(value, name, props) => {
+                                    const percent = props.payload.percentage;
+                                    return [`${value} (${percent}%)`, name];
+                                }}
+                            />
+                        </PieChart>
+                    </ResponsiveContainer>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-[300px] text-gray-400">
+                        <ChartBarIcon className="w-12 h-12 mb-2 opacity-20" />
+                        <p className="text-sm">No assessment data available</p>
                     </div>
-                    <div className="flex items-center space-x-1">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.Female }}></div>
-                        <span className="font-medium">{data.female}</span>
-                        <span className="text-gray-500">({data.femalePercent}%)</span>
-=======
-                        <span className="font-medium">{maleCount}</span>
-                        <span className="text-gray-500">({malePerc}%)</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.Female }}></div>
-                        <span className="font-medium">{femaleCount}</span>
-                        <span className="text-gray-500">({femalePerc}%)</span>
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
-                    </div>
-                </div>
+                )}
             </div>
         </div>
     );
