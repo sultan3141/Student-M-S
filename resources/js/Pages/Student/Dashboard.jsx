@@ -13,6 +13,11 @@ import {
     CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 
+/**
+ * Functional component for the student dashboard page.
+ * @param {Object} props - The component props.
+ * @returns {JSX.Element} The rendered dashboard page.
+ */
 export default function Dashboard({
     student,
     attendance,
