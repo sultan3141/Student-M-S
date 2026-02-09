@@ -5,7 +5,9 @@ import {
     ClockIcon,
     CheckCircleIcon,
     ExclamationCircleIcon,
-    CalendarIcon
+    CalendarIcon,
+    AcademicCapIcon,
+    ArrowRightIcon
 } from '@heroicons/react/24/outline';
 
 export default function Index({ auth, schedule, todayDate, stats }) {
@@ -13,106 +15,143 @@ export default function Index({ auth, schedule, todayDate, stats }) {
         <TeacherLayout>
             <Head title="Attendance Dashboard" />
 
-            <div className="space-y-6">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Attendance Dashboard</h1>
-                        <p className="mt-1 text-sm text-gray-500">{todayDate}</p>
-                    </div>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div className="flex items-center">
-                            <div className="p-3 rounded-lg bg-green-50 text-green-600">
-                                <CheckCircleIcon className="w-6 h-6" />
+            {/* Header / Hero Section */}
+            <div className="bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] shadow-sm mb-8 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                                    <CalendarIcon className="w-5 h-5 text-white" />
+                                </div>
+                                <span className="text-blue-100 font-bold uppercase tracking-widest text-[10px]">{todayDate}</span>
                             </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">Classes Completed</p>
-                                <p className="text-2xl font-semibold text-gray-900">{stats.todayCompleted} / {stats.totalClasses}</p>
-                            </div>
+                            <h1 className="text-3xl font-black text-white tracking-tight">
+                                ATTENDANCE <span className="text-blue-200">DASHBOARD</span>
+                            </h1>
                         </div>
-                    </div>
 
-                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div className="flex items-center">
-                            <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
-                                <CalendarIcon className="w-6 h-6" />
+                        {/* Summary Stats in Hero */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+                                <div className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Completed</div>
+                                <div className="text-2xl font-black text-white leading-none">
+                                    {stats.todayCompleted} <span className="text-xs font-medium text-white/50">/ {stats.totalClasses}</span>
+                                </div>
                             </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">Weekly Rate</p>
-                                <p className="text-2xl font-semibold text-gray-900">{stats.weekRate}%</p>
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+                                <div className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Weekly Rate</div>
+                                <div className="text-2xl font-black text-white leading-none">{stats.weekRate}%</div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div className="flex items-center">
-                            <div className="p-3 rounded-lg bg-orange-50 text-orange-600">
-                                <ExclamationCircleIcon className="w-6 h-6" />
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">Pending Actions</p>
-                                <p className="text-2xl font-semibold text-gray-900">{stats.totalClasses - stats.todayCompleted}</p>
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hidden sm:block">
+                                <div className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Pending</div>
+                                <div className="text-2xl font-black text-white leading-none">{stats.totalClasses - stats.todayCompleted}</div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Today's Classes */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-                        <h3 className="text-lg font-medium text-gray-900">Today's Schedule</h3>
+            <div className="max-w-7xl mx-auto">
+                {/* Schedule Pulse Board */}
+                <div className="mb-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-6 bg-blue-600 rounded-full"></div>
+                            <h2 className="text-2xl font-black text-gray-900 tracking-tight">Today's Schedule</h2>
+                        </div>
+                        <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                            {schedule.length} Classes Today
+                        </div>
                     </div>
 
                     {schedule.length > 0 ? (
-                        <div className="divide-y divide-gray-100">
-                            {schedule.map((cls) => (
-                                <div key={cls.section_id} className="p-6 transition-colors hover:bg-gray-50/50">
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                                        <div className="flex items-start">
-                                            <div className={`p-2 rounded-lg ${cls.status === 'Completed' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}`}>
-                                                <ClockIcon className="w-6 h-6" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {schedule.map((cls) => {
+                                const isCompleted = cls.status === 'Completed';
+                                return (
+                                    <div
+                                        key={cls.section_id}
+                                        className={`group relative bg-white rounded-3xl border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${isCompleted
+                                                ? 'border-green-100 hover:border-green-300'
+                                                : 'border-blue-50 hover:border-blue-200'
+                                            }`}
+                                    >
+                                        <div className="p-6">
+                                            {/* Status Badge */}
+                                            <div className="absolute top-6 right-6">
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isCompleted
+                                                        ? 'bg-green-50 text-green-600'
+                                                        : 'bg-amber-50 text-amber-600 animate-pulse'
+                                                    }`}>
+                                                    {isCompleted ? 'Completed' : 'Upcoming'}
+                                                </span>
                                             </div>
-                                            <div className="ml-4">
-                                                <div className="flex items-center space-x-2">
-                                                    <h4 className="text-lg font-semibold text-gray-900">{cls.subject_name}</h4>
-                                                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-xs font-medium text-gray-600">
-                                                        {cls.grade_name} - {cls.section_name}
-                                                    </span>
-                                                </div>
-                                                <div className="mt-1 flex items-center text-sm text-gray-500 space-x-4">
-                                                    <span>{cls.student_count} Students</span>
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${cls.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                                        }`}>
-                                                        {cls.status}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <Link
-                                            href={route('teacher.attendance.create', cls.section_id)}
-                                            className={`inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all ${cls.status === 'Completed'
-                                                    ? 'text-blue-700 bg-blue-100 hover:bg-blue-200 focus:ring-blue-500'
-                                                    : 'text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 shadow-blue-200'
-                                                }`}
-                                        >
-                                            {cls.status === 'Completed' ? 'Edit Attendance' : 'Mark Attendance'}
-                                        </Link>
+                                            {/* Class Info */}
+                                            <div className="mb-6">
+                                                <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">
+                                                    {cls.grade_name} &bull; {cls.section_name}
+                                                </div>
+                                                <h3 className="text-xl font-black text-gray-900 group-hover:text-blue-600 transition-colors">
+                                                    {cls.subject_name}
+                                                </h3>
+                                            </div>
+
+                                            <div className="flex items-center gap-6 mb-8">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Students</span>
+                                                    <span className="text-sm font-bold text-gray-700">{cls.student_count} Total</span>
+                                                </div>
+                                                <div className="w-px h-6 bg-gray-100 italic"></div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Period</span>
+                                                    <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
+                                                        <ClockIcon className="w-3.5 h-3.5 text-blue-500" />
+                                                        Daily
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <Link
+                                                href={route('teacher.attendance.create', cls.section_id)}
+                                                className={`flex items-center justify-center w-full py-4 rounded-xl font-black text-sm transition-all tracking-tight ${isCompleted
+                                                        ? 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200'
+                                                    }`}
+                                            >
+                                                {isCompleted ? 'View/Edit Records' : 'Mark Attendance'}
+                                                {!isCompleted && <ArrowRightIcon className="w-4 h-4 ml-2" />}
+                                            </Link>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
-                        <div className="p-12 text-center text-gray-500">
-                            <ClockIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                            <p className="text-lg font-medium">No classes scheduled for today.</p>
-                            <p className="text-sm">Enjoy your free day!</p>
+                        <div className="bg-white rounded-[32px] border-2 border-dashed border-gray-100 p-20 text-center">
+                            <div className="w-20 h-20 bg-blue-50 text-blue-300 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                                <ClockIcon className="w-10 h-10" />
+                            </div>
+                            <h3 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">All Clear Today!</h3>
+                            <p className="text-gray-500 font-medium max-w-sm mx-auto">
+                                No classes are scheduled for your attention today. You can relax or catch up on other tasks.
+                            </p>
                         </div>
                     )}
+                </div>
+
+                {/* Legend or Information */}
+                <div className="bg-amber-50 rounded-3xl p-6 border border-amber-100 flex items-start gap-4">
+                    <div className="p-2 bg-amber-500 text-white rounded-xl shadow-lg shadow-amber-200">
+                        <ExclamationCircleIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-black text-amber-900 uppercase tracking-tight mb-1">Attendance Reminder</h4>
+                        <p className="text-xs font-semibold text-amber-800/80 leading-relaxed">
+                            Daily attendance marking is crucial for student progress tracking. Please ensure all records are submitted by the end of each class period to maintain accurate reporting.
+                        </p>
+                    </div>
                 </div>
             </div>
         </TeacherLayout>
