@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
-    HomeIcon,
     UserCircleIcon,
     ArrowRightOnRectangleIcon,
     Bars3Icon,
@@ -9,8 +8,10 @@ import {
     KeyIcon,
     DocumentChartBarIcon,
     TrophyIcon,
-    CalendarDaysIcon
+    CalendarDaysIcon,
+    Squares2X2Icon
 } from '@heroicons/react/24/outline';
+import Footer from '@/Components/Footer';
 
 export default function StudentLayout({ children }) {
     const { auth } = usePage().props;
@@ -20,7 +21,7 @@ export default function StudentLayout({ children }) {
         {
             name: 'Dashboard',
             href: route('student.dashboard'),
-            icon: HomeIcon,
+            icon: Squares2X2Icon,
             current: route().current('student.dashboard'),
         },
         {
@@ -70,14 +71,8 @@ export default function StudentLayout({ children }) {
 
             {/* Larger Sidebar - Same Navy Gradient as Director */}
             <aside
-<<<<<<< HEAD
-                className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-                    sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                } director-sidebar`}
-=======
                 className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     } director-sidebar`}
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
             >
                 {/* Sidebar Header */}
                 <div className="p-4 border-b border-white border-opacity-20">
@@ -105,18 +100,10 @@ export default function StudentLayout({ children }) {
                             <Link
                                 key={item.name}
                                 href={item.href}
-<<<<<<< HEAD
-                                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                                    isActive
-                                        ? 'bg-white bg-opacity-20 text-white shadow-sm'
-                                        : 'text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
-                                }`}
-=======
                                 className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive
                                     ? 'bg-white bg-opacity-20 text-white shadow-sm'
                                     : 'text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
                                     }`}
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                             >
                                 <Icon className="h-5 w-5 flex-shrink-0" />
                                 <span className="truncate">{item.name}</span>
@@ -161,20 +148,6 @@ export default function StudentLayout({ children }) {
 
             {/* Main Content Area */}
             <div className="lg:pl-64 flex flex-col min-h-screen">
-<<<<<<< HEAD
-                {/* Ultra Compact Top Bar (Mobile) */}
-                <div className="sticky top-0 z-30 lg:hidden bg-white border-b border-gray-200 px-3 py-2 flex items-center justify-between shadow-sm">
-                    <button
-                        onClick={() => setSidebarOpen(true)}
-                        className="text-gray-600 hover:text-navy-900"
-                    >
-                        <Bars3Icon className="h-5 w-5" />
-                    </button>
-                    <h1 className="text-xs font-semibold text-navy-900">Student Portal</h1>
-                    <Link href={route('logout')} method="post" as="button" className="text-red-600">
-                        <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                    </Link>
-=======
                 {/* Premium Mobile Top Bar - Corrected Navy Gradient */}
                 <div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10">
                     <div className="flex-1 flex items-center">
@@ -200,13 +173,14 @@ export default function StudentLayout({ children }) {
                             <ArrowRightOnRectangleIcon className="h-5 w-5" />
                         </button>
                     </div>
->>>>>>> c3c2e32 (Final sync: Integrated all premium Teacher/Parent portal components and configurations)
                 </div>
 
-                {/* Ultra Compact Page Content */}
+                {/* Page Content */}
                 <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
                     {children}
                 </main>
+
+                <Footer />
             </div>
         </div>
     );
