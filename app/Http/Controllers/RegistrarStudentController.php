@@ -19,16 +19,25 @@ class RegistrarStudentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Student::with(['user', 'grade', 'section', 'parents.user']);
+        $query = Student::query()
+            ->select(['id', 'user_id', 'grade_id', 'section_id', 'student_id', 'gender'])
+            ->with([
+                'user:id,name,username,email',
+                'grade:id,name',
+                'section:id,name',
+                'parents.user:id,name'
+            ]);
 
         // Search functionality
-        if ($request->has('search')) {
+        if ($request->has('search') && $request->input('search')) {
             $search = $request->input('search');
-            $query->whereHas('user', function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            })->orWhere('student_id', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('username', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                })->orWhere('student_id', 'like', "%{$search}%");
+            });
         }
 
         // Filter by grade
@@ -36,7 +45,9 @@ class RegistrarStudentController extends Controller
             $query->where('grade_id', $request->grade_id);
         }
 
-        $students = $query->orderBy('student_id')->paginate(15)->withQueryString();
+        $students = $query->orderBy('student_id')
+            ->paginate(15)
+            ->withQueryString();
 
         // Get grades for filter dropdown
         $grades = Grade::select('id', 'name')->orderBy('level')->get();
@@ -61,10 +72,10 @@ class RegistrarStudentController extends Controller
             DB::transaction(function () use ($student) {
                 // Remove parent-student relationships
                 $student->parents()->detach();
-                
+
                 // Delete student record
                 $student->delete();
-                
+
                 // Delete user account
                 $student->user->delete();
             });
@@ -97,7 +108,7 @@ class RegistrarStudentController extends Controller
                 function ($attribute, $value, $fail) use ($request) {
                     $grade = Grade::find($request->grade_id);
                     $isGrade11or12 = $grade && (str_contains($grade->name, '11') || str_contains($grade->name, '12'));
-                    
+
                     if ($isGrade11or12 && !$value) {
                         $fail('Stream selection is required for Grade 11 and 12 students.');
                     }
@@ -228,15 +239,15 @@ class RegistrarStudentController extends Controller
         // 2. Prefer gender-specific sections (Male/Female) over Mixed
         // 3. Check capacity limits
         // 4. Randomly select from available sections
-        
+
         // Get all sections for this grade with current student count
         $query = Section::where('grade_id', $gradeId);
-        
+
         // For Grade 11/12, filter by stream
         if ($streamId) {
             $query->where('stream_id', $streamId);
         }
-        
+
         $sections = $query->withCount('students')->get();
 
         if ($sections->isEmpty()) {
@@ -244,7 +255,7 @@ class RegistrarStudentController extends Controller
         }
 
         // Priority 1: Gender-specific sections (Male/Female) that match student gender
-        $genderSpecificSections = $sections->filter(function($section) use ($gender) {
+        $genderSpecificSections = $sections->filter(function ($section) use ($gender) {
             return $section->gender === $gender && $section->students_count < $section->capacity;
         });
 
@@ -253,7 +264,7 @@ class RegistrarStudentController extends Controller
         }
 
         // Priority 2: Mixed sections with available capacity
-        $mixedSections = $sections->filter(function($section) {
+        $mixedSections = $sections->filter(function ($section) {
             return $section->gender === 'Mixed' && $section->students_count < $section->capacity;
         });
 
