@@ -17,21 +17,36 @@ class TeacherAssessmentController extends Controller
     public function index(Request $request)
     {
         $teacher = Teacher::where('user_id', Auth::id())->first();
-        
+
         if (!$teacher) {
             return Inertia::render('Teacher/Assessments/Index', [
                 'assessments' => [],
                 'error' => 'Teacher profile not found. Please contact the administrator.'
             ]);
         }
-        
+
         // Get current academic year and open semester
         $academicYear = \App\Models\AcademicYear::current();
-        $currentSemester = $academicYear ? $academicYear->getCurrentSemester() : 1;
+        if (!$academicYear) {
+            return Inertia::render('Teacher/Assessments/Index', [
+                'assessments' => [],
+                'error' => 'No active academic year found.'
+            ]);
+        }
+        $currentSemester = $academicYear->getCurrentSemester() ?? 1;
 
         // Get all assessments created by this teacher
         $assessmentsQuery = Assessment::with(['grade', 'section', 'subject', 'assessmentType'])
             ->where('teacher_id', $teacher->id);
+
+        // Apply filters if provided
+        if ($request->filled('grade_id')) {
+            $assessmentsQuery->where('grade_id', $request->grade_id);
+        }
+
+        if ($request->filled('section_id')) {
+            $assessmentsQuery->where('section_id', $request->section_id);
+        }
 
         $assessments = $assessmentsQuery->orderBy('due_date', 'desc')
             ->orderBy('created_at', 'desc')
@@ -41,11 +56,12 @@ class TeacherAssessmentController extends Controller
         $filteredAssessments = $assessments->filter(function ($assessment) {
             return \App\Models\SemesterStatus::isOpen($assessment->grade_id, $assessment->semester);
         })->values();
-        
+
         return Inertia::render('Teacher/Assessments/Index', [
             'assessments' => $filteredAssessments,
             'all_assessments_count' => $assessments->count(),
             'current_semester' => $currentSemester,
+            'filters' => $request->only(['grade_id', 'section_id']),
         ]);
     }
 
@@ -55,19 +71,19 @@ class TeacherAssessmentController extends Controller
     public function create()
     {
         $teacher = Teacher::where('user_id', Auth::id())->first();
-        
+
         if (!$teacher) {
             return redirect()->route('teacher.dashboard')
                 ->with('error', 'Teacher profile not found. Please contact the administrator.');
         }
-        
+
         $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
-        
+
         if (!$academicYear) {
             return redirect()->route('teacher.dashboard')
                 ->with('error', 'No active academic year found. Please contact the administrator.');
         }
-        
+
         // Get fixed grades 9, 10, 11, 12 regardless of assignments
         $grades = \App\Models\Grade::whereIn('level', [9, 10, 11, 12])
             ->orderBy('level')
@@ -80,12 +96,12 @@ class TeacherAssessmentController extends Controller
                     ->where('academic_year_id', $academicYear->id)
                     ->get()
                     ->map(function ($assignment) {
-                        return [
-                            'id' => $assignment->section_id,
-                            'name' => $assignment->section->name,
-                            'stream_name' => $assignment->section->stream->name ?? null,
-                        ];
-                    })
+                    return [
+                        'id' => $assignment->section_id,
+                        'name' => $assignment->section->name,
+                        'stream_name' => $assignment->section->stream->name ?? null,
+                    ];
+                })
                     ->unique('id')
                     ->values();
 
@@ -96,7 +112,7 @@ class TeacherAssessmentController extends Controller
                     'sections' => $sections,
                 ];
             });
-            
+
         return Inertia::render('Teacher/Assessments/CreateSimple', [
             'grades' => $grades,
             'academicYear' => $academicYear,
@@ -112,10 +128,10 @@ class TeacherAssessmentController extends Controller
         $request->validate([
             'grade_id' => 'required|exists:grades,id',
         ]);
-        
+
         $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
         $gradeId = $request->grade_id;
-        
+
         // Get subjects this teacher teaches in this grade (across all sections)
         $subjects = \App\Models\TeacherAssignment::with('subject')
             ->where('teacher_id', $teacher->id)
@@ -123,7 +139,7 @@ class TeacherAssessmentController extends Controller
             ->get()
             ->pluck('subject')
             ->unique('id')
-            ->map(function($subject) {
+            ->map(function ($subject) {
                 return [
                     'id' => $subject->id,
                     'name' => $subject->name,
@@ -131,7 +147,7 @@ class TeacherAssessmentController extends Controller
                 ];
             })
             ->values();
-            
+
         return response()->json([
             'subjects' => $subjects
         ]);
@@ -145,10 +161,10 @@ class TeacherAssessmentController extends Controller
         $request->validate([
             'grade_id' => 'required|exists:grades,id',
         ]);
-        
+
         $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
         $gradeId = $request->grade_id;
-        
+
         // Get subjects this teacher teaches in this grade (across all sections)
         $subjects = \App\Models\TeacherAssignment::with('subject')
             ->where('teacher_id', $teacher->id)
@@ -156,7 +172,7 @@ class TeacherAssessmentController extends Controller
             ->get()
             ->pluck('subject')
             ->unique('id')
-            ->map(function($subject) {
+            ->map(function ($subject) {
                 return [
                     'id' => $subject->id,
                     'name' => $subject->name,
@@ -164,7 +180,7 @@ class TeacherAssessmentController extends Controller
                 ];
             })
             ->values();
-            
+
         return response()->json($subjects);
     }
 
@@ -177,7 +193,7 @@ class TeacherAssessmentController extends Controller
             ->where('section_id', $request->section_id)
             ->where('subject_id', $request->subject_id)
             ->get();
-            
+
         return response()->json($types);
     }
 
@@ -194,16 +210,16 @@ class TeacherAssessmentController extends Controller
         $types = \App\Models\AssessmentType::where('grade_id', $request->grade_id)
             ->where('subject_id', $request->subject_id)
             ->whereNull('section_id') // Only get types applicable to the whole grade/class
-            ->orWhere(function($q) use ($request) {
+            ->orWhere(function ($q) use ($request) {
                 // Also get global types if any (where grade, subject, section are null)
                 $q->whereNull('grade_id')->whereNull('subject_id')->whereNull('section_id');
             })
             // Or types that match grade but no subject/section
-            ->orWhere(function($q) use ($request) {
+            ->orWhere(function ($q) use ($request) {
                 $q->where('grade_id', $request->grade_id)->whereNull('subject_id')->whereNull('section_id');
             })
             ->get();
-            
+
         return response()->json($types);
     }
 
@@ -214,7 +230,7 @@ class TeacherAssessmentController extends Controller
     {
         $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
         $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
-        
+
         $validated = $request->validate([
             'grade_id' => 'required|exists:grades,id',
             'subject_id' => 'required|exists:subjects,id',
@@ -223,28 +239,28 @@ class TeacherAssessmentController extends Controller
             'assessments.*.total_marks' => 'required|numeric|min:0',
             'assessments.*.assessment_type_id' => 'nullable|exists:assessment_types,id', // Added validation
         ]);
-        
+
         // Get all sections in this grade that the teacher teaches this subject
         $sections = \App\Models\TeacherAssignment::where('teacher_id', $teacher->id)
             ->where('grade_id', $validated['grade_id'])
             ->where('subject_id', $validated['subject_id'])
             ->distinct()
             ->pluck('section_id');
-            
+
         if ($sections->isEmpty()) {
             return back()->withErrors(['error' => 'You are not assigned to teach this subject in this grade.']);
         }
-        
+
         // Create assessments for each section
         $totalCreated = 0;
-        
+
         foreach ($validated['assessments'] as $assessmentData) {
             // Determine weight - use type default if not specified, else 0 (teacher can update later)
             $weight = 0;
             if (!empty($assessmentData['assessment_type_id'])) {
                 $type = \App\Models\AssessmentType::find($assessmentData['assessment_type_id']);
                 if ($type) {
-                     $weight = $type->weight ?? $type->weight_percentage ?? 0;
+                    $weight = $type->weight ?? $type->weight_percentage ?? 0;
                 }
             }
 
@@ -267,7 +283,7 @@ class TeacherAssessmentController extends Controller
                 $totalCreated++;
             }
         }
-        
+
         return redirect()->route('teacher.assessments-simple.index')
             ->with('success', count($validated['assessments']) . " assessment(s) created successfully for " . $sections->count() . " section(s)!");
     }
@@ -278,17 +294,17 @@ class TeacherAssessmentController extends Controller
     public function update(Request $request, Assessment $assessment)
     {
         $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
-        
+
         // Verify teacher owns this assessment
         if ($assessment->teacher_id !== $teacher->id) {
             abort(403);
         }
-        
+
         // Cannot edit locked assessments
         if ($assessment->status === 'locked') {
             return redirect()->back()->withErrors(['error' => 'Cannot edit locked assessment.']);
         }
-        
+
         $validated = $request->validate([
             'name' => 'string|max:255',
             'weight_percentage' => 'numeric|min:0|max:100',
@@ -297,7 +313,7 @@ class TeacherAssessmentController extends Controller
             'description' => 'nullable|string',
             'status' => 'in:draft,published,locked',
         ]);
-        
+
         $assessment->update($validated);
         return redirect()->back()->with('success', 'Assessment updated successfully.');
     }
@@ -308,18 +324,18 @@ class TeacherAssessmentController extends Controller
     public function destroy(Assessment $assessment)
     {
         $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
-        
+
         if ($assessment->teacher_id !== $teacher->id) {
             abort(403);
         }
-        
+
         // Cannot delete if marks exist
         if ($assessment->marks()->exists()) {
             return redirect()->back()->withErrors(['error' => 'Cannot delete assessment with existing marks.']);
         }
-        
+
         $assessment->delete();
-        
+
         return redirect()->back()->with('success', 'Assessment deleted successfully.');
     }
 }
