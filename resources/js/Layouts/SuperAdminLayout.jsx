@@ -1,3 +1,7 @@
+/**
+ * Super Admin Layout Component
+ * High-level system management layout for Super Admin users.
+ */
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
