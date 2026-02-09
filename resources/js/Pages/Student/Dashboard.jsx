@@ -1,3 +1,7 @@
+/**
+ * Student Dashboard Page
+ * Main landing page for students with academic summary and charts.
+ */
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import StudentLayout from '@/Layouts/StudentLayout';
