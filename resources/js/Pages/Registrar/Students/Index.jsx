@@ -1,28 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import RegistrarLayout from '@/Layouts/RegistrarLayout';
 import { Head, useForm, Link, router, usePage } from '@inertiajs/react';
 import { ClipboardDocumentIcon, EyeIcon, EyeSlashIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { debounce } from 'lodash';
 
 export default function Index({ students, grades, filters }) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [selectedGrade, setSelectedGrade] = useState(filters.grade_id || '');
     const [showCredentials, setShowCredentials] = useState({});
+    const [isSearching, setIsSearching] = useState(false);
     const { flash } = usePage().props;
+
+    // Debounced search function
+    const performSearch = useCallback(
+        debounce((query, gradeId) => {
+            router.get(route('registrar.students.index'), {
+                search: query,
+                grade_id: gradeId
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+                onFinish: () => setIsSearching(false)
+            });
+        }, 500),
+        []
+    );
+
+    // Effect to trigger search when searchTerm or selectedGrade changes
+    useEffect(() => {
+        if (searchTerm !== (filters.search || '') || selectedGrade !== (filters.grade_id || '')) {
+            setIsSearching(true);
+            performSearch(searchTerm, selectedGrade);
+        }
+    }, [searchTerm, selectedGrade]);
 
     const handleSearch = (e) => {
         e.preventDefault();
-        router.get(route('registrar.students.index'), {
-            search: searchTerm,
-            grade_id: selectedGrade
-        }, { preserveState: true });
+        performSearch.flush(); // Execute search immediately on enter
     };
 
     const handleGradeFilter = (gradeId) => {
         setSelectedGrade(gradeId);
-        router.get(route('registrar.students.index'), {
-            search: searchTerm,
-            grade_id: gradeId
-        }, { preserveState: true });
     };
 
     const toggleCredentials = (studentId) => {
@@ -94,14 +112,19 @@ export default function Index({ students, grades, filters }) {
                             <span className="mr-2">🎓</span> STUDENT MANAGEMENT
                         </h2>
                         <div className="mt-4 md:mt-0 flex items-center space-x-3 w-full md:w-auto">
-                            <form onSubmit={handleSearch} className="flex flex-1 md:flex-initial">
+                            <form onSubmit={handleSearch} className="flex flex-1 md:flex-initial relative">
                                 <input
                                     type="text"
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
-                                    className="w-full md:w-64 border-gray-300 rounded-l-md shadow-sm focus:border-[#228B22] focus:ring-[#228B22] text-sm"
+                                    className="w-full md:w-64 border-gray-300 rounded-l-md shadow-sm focus:border-[#228B22] focus:ring-[#228B22] text-sm pr-10"
                                     placeholder="Search Name, ID, Username..."
                                 />
+                                {isSearching && (
+                                    <div className="absolute right-12 top-1/2 -translate-y-1/2">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#228B22] border-t-transparent"></div>
+                                    </div>
+                                )}
                                 <button type="submit" className="bg-[#1E40AF] text-white px-4 py-2 rounded-r-md hover:bg-blue-800 transition-colors">
                                     🔍
                                 </button>
