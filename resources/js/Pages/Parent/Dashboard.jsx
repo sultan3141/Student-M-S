@@ -1,40 +1,19 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import ParentLayout from '@/Layouts/ParentLayout';
-import { Head, router, Link } from '@inertiajs/react';
-import StudentCard from '@/Components/StudentCard';
+import { Head, Link } from '@inertiajs/react';
+import {
+    AcademicCapIcon,
+    CalendarDaysIcon,
+    BanknotesIcon,
+    DocumentTextIcon,
+    UserGroupIcon,
+    ArrowRightIcon,
+    ClockIcon,
+    ExclamationCircleIcon
+} from '@heroicons/react/24/outline';
 
-export default function Dashboard({ students, selectedStudentId }) {
-    // Use selectedStudentId from URL if available, otherwise default to first student
-    const initialStudent = useMemo(() => {
-        return selectedStudentId
-            ? students?.find(s => s.id === parseInt(selectedStudentId))
-            : students?.[0];
-    }, [selectedStudentId, students]);
-
-    const [selectedStudent, setSelectedStudent] = useState(initialStudent || null);
-
-    // Update selected student when it changes
-    useEffect(() => {
-        if (selectedStudentId && students) {
-            const student = students.find(s => s.id === parseInt(selectedStudentId));
-            if (student) {
-                setSelectedStudent(student);
-            }
-        }
-    }, [selectedStudentId, students]);
-
-    // Handle student selection - update URL to persist selection
-    const handleStudentSelect = useCallback((student) => {
-        setSelectedStudent(student);
-        // Update URL with selected student ID
-        router.get(route('parent.dashboard', { student: student.id }), {}, {
-            preserveState: true,
-            preserveScroll: true,
-            only: [], // Don't reload any data, just update URL
-        });
-    }, []);
-
-    // Mock payment data - will come from backend
+export default function Dashboard({ parentName, selectedStudent, attendance }) {
+    // Mock payment data - in production this would come from controller
     const paymentInfo = useMemo(() => ({
         status: 'Partial',
         outstandingBalance: 5000,
@@ -45,183 +24,190 @@ export default function Dashboard({ students, selectedStudentId }) {
             <Head title="Parent Dashboard" />
 
             <div className="space-y-6">
-                {/* Header */}
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Parent Dashboard</h1>
-                    <p className="mt-1 text-sm text-gray-500">Welcome back! Select a child to view their information.</p>
-                </div>
-
-                {/* My Children Section */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">My Children</h2>
-                    {students && students.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {students.map((student) => (
-                                <StudentCard
-                                    key={student.id}
-                                    student={student}
-                                    isSelected={selectedStudent?.id === student.id}
-                                    onClick={() => handleStudentSelect(student)}
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-8">
-                            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                            <p className="mt-2 text-sm text-gray-500">No children linked to your account</p>
-                            <p className="mt-1 text-xs text-gray-400">Please contact the school registrar to link your children</p>
-                        </div>
-                    )}
-                </div>
-
-                {selectedStudent && (
-                    <>
-                        {/* Student Information and Payment Information Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Student Information */}
-                            <div className="bg-white shadow rounded-lg p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Student Information</h3>
-
-                                <div className="space-y-3">
-                                    <div className="flex justify-between border-b border-gray-200 pb-2">
-                                        <span className="text-sm font-medium text-gray-500">Student ID:</span>
-                                        <span className="text-sm text-gray-900 font-semibold">{selectedStudent.student_id}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-gray-200 pb-2">
-                                        <span className="text-sm font-medium text-gray-500">Full Name:</span>
-                                        <span className="text-sm text-gray-900">{selectedStudent.user?.name || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-gray-200 pb-2">
-                                        <span className="text-sm font-medium text-gray-500">Grade:</span>
-                                        <span className="text-sm text-gray-900">{selectedStudent.grade?.name || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-gray-200 pb-2">
-                                        <span className="text-sm font-medium text-gray-500">Section:</span>
-                                        <span className="text-sm text-gray-900">{selectedStudent.section?.name || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-gray-500">Gender:</span>
-                                        <span className="text-sm text-gray-900">{selectedStudent.gender || 'N/A'}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Payment Information */}
-                            <div className="bg-white shadow rounded-lg p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Information</h3>
-
-                                <div className="space-y-3">
-                                    <div className="flex justify-between border-b border-gray-200 pb-2">
-                                        <span className="text-sm font-medium text-gray-500">Payment Status:</span>
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            {paymentInfo.status}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-gray-200 pb-2">
-                                        <span className="text-sm font-medium text-gray-500">Outstanding Balance:</span>
-                                        <span className="text-sm font-semibold text-red-600">{paymentInfo.outstandingBalance.toLocaleString()} Birr</span>
-                                    </div>
-                                </div>
-
-                                <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-md p-3">
-                                    <p className="text-sm text-yellow-800">
-                                        Please visit the school registrar to make a payment.
+                {/* Modern Header Section */}
+                <div className="bg-gradient-to-r from-navy-900 to-indigo-900 rounded-2xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                            <p className="text-indigo-200 text-sm font-medium mb-1">Welcome back,</p>
+                            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+                                {parentName}
+                            </h1>
+                            {selectedStudent ? (
+                                <div className="mt-3 flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20 w-fit">
+                                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                                    <p className="text-xs font-semibold text-indigo-100">
+                                        Managing: {selectedStudent.user?.name}
                                     </p>
                                 </div>
-                            </div>
-
-                            {/* Registration Status */}
-                            <div className="bg-white shadow rounded-lg p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Annual Registration</h3>
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium text-gray-500">Status:</span>
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${selectedStudent.current_registration
-                                                ? (selectedStudent.current_registration.status === 'Approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800')
-                                                : 'bg-gray-100 text-gray-800'
-                                            }`}>
-                                            {selectedStudent.current_registration?.status || 'Not Registered'}
-                                        </span>
-                                    </div>
-
-                                    {!selectedStudent.current_registration && (
-                                        <div className="mt-4">
-                                            <Link
-                                                href={route('parent.registration.create', selectedStudent.id)}
-                                                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                            >
-                                                Register for Next Year
-                                            </Link>
-                                        </div>
-                                    )}
-
-                                    {selectedStudent.current_registration && (
-                                        <p className="text-xs text-gray-500 mt-2">
-                                            Application submitted on {new Date(selectedStudent.current_registration.registration_date).toLocaleDateString()}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Reports Card */}
-                        <div className="bg-white shadow rounded-lg p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Reports</h3>
-
-                            {selectedStudent.reports && selectedStudent.reports.length > 0 ? (
-                                <div className="space-y-3">
-                                    {selectedStudent.reports.map((report) => {
-                                        // Determine badge color based on severity and type
-                                        const getBadgeColor = (severity, type) => {
-                                            if (severity === 'high') return 'bg-red-100 text-red-800';
-                                            if (severity === 'medium') return 'bg-yellow-100 text-yellow-800';
-                                            if (type === 'general') return 'bg-green-100 text-green-800';
-                                            return 'bg-blue-100 text-blue-800';
-                                        };
-
-                                        const formatDate = (dateString) => {
-                                            const date = new Date(dateString);
-                                            return date.toLocaleDateString('en-US', {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                year: 'numeric'
-                                            });
-                                        };
-
-                                        return (
-                                            <div key={report.id} className="border-l-4 border-indigo-500 bg-gray-50 p-3 rounded-r">
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getBadgeColor(report.severity, report.report_type)}`}>
-                                                        {report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1)}
-                                                    </span>
-                                                    <span className="text-xs text-gray-500">
-                                                        {formatDate(report.reported_at)}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-gray-800 mb-1">
-                                                    {report.message}
-                                                </p>
-                                                {report.reported_by && (
-                                                    <p className="text-xs text-gray-500">
-                                                        — {report.reported_by}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
                             ) : (
-                                <div className="text-center py-8">
-                                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    <p className="mt-2 text-sm text-gray-500">No reports available</p>
+                                <div className="mt-3 flex items-center gap-2 bg-amber-500/20 px-3 py-1.5 rounded-full backdrop-blur-sm border border-amber-500/30 w-fit">
+                                    <ExclamationCircleIcon className="h-4 w-4 text-amber-400" />
+                                    <p className="text-xs font-semibold text-amber-100">
+                                        No child selected.
+                                    </p>
                                 </div>
                             )}
                         </div>
-                    </>
+                        <Link
+                            href={route('parent.children')}
+                            className="px-5 py-2.5 bg-white text-navy-900 rounded-xl font-bold text-sm shadow-lg hover:shadow-indigo-500/20 transition-all flex items-center gap-2 w-fit"
+                        >
+                            <UserGroupIcon className="h-4 w-4" />
+                            Switch Child
+                        </Link>
+                    </div>
+                </div>
+
+                {selectedStudent ? (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        {/* Summary Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                        <AcademicCapIcon className="h-5 w-5" />
+                                    </div>
+                                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</span>
+                                </div>
+                                <div className="text-xl font-bold text-gray-900">{selectedStudent.grade?.name || 'N/A'}</div>
+                                <div className="text-xs text-gray-400 mt-1">Section {selectedStudent.section?.name || 'N/A'}</div>
+                            </div>
+
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                                        <ClockIcon className="h-5 w-5" />
+                                    </div>
+                                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance</span>
+                                </div>
+                                <div className="text-xl font-bold text-gray-900">{attendance?.rate || '100'}%</div>
+                                <div className="text-xs text-gerald-500 mt-1">{attendance?.present || 0} Days Present</div>
+                            </div>
+
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                                        <CalendarDaysIcon className="h-5 w-5" />
+                                    </div>
+                                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Registration</span>
+                                </div>
+                                <div className={`text-xl font-bold ${selectedStudent.current_registration?.status === 'Approved' ? 'text-green-600' : 'text-amber-600'}`}>
+                                    {selectedStudent.current_registration?.status || 'Pending'}
+                                </div>
+                                <div className="text-xs text-gray-400 mt-1">Academic Year 2024</div>
+                            </div>
+
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                                        <BanknotesIcon className="h-5 w-5" />
+                                    </div>
+                                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Fees</span>
+                                </div>
+                                <div className="text-xl font-bold text-gray-900">{paymentInfo.outstandingBalance.toLocaleString()}</div>
+                                <div className="text-xs text-amber-600 mt-1">{paymentInfo.status} Payment</div>
+                            </div>
+                        </div>
+
+                        {/* Reports Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-2 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                                <div className="p-5 border-b border-gray-50 flex items-center justify-between">
+                                    <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                                        <DocumentTextIcon className="h-5 w-5 text-indigo-500" />
+                                        Recent Reports
+                                    </h3>
+                                    <Link href={route('parent.academic.semesters', selectedStudent.id)} className="text-xs font-bold text-indigo-600 hover:text-indigo-700">
+                                        View All
+                                    </Link>
+                                </div>
+                                <div className="p-5">
+                                    {selectedStudent.reports && selectedStudent.reports.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {selectedStudent.reports.map((report) => (
+                                                <div key={report.id} className="flex gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition border border-transparent hover:border-gray-200">
+                                                    <div className={`p-2 rounded-lg h-fit ${report.report_type === 'disciplinary' ? 'bg-red-100 text-red-600' :
+                                                            report.report_type === 'academic' ? 'bg-blue-100 text-blue-600' :
+                                                                'bg-gray-100 text-gray-600'
+                                                        }`}>
+                                                        <DocumentTextIcon className="h-5 w-5" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <span className="text-xs font-extrabold uppercase tracking-wide text-gray-400">
+                                                                {report.report_type} Report
+                                                            </span>
+                                                            <span className="text-[10px] font-medium text-gray-400">
+                                                                {new Date(report.reported_at).toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                                                            {report.message}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-10">
+                                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <DocumentTextIcon className="h-8 w-8 text-gray-200" />
+                                            </div>
+                                            <p className="text-sm text-gray-500">No recent reports found for {selectedStudent.user?.name}.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Quick Actions / Info */}
+                            <div className="space-y-6">
+                                <div className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-200">
+                                    <h3 className="font-bold text-lg mb-2">Need Support?</h3>
+                                    <p className="text-indigo-100 text-xs leading-relaxed mb-6 opacity-80">
+                                        Have questions about your child's progress or school events? Our administration is here to help.
+                                    </p>
+                                    <Link
+                                        href={route('parent.school-contact')}
+                                        className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2"
+                                    >
+                                        Contact School
+                                    </Link>
+                                </div>
+
+                                <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-5">
+                                    <h4 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wider">Quick Access</h4>
+                                    <div className="space-y-3">
+                                        <Link href={route('parent.student.attendance', selectedStudent.id)} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-blue-700 transition group">
+                                            <span className="text-xs font-bold">Attendance History</span>
+                                            <ArrowRightIcon className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                                        </Link>
+                                        <Link href={route('parent.student.payments', selectedStudent.id)} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-amber-50 hover:text-amber-700 transition group">
+                                            <span className="text-xs font-bold">Billing & Payments</span>
+                                            <ArrowRightIcon className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-12 text-center animate-in fade-in duration-1000">
+                        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <UserGroupIcon className="h-10 w-10 text-gray-300" />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">No Student Selected</h2>
+                        <p className="text-gray-500 text-sm max-w-sm mx-auto mb-8 leading-relaxed">
+                            Please select a child from your account to view their specific academic achievements and real-time attendance stats.
+                        </p>
+                        <Link
+                            href={route('parent.children')}
+                            className="inline-flex items-center gap-2 px-8 py-3 bg-navy-900 text-white rounded-xl font-bold hover:bg-navy-800 transition shadow-lg"
+                        >
+                            Select a Child
+                            <ArrowRightIcon className="h-4 w-4" />
+                        </Link>
+                    </div>
                 )}
             </div>
         </ParentLayout>

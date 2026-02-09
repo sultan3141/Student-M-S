@@ -175,7 +175,7 @@ class StudentController extends Controller
             // Check if student has any marks for this semester (results available)
             $hasMarks = \App\Models\Mark::where('student_id', $student->id)
                 ->where('academic_year_id', $academicYear->id)
-                ->where('semester', $status->semester)
+                ->where('semester', (string)$status->semester)
                 ->exists();
             
             return [

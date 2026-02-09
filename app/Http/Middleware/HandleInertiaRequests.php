@@ -45,6 +45,24 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
                 'credentials' => fn () => $request->session()->get('credentials'),
             ],
+            'selectedStudentId' => function () use ($request) {
+                $id = $request->session()->get('selected_student_id');
+                if (!$id && $request->user() && $request->user()->isParent() && $request->user()->parentProfile) {
+                    $id = $request->user()->parentProfile->students()->first()?->id;
+                    if ($id) {
+                        $request->session()->put('selected_student_id', $id);
+                    }
+                }
+                return $id;
+            },
+            'students' => function () use ($request) {
+                if ($request->user() && $request->user()->isParent() && $request->user()->parentProfile) {
+                    return $request->user()->parentProfile->students()
+                        ->with(['user:id,name', 'grade:id,name', 'section:id,name'])
+                        ->get();
+                }
+                return null;
+            },
         ];
     }
 }

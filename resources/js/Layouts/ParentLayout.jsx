@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
+    HomeIcon,
     UserGroupIcon,
     CurrencyDollarIcon,
     AcademicCapIcon,
@@ -10,227 +11,169 @@ import {
     DocumentChartBarIcon,
     TrophyIcon,
     Bars3Icon,
-    XMarkIcon
+    XMarkIcon,
+    ClipboardDocumentCheckIcon
 } from '@heroicons/react/24/outline';
 import ChangePasswordModal from '@/Components/ChangePasswordModal';
-import { useEffect } from 'react';
 
 export default function ParentLayout({ children }) {
     const { auth, students, student: pageStudent, selectedStudentId } = usePage().props;
-    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
     // Determine active student ID from multiple sources
-    const activeStudentId = selectedStudentId || pageStudent?.id || students?.[0]?.id;
+    // Page-specific student takes priority, then globally selected, then first child
+    const activeStudentId = pageStudent?.id || selectedStudentId || students?.[0]?.id;
 
     const navigation = [
         {
-            name: 'My Children',
-            href: route('parent.dashboard', { student: activeStudentId }),
-            icon: UserGroupIcon,
-            current: route().current('parent.dashboard')
+            name: 'Dashboard',
+            href: route('parent.dashboard'),
+            icon: HomeIcon,
         },
         {
-            name: 'Semester Academic Record',
+            name: 'My Children',
+            href: route('parent.children'),
+            icon: UserGroupIcon,
+        },
+        {
+            name: 'Semester Records',
             href: route('parent.academic.semesters', activeStudentId),
             icon: DocumentChartBarIcon,
-            description: 'Subject marks & Rank',
-            current: route().current('parent.academic.semesters') || route().current('parent.academic.semester.show')
         },
         {
-            name: 'Academic Year Record',
+            name: 'Academic Year',
             href: route('parent.academic.year.current', activeStudentId),
             icon: TrophyIcon,
-            description: 'Yearly average & Final Rank',
-            current: route().current('parent.academic.year.current') || route().current('parent.academic.year.show')
         },
         {
-            name: 'Payment Info',
+            name: 'Attendance',
+            href: route('parent.student.attendance', activeStudentId),
+            icon: ClipboardDocumentCheckIcon,
+        },
+        {
+            name: 'Payments',
             href: route('parent.student.payments', activeStudentId),
             icon: CurrencyDollarIcon,
-            current: route().current('parent.student.payments')
         },
         {
             name: 'School Contact',
             href: route('parent.school-contact'),
             icon: PhoneIcon,
-            current: route().current('parent.school-contact')
         },
     ];
 
-    function classNames(...classes) {
-        return classes.filter(Boolean).join(' ');
-    }
+    const currentPath = window.location.pathname;
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans text-neutral-gray">
-            {/* Desktop Sidebar */}
-            <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
-                <div className="flex flex-col flex-grow border-r border-gray-200 pt-5 pb-4 overflow-y-auto" style={{ backgroundColor: '#3730a3' }}>
-                    <div className="flex flex-col flex-shrink-0 px-4 mb-8">
-                        <span className="text-xl font-bold text-white">School Portal</span>
-                        <span className="text-sm text-indigo-200 mt-1">{auth.user.name}</span>
-                    </div>
-
-                    <div className="flex-grow flex flex-col">
-                        <nav className="flex-1 px-2 space-y-1">
-                            {navigation.map((item) => (
-                                <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    className={classNames(
-                                        item.current ? 'bg-indigo-900 text-white border-l-4 border-indigo-400' : 'text-indigo-100 hover:bg-indigo-700',
-                                        "group flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-200"
-                                    )}
-                                    onMouseEnter={() => {
-                                        // Prefetch on hover for instant navigation
-                                        if (!item.current) {
-                                            window.dispatchEvent(new CustomEvent('inertia:prefetch', { detail: { url: item.href } }));
-                                        }
-                                    }}
-                                >
-                                    <item.icon
-                                        className={classNames(
-                                            item.current ? 'text-white' : 'text-indigo-300 group-hover:text-white',
-                                            "mr-3 flex-shrink-0 h-5 w-5 transition-colors"
-                                        )}
-                                        aria-hidden="true"
-                                    />
-                                    <div className="flex flex-col">
-                                        <span>{item.name}</span>
-                                        {item.description && <span className={classNames(item.current ? 'text-indigo-200' : 'text-indigo-300', "text-[10px] font-normal")}>{item.description}</span>}
-                                    </div>
-                                </Link>
-                            ))}
-                        </nav>
-                    </div>
-
-                    <div className="flex-shrink-0 px-2 space-y-1 border-t border-indigo-700 pt-4">
-                        <button
-                            onClick={() => setShowPasswordModal(true)}
-                            className="w-full group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
-                        >
-                            <LockClosedIcon className="mr-3 flex-shrink-0 h-5 w-5" aria-hidden="true" />
-                            Change Password
-                        </button>
-                        <Link
-                            href={route('logout')}
-                            method="post"
-                            as="button"
-                            className="w-full group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
-                        >
-                            <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-5 w-5" aria-hidden="true" />
-                            Logout
-                        </Link>
-                    </div>
-                </div>
-            </div>
-
-            {/* Mobile Sidebar Overlay */}
-            {showingNavigationDropdown && (
-                <>
-                    {/* Backdrop */}
-                    <div
-                        className="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 md:hidden"
-                        onClick={() => setShowingNavigationDropdown(false)}
-                    ></div>
-
-                    {/* Mobile Sidebar */}
-                    <div className="fixed inset-y-0 left-0 flex flex-col w-64 z-50 md:hidden">
-                        <div className="flex flex-col flex-grow border-r border-gray-200 pt-5 pb-4 overflow-y-auto" style={{ backgroundColor: '#3730a3' }}>
-                            {/* Header with Close Button */}
-                            <div className="flex items-center justify-between px-4 mb-8">
-                                <div className="flex flex-col">
-                                    <span className="text-xl font-bold text-white">School Portal</span>
-                                    <span className="text-sm text-indigo-200 mt-1">{auth.user.name}</span>
-                                </div>
-                                <button
-                                    onClick={() => setShowingNavigationDropdown(false)}
-                                    className="text-white hover:text-indigo-200"
-                                >
-                                    <XMarkIcon className="h-6 w-6" />
-                                </button>
-                            </div>
-
-                            <nav className="flex-1 px-2 space-y-1">
-                                {navigation.map((item) => (
-                                    <Link
-                                        key={item.name}
-                                        href={item.href}
-                                        className={classNames(
-                                            item.current ? 'bg-indigo-900 text-white border-l-4 border-indigo-400' : 'text-indigo-100 hover:bg-indigo-700',
-                                            "group flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-200"
-                                        )}
-                                        onClick={() => setShowingNavigationDropdown(false)}
-                                    >
-                                        <item.icon
-                                            className={classNames(
-                                                item.current ? 'text-white' : 'text-indigo-300 group-hover:text-white',
-                                                "mr-3 flex-shrink-0 h-5 w-5 transition-colors"
-                                            )}
-                                            aria-hidden="true"
-                                        />
-                                        <div className="flex flex-col">
-                                            <span>{item.name}</span>
-                                            {item.description && <span className={classNames(item.current ? 'text-indigo-200' : 'text-indigo-300', "text-[10px] font-normal")}>{item.description}</span>}
-                                        </div>
-                                    </Link>
-                                ))}
-                            </nav>
-
-                            {/* Bottom Actions */}
-                            <div className="flex-shrink-0 px-2 space-y-1 border-t border-indigo-700 pt-4">
-                                <button
-                                    onClick={() => {
-                                        setShowPasswordModal(true);
-                                        setShowingNavigationDropdown(false);
-                                    }}
-                                    className="w-full group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
-                                >
-                                    <LockClosedIcon className="mr-3 flex-shrink-0 h-5 w-5" aria-hidden="true" />
-                                    Change Password
-                                </button>
-                                <Link
-                                    href={route('logout')}
-                                    method="post"
-                                    as="button"
-                                    className="w-full group flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-white hover:bg-indigo-700 transition-colors"
-                                >
-                                    <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-5 w-5" aria-hidden="true" />
-                                    Logout
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </>
+        <div className="min-h-screen bg-gray-50">
+            {/* Mobile sidebar backdrop */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                ></div>
             )}
 
-            {/* Mobile Header & Content Wrapper */}
-            <div className="flex flex-col md:pl-64 flex-1">
-                <div className="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow md:hidden">
-                    <button
-                        type="button"
-                        className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-trust-blue md:hidden"
-                        onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}
-                    >
-                        <span className="sr-only">Open sidebar</span>
-                        <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-                    </button>
-                    <div className="flex-1 px-4 flex justify-between items-center text-trust-blue font-bold text-lg">
-                        Parent Portal
+            {/* Compact Sidebar - Director Style */}
+            <aside
+                className={`fixed top-0 left-0 z-50 h-screen w-60 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                    } parent-sidebar`}
+            >
+                {/* Sidebar Header */}
+                <div className="p-4 border-b border-white border-opacity-20">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-lg font-bold text-white">Parent</h1>
+                            <p className="text-sm text-blue-200">Guardian</p>
+                        </div>
+                        <button
+                            onClick={() => setSidebarOpen(false)}
+                            className="lg:hidden text-white hover:text-blue-200"
+                        >
+                            <XMarkIcon className="h-5 w-5" />
+                        </button>
                     </div>
                 </div>
 
-                <main className="flex-1">
-                    <div className="py-6">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                            {children}
+                {/* Navigation Links */}
+                <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                    {navigation.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = currentPath.startsWith(item.href);
+
+                        return (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className={`flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-all ${isActive
+                                    ? 'bg-white bg-opacity-20 text-white shadow-sm'
+                                    : 'text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
+                                    }`}
+                            >
+                                <Icon className="h-4 w-4 flex-shrink-0" />
+                                <span className="truncate">{item.name}</span>
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                {/* Sidebar Footer */}
+                <div className="p-3 border-t border-white border-opacity-20">
+                    <div className="flex items-center space-x-3 mb-2 px-1">
+                        <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                            {auth?.user?.name?.charAt(0) || 'P'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white truncate">
+                                {auth?.user?.name || 'Parent'}
+                            </p>
+                            <p className="text-xs text-gray-300">Guardian</p>
                         </div>
                     </div>
+
+                    <button
+                        onClick={() => setShowPasswordModal(true)}
+                        className="flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white transition-all w-full text-left mb-1"
+                    >
+                        <LockClosedIcon className="h-4 w-4" />
+                        <span>Change Password</span>
+                    </button>
+
+                    <Link
+                        href="/logout"
+                        method="post"
+                        as="button"
+                        className="flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white transition-all w-full text-left"
+                    >
+                        <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                        <span>Logout</span>
+                    </Link>
+                </div>
+            </aside>
+
+            {/* Main Content Area */}
+            <div className="lg:pl-60 flex flex-col min-h-screen">
+
+                {/* Compact Top Bar (Mobile) */}
+                <div className="sticky top-0 z-30 lg:hidden bg-white border-b border-gray-200 px-3 py-2 flex items-center justify-between shadow-sm">
+                    <button
+                        onClick={() => setSidebarOpen(true)}
+                        className="text-gray-600 hover:text-navy-900"
+                    >
+                        <Bars3Icon className="h-5 w-5" />
+                    </button>
+                    <h1 className="text-xs font-semibold text-navy-900">Parent Panel</h1>
+                    <Link href="/logout" method="post" as="button" className="text-red-600">
+                        <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                    </Link>
+                </div>
+
+                {/* Page Content */}
+                <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
+                    {children}
                 </main>
             </div>
-
-            {/* Mobile Bottom Navigation (Optional fallback if Toggle is not sufficient) */}
 
             {/* Change Password Modal */}
             <ChangePasswordModal

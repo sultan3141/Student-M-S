@@ -166,6 +166,8 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
 
 Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\ParentDashboardController::class, 'index'])->name('parent.dashboard');
+    Route::get('/children', [\App\Http\Controllers\ParentDashboardController::class, 'children'])->name('parent.children');
+    Route::post('/children/select', [\App\Http\Controllers\ParentDashboardController::class, 'selectChild'])->name('parent.children.select');
     Route::get('/student/{studentId}', [\App\Http\Controllers\ParentDashboardController::class, 'profile'])->name('parent.student.profile');
 
     // Registration
@@ -174,6 +176,7 @@ Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () 
 
     Route::get('/student/{studentId}/marks', [\App\Http\Controllers\ParentDashboardController::class, 'marks'])->name('parent.student.marks');
     Route::get('/student/{studentId}/progress', [\App\Http\Controllers\ParentDashboardController::class, 'progress'])->name('parent.student.progress');
+    Route::get('/student/{studentId}/attendance', [\App\Http\Controllers\ParentDashboardController::class, 'attendance'])->name('parent.student.attendance');
     Route::get('/student/{studentId}/payments', [\App\Http\Controllers\ParentDashboardController::class, 'paymentHistory'])->name('parent.student.payments');
     Route::get('/notifications', [\App\Http\Controllers\ParentDashboardController::class, 'notifications'])->name('parent.notifications');
     Route::get('/school-contact', [\App\Http\Controllers\ParentDashboardController::class, 'schoolContact'])->name('parent.school-contact');

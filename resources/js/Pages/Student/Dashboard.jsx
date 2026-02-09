@@ -34,9 +34,9 @@ export default function Dashboard({ student, attendance, marks, currentSemester 
         <StudentLayout>
             <Head title="Dashboard" />
 
-            {/* Compact Page Header - Same as Director */}
-            <div className="mb-4">
-                <h1 className="text-2xl font-bold text-navy-900" style={{ color: '#0F172A' }}>
+            {/* Compact Page Header - Responsive */}
+            <div className="mb-3 md:mb-4">
+                <h1 className="text-xl md:text-2xl font-bold text-navy-900" style={{ color: '#0F172A' }}>
                     📊 Student Dashboard
                 </h1>
                 <p className="mt-1 text-xs text-gray-600">
@@ -44,25 +44,25 @@ export default function Dashboard({ student, attendance, marks, currentSemester 
                 </p>
             </div>
 
-            {/* Semester Status Banner - Same as Director */}
+            {/* Semester Status Banner - Responsive */}
             {currentSemester && (
-                <div className="mb-4 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg p-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            <div className="p-3 bg-white/20 rounded-lg">
-                                <CalendarDaysIcon className="h-6 w-6 text-white" />
+                <div className="mb-3 md:mb-4 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg p-3 md:p-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div className="flex items-center space-x-3 md:space-x-4">
+                            <div className="p-2 md:p-3 bg-white/20 rounded-lg flex-shrink-0">
+                                <CalendarDaysIcon className="h-5 w-5 md:h-6 md:w-6 text-white" />
                             </div>
-                            <div>
-                                <h3 className="text-white font-semibold text-lg">
+                            <div className="min-w-0 flex-1">
+                                <h3 className="text-white font-semibold text-base md:text-lg">
                                     Semester {currentSemester.semester || 1}
                                 </h3>
-                                <div className="flex items-center space-x-4 mt-1">
-                                    <span className="text-white text-sm">
+                                <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mt-1 gap-1 md:gap-0">
+                                    <span className="text-white text-xs md:text-sm">
                                         Status: <span className="ml-1 font-semibold text-green-300">
                                             {currentSemester.status?.toUpperCase() || 'ACTIVE'}
                                         </span>
                                     </span>
-                                    <span className="text-white text-sm">
+                                    <span className="text-white text-xs md:text-sm">
                                         {student?.grade?.name || 'Grade 10'} - Section {student?.section?.name || 'A'}
                                     </span>
                                 </div>
@@ -73,7 +73,7 @@ export default function Dashboard({ student, attendance, marks, currentSemester 
                         </div>
                         <Link
                             href={route('student.academic.semesters')}
-                            className="px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-medium text-sm"
+                            className="px-3 md:px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-medium text-xs md:text-sm text-center whitespace-nowrap"
                         >
                             View Records
                         </Link>
@@ -81,76 +81,76 @@ export default function Dashboard({ student, attendance, marks, currentSemester 
                 </div>
             )}
 
-            {/* Compact Summary Cards - 5 columns - Same as Director */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
+            {/* Compact Summary Cards - Responsive Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3 mb-3 md:mb-4">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-2 md:p-3">
                     <div className="flex items-center justify-between mb-1">
-                        <div className="p-2 bg-blue-500 rounded">
-                            <ChartBarIcon className="h-4 w-4 text-white" />
+                        <div className="p-1.5 md:p-2 bg-blue-500 rounded">
+                            <ChartBarIcon className="h-3 w-3 md:h-4 md:w-4 text-white" />
                         </div>
                         <div className="text-right">
-                            <div className="text-2xl font-bold text-blue-700">{currentAverage.toFixed(1)}</div>
+                            <div className="text-xl md:text-2xl font-bold text-blue-700">{currentAverage.toFixed(1)}</div>
                         </div>
                     </div>
-                    <div className="text-xs text-blue-600 font-medium">Current Average</div>
+                    <div className="text-xs text-blue-600 font-medium truncate">Current Average</div>
                     <div className="text-xs text-blue-500">Percentage</div>
                 </div>
 
-                <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-3">
+                <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-2 md:p-3">
                     <div className="flex items-center justify-between mb-1">
-                        <div className="p-2 bg-amber-500 rounded">
-                            <TrophyIcon className="h-4 w-4 text-white" />
+                        <div className="p-1.5 md:p-2 bg-amber-500 rounded">
+                            <TrophyIcon className="h-3 w-3 md:h-4 md:w-4 text-white" />
                         </div>
                         <div className="text-right">
-                            <div className="text-2xl font-bold text-amber-700">#{currentRank}</div>
+                            <div className="text-xl md:text-2xl font-bold text-amber-700">#{currentRank}</div>
                         </div>
                     </div>
-                    <div className="text-xs text-amber-600 font-medium">Class Rank</div>
+                    <div className="text-xs text-amber-600 font-medium truncate">Class Rank</div>
                     <div className="text-xs text-amber-500">Position</div>
                 </div>
 
-                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-3">
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-2 md:p-3">
                     <div className="flex items-center justify-between mb-1">
-                        <div className="p-2 bg-emerald-500 rounded">
-                            <CalendarDaysIcon className="h-4 w-4 text-white" />
+                        <div className="p-1.5 md:p-2 bg-emerald-500 rounded">
+                            <CalendarDaysIcon className="h-3 w-3 md:h-4 md:w-4 text-white" />
                         </div>
                         <div className="text-right">
-                            <div className="text-2xl font-bold text-emerald-700">{attendanceRate}%</div>
+                            <div className="text-xl md:text-2xl font-bold text-emerald-700">{attendanceRate}%</div>
                         </div>
                     </div>
-                    <div className="text-xs text-emerald-600 font-medium">Attendance</div>
+                    <div className="text-xs text-emerald-600 font-medium truncate">Attendance</div>
                     <div className="text-xs text-emerald-500">Rate</div>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3">
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-2 md:p-3">
                     <div className="flex items-center justify-between mb-1">
-                        <div className="p-2 bg-purple-500 rounded">
-                            <AcademicCapIcon className="h-4 w-4 text-white" />
+                        <div className="p-1.5 md:p-2 bg-purple-500 rounded">
+                            <AcademicCapIcon className="h-3 w-3 md:h-4 md:w-4 text-white" />
                         </div>
                         <div className="text-right">
-                            <div className="text-2xl font-bold text-purple-700">{totalSubjects}</div>
+                            <div className="text-xl md:text-2xl font-bold text-purple-700">{totalSubjects}</div>
                         </div>
                     </div>
-                    <div className="text-xs text-purple-600 font-medium">Total Subjects</div>
+                    <div className="text-xs text-purple-600 font-medium truncate">Total Subjects</div>
                     <div className="text-xs text-purple-500">Enrolled</div>
                 </div>
 
-                <div className="bg-gradient-to-br from-pink-50 to-pink-100 border border-pink-200 rounded-lg p-3">
+                <div className="bg-gradient-to-br from-pink-50 to-pink-100 border border-pink-200 rounded-lg p-2 md:p-3 col-span-2 sm:col-span-1">
                     <div className="flex items-center justify-between mb-1">
-                        <div className="p-2 bg-pink-500 rounded">
-                            <UserGroupIcon className="h-4 w-4 text-white" />
+                        <div className="p-1.5 md:p-2 bg-pink-500 rounded">
+                            <UserGroupIcon className="h-3 w-3 md:h-4 md:w-4 text-white" />
                         </div>
                         <div className="text-right">
-                            <div className="text-2xl font-bold text-pink-700">{totalStudents}</div>
+                            <div className="text-xl md:text-2xl font-bold text-pink-700">{totalStudents}</div>
                         </div>
                     </div>
-                    <div className="text-xs text-pink-600 font-medium">Classmates</div>
+                    <div className="text-xs text-pink-600 font-medium truncate">Classmates</div>
                     <div className="text-xs text-pink-500">Total</div>
                 </div>
             </div>
 
-            {/* Analysis Section with Charts - Same as Director */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            {/* Analysis Section with Charts - Responsive */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
                 {/* Performance Chart */}
                 <StudentPerformanceChart 
                     marks={formattedMarks}
@@ -165,10 +165,10 @@ export default function Dashboard({ student, attendance, marks, currentSemester 
                 />
             </div>
 
-            {/* Performance Analysis - Same as Director */}
+            {/* Performance Analysis - Responsive */}
             {recentMarks && recentMarks.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3">📊 Subject Performance Analysis</h3>
+                <div className="bg-white border border-gray-200 rounded-lg p-3 md:p-4 mb-3 md:mb-4">
+                    <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2 md:mb-3">📊 Subject Performance Analysis</h3>
                     <div className="space-y-2">
                         {recentMarks.slice(0, 5).map((mark, index) => {
                             const percentage = mark.percentage_value || parseFloat(mark.percentage) || 0;
