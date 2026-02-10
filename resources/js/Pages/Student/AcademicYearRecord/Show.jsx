@@ -244,6 +244,26 @@ export default function AcademicYearRecordShow({
                                                 </span>
                                             </td>
                                         </tr>
+                                        <tr className="bg-white border-t border-gray-100">
+                                            <td className="px-4 py-4 text-left text-sm font-black text-gray-900 uppercase tracking-wider">
+                                                Average
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`font-bold text-base ${(totalScoreS1 > 0) ? 'text-gray-900' : 'text-gray-400'}`}>
+                                                    {(totalScoreS1 > 0 && subjects.length > 0) ? parseFloat((totalScoreS1 / subjects.length).toFixed(2)) : '-'}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`font-bold text-base ${(totalScoreS2 > 0) ? 'text-gray-900' : 'text-gray-400'}`}>
+                                                    {(totalScoreS2 > 0 && subjects.length > 0) ? parseFloat((totalScoreS2 / subjects.length).toFixed(2)) : '-'}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`font-black text-lg ${(totalScoreFinal > 0) ? 'text-blue-700' : 'text-gray-400'}`}>
+                                                    {(totalScoreFinal > 0 && subjects.length > 0) ? parseFloat((totalScoreFinal / subjects.length).toFixed(2)) : '-'}
+                                                </span>
+                                            </td>
+                                        </tr>
                                     </tfoot>
                                 </table>
                             </div>
