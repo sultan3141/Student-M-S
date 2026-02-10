@@ -188,7 +188,7 @@ export default function AcademicYearRecordShow({
                                             <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Subject</th>
                                             <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Semester 1</th>
                                             <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Semester 2</th>
-                                            <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Final</th>
+                                            <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Average</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
