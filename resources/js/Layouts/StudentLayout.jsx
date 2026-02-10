@@ -105,7 +105,7 @@ export default function StudentLayout({ children }) {
                                 Darul-Ulum
                             </h1>
                             <p className="text-[8px] font-bold text-blue-300 tracking-[0.2em] uppercase mt-0.5 opacity-80 truncate">
-                                Islamic School
+                                Islamic School (Student)
                             </p>
                         </div>
                     </div>
