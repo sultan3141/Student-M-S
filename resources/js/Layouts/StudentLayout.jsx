@@ -31,7 +31,8 @@ import {
     UserIcon,
     HomeIcon,
     ArrowUturnLeftIcon,
-    ChevronRightIcon
+    ChevronRightIcon,
+    AcademicCapIcon
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 
@@ -123,16 +124,18 @@ export default function StudentLayout({ children }) {
                     </div>
                 </div>
 
-                {/* Sidebar Managed Section (Styled Header) */}
+                {/* Sidebar Managed Section (Styled Header - Reference Form) */}
                 <div className="p-4">
                     <div className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all">
                         <div className="flex items-center space-x-3">
-                            <div className="p-1.5 bg-white/20 rounded-lg">
-                                <TrophyIcon className="h-5 w-5 text-white" />
+                            <div className="p-1 px-2 border-r border-white/20">
+                                <AcademicCapIcon className="h-6 w-6 text-white" />
                             </div>
-                            <span className="text-white font-black uppercase tracking-wider text-xs">Manage Student</span>
+                            <span className="text-white font-black uppercase tracking-wider text-sm">Manage Student</span>
                         </div>
-                        <ChevronRightIcon className="h-4 w-4 text-white/70 group-hover:translate-x-0.5 transition-transform" />
+                        <div className="flex items-center">
+                            <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-white/90 border-b-[6px] border-b-transparent ml-2 group-hover:translate-x-0.5 transition-transform"></div>
+                        </div>
                     </div>
                 </div>
 
