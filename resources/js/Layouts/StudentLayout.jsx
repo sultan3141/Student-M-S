@@ -133,6 +133,25 @@ export default function StudentLayout({ children }) {
                         );
                     })}
                 </nav>
+
+                {/* Sidebar Footer with Profile - RESTORED */}
+                <div className="p-4 border-t border-white border-opacity-10 bg-black/20 mt-auto">
+                    <div className="flex items-center space-x-3">
+                        <img
+                            className="w-10 h-10 rounded-lg ring-2 ring-white ring-opacity-20 shadow-xl object-cover"
+                            src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=1E3A8A&color=fff`}
+                            alt={auth?.user?.name || 'Student'}
+                        />
+                        <div className="flex-1 min-w-0">
+                            <p className="text-white text-xs font-bold truncate">
+                                {auth?.user?.name || 'Student Name'}
+                            </p>
+                            <p className="text-blue-300 text-[10px] uppercase font-black tracking-widest opacity-80 mt-0.5">
+                                Student
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </aside>
 
             {/* Main Content Area */}
@@ -184,11 +203,13 @@ export default function StudentLayout({ children }) {
 
                         {/* User Profile Dropdown (Modern Design) */}
                         <Menu as="div" className="relative ml-2 sm:ml-4 border-l border-white/10 pl-4 h-8 flex items-center">
-                            <Menu.Button className="flex items-center focus:outline-none h-full">
-                                <div className="w-9 h-9 rounded-full bg-white p-0.5 shadow-xl flex-shrink-0 flex items-center justify-center transform hover:scale-105 transition-transform cursor-pointer">
-                                    <div className="w-full h-full rounded-full bg-gradient-to-tr from-[#0F172A] to-[#1E3A8A] flex items-center justify-center text-white font-bold text-xs ring-2 ring-white ring-offset-2 ring-offset-[#1E293B]">
-                                        {auth?.user?.name?.charAt(0) || 'S'}
-                                    </div>
+                            <Menu.Button className="flex items-center focus:outline-none h-full group">
+                                <div className="w-9 h-9 rounded-full bg-white p-0.5 shadow-xl flex-shrink-0 flex items-center justify-center transform hover:rotate-12 transition-all duration-300 cursor-pointer">
+                                    <img
+                                        className="w-full h-full rounded-full object-cover ring-2 ring-white ring-offset-2 ring-offset-[#1E293B]"
+                                        src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=1E3A8A&color=fff`}
+                                        alt={auth?.user?.name || 'Student'}
+                                    />
                                 </div>
                             </Menu.Button>
 
@@ -204,10 +225,12 @@ export default function StudentLayout({ children }) {
                                 <Menu.Items className="absolute right-0 top-full mt-4 w-64 origin-top-right divide-y divide-gray-100 rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50">
                                     {/* Dropdown Header */}
                                     <div className="bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] p-6 flex flex-col items-center">
-                                        <div className="w-16 h-16 rounded-full bg-white p-1 shadow-lg mb-3">
-                                            <div className="w-full h-full rounded-full bg-gradient-to-tr from-[#0F172A] to-[#1E3A8A] flex items-center justify-center text-white font-bold text-2xl">
-                                                {auth?.user?.name?.charAt(0) || 'S'}
-                                            </div>
+                                        <div className="w-16 h-16 rounded-full bg-white p-1 shadow-lg mb-3 ring-4 ring-white/10">
+                                            <img
+                                                className="w-full h-full rounded-full object-cover"
+                                                src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=1E3A8A&color=fff`}
+                                                alt={auth?.user?.name || 'Student'}
+                                            />
                                         </div>
                                         <h3 className="text-white font-bold text-lg">Welcome!</h3>
                                         <p className="text-blue-200 text-xs truncate w-full text-center mt-1">
