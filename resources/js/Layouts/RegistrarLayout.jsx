@@ -56,12 +56,6 @@ export default function RegistrarLayout({ user, children }) {
                             <h1 className="text-lg font-bold text-white">Registrar</h1>
                             <p className="text-sm text-blue-200">Portal</p>
                         </div>
-                        <button
-                            onClick={() => setSidebarOpen(false)}
-                            className="lg:hidden text-white hover:text-blue-200"
-                        >
-                            <XMarkIcon className="h-5 w-5" />
-                        </button>
                     </div>
                 </div>
 
@@ -105,19 +99,20 @@ export default function RegistrarLayout({ user, children }) {
                         href="/logout"
                         method="post"
                         as="button"
+                        onClick={() => setSidebarOpen(false)}
                         className="flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white transition-all w-full text-left"
                     >
                         <ArrowRightOnRectangleIcon className="h-4 w-4" />
                         <span>Logout</span>
                     </Link>
                 </div>
-            </aside>
+            </aside >
 
             {/* Main Content Area - LG Padding Sync */}
-            <div className="lg:pl-64 flex flex-col min-h-screen">
+            < div className="lg:pl-64 flex flex-col min-h-screen" >
 
                 {/* Premium Mobile Top Bar - Synced with Student Design */}
-                <div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10">
+                < div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10" >
                     <div className="flex-1 flex items-center">
                         <button
                             onClick={() => setSidebarOpen(true)}
@@ -143,15 +138,15 @@ export default function RegistrarLayout({ user, children }) {
                             <ArrowRightOnRectangleIcon className="h-5 w-5" />
                         </Link>
                     </div>
-                </div>
+                </div >
 
                 {/* Page Content */}
-                <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
+                < main className="p-3 lg:p-5 flex-1 bg-gray-50/50" >
                     {children}
-                </main>
+                </main >
 
                 <Footer />
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
