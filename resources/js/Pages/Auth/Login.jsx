@@ -23,7 +23,12 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <GuestLayout>
-            <Head title="Log in" />
+            <Head title="Sign In" />
+
+            <div className="mb-8">
+                <h2 className="text-2xl font-bold text-[#0F172A]">Welcome Back</h2>
+                <p className="text-gray-500 mt-1">Please enter your details to sign in</p>
+            </div>
 
             {status && (
                 <div className="mb-4 text-sm font-medium text-green-600">

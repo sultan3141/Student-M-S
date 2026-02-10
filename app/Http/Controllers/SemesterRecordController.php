@@ -183,7 +183,7 @@ class SemesterRecordController extends Controller
         $marks = \App\Models\Mark::where('student_id', $student->id)
             ->where('semester', (string) $semester)
             ->where('academic_year_id', $academicYearId)
-            ->with(['subject', 'assessment.assessmentType'])
+            ->with(['subject', 'assessment.assessmentType', 'assessmentType'])
             ->get();
 
         $marksByAssessment = $marks->whereNotNull('assessment_id')->groupBy('assessment_id');

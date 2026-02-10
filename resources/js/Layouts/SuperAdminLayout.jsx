@@ -17,7 +17,8 @@ import {
     ArrowRightOnRectangleIcon,
     Bars3Icon,
     BellIcon,
-    LockClosedIcon
+    LockClosedIcon,
+    Squares2X2Icon
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 
@@ -29,7 +30,7 @@ export default function SuperAdminLayout({ children }) {
         {
             name: 'Dashboard',
             href: route('super_admin.dashboard'),
-            icon: HomeIcon,
+            icon: Squares2X2Icon,
             current: route().current('super_admin.dashboard')
         },
         {
@@ -70,28 +71,24 @@ export default function SuperAdminLayout({ children }) {
     }
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] flex">
+        <div className="min-h-screen bg-[#F8FAFC]">
             {/* Mobile Sidebar Overlay */}
             {sidebarOpen && (
-                <div className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm md:hidden" onClick={() => setSidebarOpen(false)}></div>
+                <div className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)}></div>
             )}
 
-            {/* Main Sidebar - Indigo/Purple Theme */}
-            <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-indigo-900 to-indigo-950 text-white transform transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                {/* Logo Section */}
-                <div className="h-16 flex items-center px-6 border-b border-indigo-800/50">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg">
-                            <span className="text-indigo-700 font-bold text-sm">SP</span>
-                        </div>
+            {/* Premium Sidebar Strategy - Synced with Student Portal */}
+            <aside
+                className={`fixed inset-y-0 left-0 z-50 h-screen w-64 bg-gradient-to-b from-indigo-900 to-indigo-950 text-white transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+            >
+                {/* Sidebar Header */}
+                <div className="p-4 border-b border-white border-opacity-20">
+                    <div className="flex items-center justify-between">
                         <div>
-                            <span className="text-base font-bold text-white block">School Portal</span>
-                            <span className="text-xs text-indigo-300">Admin User</span>
+                            <h1 className="text-lg font-bold text-white">Super Admin</h1>
+                            <p className="text-sm text-indigo-200">Portal</p>
                         </div>
                     </div>
-                    <button className="md:hidden ml-auto text-gray-400" onClick={() => setSidebarOpen(false)}>
-                        <XMarkIcon className="w-6 h-6" />
-                    </button>
                 </div>
 
                 <div className="flex flex-col h-[calc(100vh-4rem)] justify-between">
@@ -101,6 +98,7 @@ export default function SuperAdminLayout({ children }) {
                             <Link
                                 key={item.name}
                                 href={item.href}
+                                onClick={() => setSidebarOpen(false)}
                                 className={classNames(
                                     item.current ? 'bg-indigo-700 text-white' : 'text-indigo-200 hover:bg-indigo-800/50 hover:text-white',
                                     'group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200'
@@ -112,72 +110,91 @@ export default function SuperAdminLayout({ children }) {
                         ))}
                     </nav>
 
-                    {/* Bottom Navigation */}
-                    <div className="px-3 py-4 space-y-1 border-t border-indigo-800/50">
-                        <Link
-                            href="#"
-                            className="group flex items-center px-3 py-2.5 text-sm font-medium text-indigo-200 rounded-lg hover:bg-indigo-800/50 hover:text-white transition-all duration-200"
-                        >
-                            <LockClosedIcon className="mr-3 flex-shrink-0 h-5 w-5 text-indigo-400 group-hover:text-white" />
-                            Change Password
-                        </Link>
+                    {/* Sidebar Profile & Notifications */}
+                    <div className="px-5 py-6 border-t border-indigo-800/50 bg-indigo-950/30">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="relative group cursor-pointer">
+                                <img
+                                    className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-500/30 transition-all group-hover:ring-indigo-400"
+                                    src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Admin'}&background=4F46E5&color=fff`}
+                                    alt={auth?.user?.name || 'Admin'}
+                                />
+                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-indigo-950 rounded-full"></div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-white truncate leading-tight">
+                                    {auth?.user?.name || 'Super Admin'}
+                                </p>
+                                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-0.5">Super Admin</p>
+                            </div>
+                            <button className="relative p-2 text-indigo-300 hover:text-white transition-colors">
+                                <BellIcon className="w-5 h-5" />
+                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-indigo-950"></span>
+                            </button>
+                        </div>
 
+                        <div className="space-y-1">
+                            <Link
+                                href="#"
+                                className="group flex items-center px-3 py-2 text-xs font-medium text-indigo-200 rounded-lg hover:bg-indigo-800/50 hover:text-white transition-all duration-200"
+                            >
+                                <LockClosedIcon className="mr-3 flex-shrink-0 h-4 w-4" />
+                                <span>Change Password</span>
+                            </Link>
+
+                            <Link
+                                href={route('logout')}
+                                method="post"
+                                as="button"
+                                onClick={() => setSidebarOpen(false)}
+                                className="w-full group flex items-center px-3 py-2 text-xs font-medium text-red-300/80 rounded-lg hover:bg-red-500/10 hover:text-red-300 transition-all duration-200"
+                            >
+                                <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
+                                <span>Logout</span>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </aside >
+
+            {/* Main Content Area - LG Padding Sync */}
+            < div className="lg:pl-64 flex flex-col min-h-screen" >
+                {/* Premium Mobile Top Bar - Synced with Student Design (lg breakpoint) */}
+                < div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10" >
+                    <div className="flex-1 flex items-center">
+                        <button
+                            onClick={() => setSidebarOpen(true)}
+                            className="p-2 -ml-2 text-white/80 hover:text-white transition-colors"
+                        >
+                            <Bars3Icon className="h-6 w-6" />
+                        </button>
+                    </div>
+
+                    <div className="flex-shrink-0">
+                        <h1 className="text-sm font-black text-white tracking-[0.2em] uppercase">
+                            Super Admin Portal
+                        </h1>
+                    </div>
+
+                    <div className="flex-1 flex items-center justify-end">
                         <Link
                             href={route('logout')}
                             method="post"
                             as="button"
-                            className="w-full group flex items-center px-3 py-2.5 text-sm font-medium text-red-300 rounded-lg hover:bg-red-500/20 hover:text-red-200 transition-all duration-200"
+                            className="p-2 -mr-2 text-red-400 hover:text-red-300 transition-colors"
                         >
-                            <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-5 w-5 text-red-400 group-hover:text-red-300" />
-                            Logout
+                            <ArrowRightOnRectangleIcon className="h-5 w-5" />
                         </Link>
                     </div>
-                </div>
-            </div>
-
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                {/* Top Header */}
-                <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center">
-                        <button onClick={() => setSidebarOpen(true)} className="md:hidden text-gray-500 hover:text-gray-700 mr-4">
-                            <Bars3Icon className="w-6 h-6" />
-                        </button>
-                        <h2 className="text-xl font-bold text-gray-800">Admin Dashboard</h2>
-                    </div>
-
-                    <div className="flex items-center space-x-4">
-                        <button className="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors">
-                            <BellIcon className="w-6 h-6" />
-                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
-                        </button>
-
-                        <div className="h-8 w-px bg-gray-200 mx-2"></div>
-
-                        <div className="flex items-center">
-                            <div className="text-right mr-3 hidden sm:block">
-                                <span className="block text-sm font-bold text-gray-900">{auth?.user?.name || 'Super Admin'}</span>
-                                <span className="block text-xs text-indigo-600 font-medium">Super Admin</span>
-                            </div>
-                            <img
-                                className="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-100"
-                                src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Admin'}&background=4F46E5&color=fff`}
-                                alt={auth?.user?.name || 'Admin'}
-                            />
-                        </div>
-                    </div>
-                </header>
+                </div >
 
                 {/* Main Scrollable Content */}
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50">
-                    <div className="mb-6">
-                        <p className="text-sm text-gray-500">Welcome, {auth?.user?.name || 'Admin'}</p>
-                    </div>
+                < main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50/50" >
                     {children}
-                </main>
+                </main >
 
                 <Footer />
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

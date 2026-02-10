@@ -15,6 +15,7 @@ import {
     XMarkIcon,
     ClipboardDocumentListIcon,
     Bars3Icon,
+    Squares2X2Icon,
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 
@@ -23,7 +24,7 @@ export default function RegistrarLayout({ user, children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const navigation = [
-        { name: 'Dashboard', href: '/registrar/dashboard', icon: HomeIcon },
+        { name: 'Dashboard', href: '/registrar/dashboard', icon: Squares2X2Icon },
         { name: 'Student Admission', href: '/registrar/students/create', icon: AcademicCapIcon },
         { name: 'Admitted Students', href: '/registrar/admission', icon: UsersIcon },
         { name: 'Student Management', href: '/registrar/students', icon: ClipboardDocumentListIcon },
@@ -45,9 +46,9 @@ export default function RegistrarLayout({ user, children }) {
                 ></div>
             )}
 
-            {/* Compact Sidebar */}
+            {/* Premium Sidebar Strategy - Synced with Student Portal */}
             <aside
-                className={`fixed top-0 left-0 z-50 h-screen w-60 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     } registrar-sidebar`}
             >
                 {/* Sidebar Header */}
@@ -55,14 +56,8 @@ export default function RegistrarLayout({ user, children }) {
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-lg font-bold text-white">Registrar</h1>
-                            <p className="text-sm text-blue-200">Enrollment</p>
+                            <p className="text-sm text-blue-200">Portal</p>
                         </div>
-                        <button
-                            onClick={() => setSidebarOpen(false)}
-                            className="lg:hidden text-white hover:text-blue-200"
-                        >
-                            <XMarkIcon className="h-5 w-5" />
-                        </button>
                     </div>
                 </div>
 
@@ -106,30 +101,31 @@ export default function RegistrarLayout({ user, children }) {
                         href="/logout"
                         method="post"
                         as="button"
+                        onClick={() => setSidebarOpen(false)}
                         className="flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white transition-all w-full text-left"
                     >
                         <ArrowRightOnRectangleIcon className="h-4 w-4" />
                         <span>Logout</span>
                     </Link>
                 </div>
-            </aside>
+            </aside >
 
-            {/* Main Content Area */}
-            <div className="lg:pl-60 flex flex-col min-h-screen">
+            {/* Main Content Area - LG Padding Sync */}
+            < div className="lg:pl-64 flex flex-col min-h-screen" >
 
-                {/* Premium Mobile Top Bar */}
-                <div className="sticky top-0 z-30 lg:hidden bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 h-14 flex items-center shadow-sm">
+                {/* Premium Mobile Top Bar - Synced with Student Design */}
+                < div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10" >
                     <div className="flex-1 flex items-center">
                         <button
                             onClick={() => setSidebarOpen(true)}
-                            className="p-2 -ml-2 text-gray-500 hover:text-navy-900 transition-colors"
+                            className="p-2 -ml-2 text-white/80 hover:text-white transition-colors"
                         >
                             <Bars3Icon className="h-6 w-6" />
                         </button>
                     </div>
 
                     <div className="flex-shrink-0">
-                        <h1 className="text-base font-bold text-navy-900 tracking-tight">
+                        <h1 className="text-sm font-black text-white tracking-[0.2em] uppercase">
                             Registrar Portal
                         </h1>
                     </div>
@@ -139,20 +135,20 @@ export default function RegistrarLayout({ user, children }) {
                             href="/logout"
                             method="post"
                             as="button"
-                            className="p-2 -mr-2 text-red-500 hover:text-red-600 transition-colors"
+                            className="p-2 -mr-2 text-red-400 hover:text-red-300 transition-colors"
                         >
                             <ArrowRightOnRectangleIcon className="h-5 w-5" />
                         </Link>
                     </div>
-                </div>
+                </div >
 
                 {/* Page Content */}
-                <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
+                < main className="p-3 lg:p-5 flex-1 bg-gray-50/50" >
                     {children}
-                </main>
+                </main >
 
                 <Footer />
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
