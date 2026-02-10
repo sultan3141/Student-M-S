@@ -41,7 +41,7 @@ export default function Schedule({ student, schedule }) {
                                         </th>
                                         {days.map(day => (
                                             <th key={day} className="border-r border-gray-300 last:border-r-0 px-4 py-3 text-center font-bold text-gray-700 text-sm uppercase tracking-wider">
-                                                {day.substring(0, 3)}
+                                                {day}
                                             </th>
                                         ))}
                                     </tr>
