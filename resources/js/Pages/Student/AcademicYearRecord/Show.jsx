@@ -18,6 +18,8 @@ export default function AcademicYearRecordShow({
     final_average,
     subjects,
     final_rank,
+    rank_s1,
+    rank_s2,
     total_students,
     is_complete
 }) {
@@ -261,6 +263,26 @@ export default function AcademicYearRecordShow({
                                             <td className="px-4 py-4 text-center">
                                                 <span className={`font-black text-lg ${(totalScoreFinal > 0) ? 'text-blue-700' : 'text-gray-400'}`}>
                                                     {(totalScoreFinal > 0 && subjects.length > 0) ? parseFloat((totalScoreFinal / subjects.length).toFixed(2)) : '-'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr className="bg-gray-50 border-t border-gray-100">
+                                            <td className="px-4 py-4 text-left text-sm font-black text-gray-900 uppercase tracking-wider">
+                                                Rank
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`font-bold text-base ${rank_s1 !== '-' ? 'text-gray-900' : 'text-gray-400'}`}>
+                                                    {rank_s1 !== '-' ? `#${rank_s1}` : '-'}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`font-bold text-base ${rank_s2 !== '-' ? 'text-gray-900' : 'text-gray-400'}`}>
+                                                    {rank_s2 !== '-' ? `#${rank_s2}` : '-'}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`font-black text-lg ${final_rank !== '-' ? 'text-blue-700' : 'text-gray-400'}`}>
+                                                    {final_rank !== '-' ? `#${final_rank}` : '-'}
                                                 </span>
                                             </td>
                                         </tr>

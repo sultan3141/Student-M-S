@@ -21,11 +21,11 @@ class AcademicYearRecordController extends Controller
             ->orWhere('status', 'active')
             ->orderBy('created_at', 'desc')
             ->first();
-        
+
         if ($year) {
             return redirect()->route('student.academic.year.show', ['academicYear' => $year->id]);
         }
-        
+
         return redirect()->route('student.dashboard')->with('error', 'No active academic year found.');
     }
 
@@ -33,13 +33,13 @@ class AcademicYearRecordController extends Controller
     {
         $user = auth()->user();
         $student = $user->student()->with(['user'])->first();
-        
+
         if (!$student) {
             return redirect()->route('student.dashboard')->with('error', 'Student profile not found');
         }
 
         $academicYear = \App\Models\AcademicYear::findOrFail($academicYearId);
-        
+
         // Find the registration for THIS specific year to get the correct grade/section history
         $registration = \App\Models\Registration::where('student_id', $student->id)
             ->where('academic_year_id', $academicYearId)
@@ -53,9 +53,9 @@ class AcademicYearRecordController extends Controller
         // Get all subjects for the grade the student was in DURING THAT YEAR
         $subjectsQuery = \App\Models\Subject::where('grade_id', $gradeId);
         if ($streamId) {
-            $subjectsQuery->where(function($q) use ($streamId) {
+            $subjectsQuery->where(function ($q) use ($streamId) {
                 $q->where('stream_id', $streamId)
-                  ->orWhereNull('stream_id');
+                    ->orWhereNull('stream_id');
             });
         }
         $assignedSubjects = $subjectsQuery->get();
@@ -66,8 +66,9 @@ class AcademicYearRecordController extends Controller
             ->get();
 
         // Calculate semester averages based on SUBJECT percentages
-        $calculateSemAvg = function($m) {
-            if ($m->isEmpty()) return 0;
+        $calculateSemAvg = function ($m) {
+            if ($m->isEmpty())
+                return 0;
             $subjectStats = $m->groupBy('subject_id')->map(function ($sm) {
                 $score = $sm->sum('score');
                 $max = $sm->sum('max_score') ?: ($sm->count() * 100);
@@ -78,7 +79,7 @@ class AcademicYearRecordController extends Controller
 
         $semester1Average = $calculateSemAvg($marks->where('semester', '1'));
         $semester2Average = $calculateSemAvg($marks->where('semester', '2'));
-        
+
         $finalAverage = 0;
         if ($semester1Average > 0 && $semester2Average > 0) {
             $finalAverage = round(($semester1Average + $semester2Average) / 2, 2);
@@ -89,9 +90,10 @@ class AcademicYearRecordController extends Controller
         // Map subjects for display
         $subjectPerformance = $assignedSubjects->map(function ($subject) use ($marks) {
             $subjectMarks = $marks->where('subject_id', $subject->id);
-            
-            $getSemAvg = function($m) {
-                if ($m->isEmpty()) return null;
+
+            $getSemAvg = function ($m) {
+                if ($m->isEmpty())
+                    return null;
                 $score = $m->sum('score');
                 $max = $m->sum('max_score') ?: ($m->count() * 100);
                 return $max > 0 ? ($score / $max) * 100 : 0;
@@ -99,7 +101,7 @@ class AcademicYearRecordController extends Controller
 
             $sem1Avg = $getSemAvg($subjectMarks->where('semester', '1'));
             $sem2Avg = $getSemAvg($subjectMarks->where('semester', '2'));
-            
+
             $finalAvg = null;
             if ($sem1Avg !== null && $sem2Avg !== null) {
                 $finalAvg = round(($sem1Avg + $sem2Avg) / 2, 2);
@@ -128,7 +130,9 @@ class AcademicYearRecordController extends Controller
             'semester2_average' => $semester2Average,
             'final_average' => $finalAverage,
             'subjects' => $subjectPerformance,
-            'final_rank' => $rankData['rank'] ?? '-',
+            'final_rank' => $rankData['final_rank'] ?? '-',
+            'rank_s1' => $rankData['rank_s1'] ?? '-',
+            'rank_s2' => $rankData['rank_s2'] ?? '-',
             'total_students' => $rankData['total'] ?? 0,
             'is_complete' => $semester1Average > 0 && $semester2Average > 0,
             'grade_at_time' => \App\Models\Grade::find($gradeId)?->name, // Bonus: show historical grade name
@@ -141,7 +145,7 @@ class AcademicYearRecordController extends Controller
     private function calculateYearRankFast($studentId, $sectionId, $academicYearId)
     {
         $cacheKey = "year_rank_{$sectionId}_{$academicYearId}";
-        
+
         return cache()->remember($cacheKey, 300, function () use ($studentId, $sectionId, $academicYearId) {
             // Get all students in the same section
             $sectionStudents = Student::where('section_id', $sectionId)
@@ -152,10 +156,12 @@ class AcademicYearRecordController extends Controller
                 ->where('academic_year_id', $academicYearId)
                 ->get();
 
-            $rankings = $sectionMarks->groupBy('student_id')->map(function ($studentMarks) {
-                $calculateAvg = function($marks) {
-                    if ($marks->isEmpty()) return 0;
-                    $subjectStats = $marks->groupBy('subject_id')->map(function($sm) {
+            // Calculate averages for ALL students in the section
+            $studentAverages = $sectionMarks->groupBy('student_id')->map(function ($studentMarks) {
+                $calculateAvg = function ($marks) {
+                    if ($marks->isEmpty())
+                        return 0;
+                    $subjectStats = $marks->groupBy('subject_id')->map(function ($sm) {
                         $score = $sm->sum('score');
                         $max = $sm->sum('max_score') ?: ($sm->count() * 100);
                         return $max > 0 ? ($score / $max) * 100 : 0;
@@ -163,26 +169,52 @@ class AcademicYearRecordController extends Controller
                     return $subjectStats->avg();
                 };
 
-                $sem1Avg = $calculateAvg($studentMarks->where('semester', '1'));
-                $sem2Avg = $calculateAvg($studentMarks->where('semester', '2'));
-                
-                if ($sem1Avg > 0 && $sem2Avg > 0) {
-                    return ($sem1Avg + $sem2Avg) / 2;
+                $s1 = $calculateAvg($studentMarks->where('semester', '1'));
+                $s2 = $calculateAvg($studentMarks->where('semester', '2'));
+
+                $final = 0;
+                if ($s1 > 0 && $s2 > 0) {
+                    $final = ($s1 + $s2) / 2;
+                } else {
+                    $final = max($s1, $s2);
                 }
-                return max($sem1Avg, $sem2Avg);
-            })
-            ->sortDesc();
-            
-            // Find this student's rank
-            $rank = $rankings->keys()->search($studentId);
+
+                return [
+                    's1' => $s1,
+                    's2' => $s2,
+                    'final' => $final
+                ];
+            });
+
+            // Function to get rank from a collection of values
+            $getRank = function ($collection, $value, $key) {
+                if ($value <= 0)
+                    return '-';
+                // Sort by the specific key (s1, s2, or final)
+                $sorted = $collection->sortByDesc($key)->values();
+                // Find position
+                $position = $sorted->search(function ($item) use ($value, $key) {
+                    return $item[$key] == $value;
+                });
+                return $position !== false ? $position + 1 : '-';
+            };
+
+            // Get this student's averages
+            $myAvgs = $studentAverages->get($studentId);
+
+            if (!$myAvgs) {
+                return ['rank_s1' => '-', 'rank_s2' => '-', 'final_rank' => '-', 'total' => $studentAverages->count()];
+            }
 
             return [
-                'rank' => $rank !== false ? $rank + 1 : null,
-                'total' => $rankings->count(),
+                'rank_s1' => $getRank($studentAverages, $myAvgs['s1'], 's1'),
+                'rank_s2' => $getRank($studentAverages, $myAvgs['s2'], 's2'),
+                'final_rank' => $getRank($studentAverages, $myAvgs['final'], 'final'),
+                'total' => $studentAverages->count(),
             ];
         });
     }
-    
+
     /**
      * Calculate final year rank based on combined semester averages
      */
