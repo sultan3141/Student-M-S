@@ -12,6 +12,7 @@ import UserDistributionBarChart from '@/Components/Charts/UserDistributionBarCha
 import {
     CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
+import DashboardSchedule from '@/Components/DashboardSchedule';
 
 /**
  * Functional component for the student dashboard page.
@@ -51,6 +52,10 @@ export default function Dashboard({
             <Head title="Dashboard" />
 
 
+            {/* Schedule Section */}
+            <div className="mb-6">
+                <DashboardSchedule schedule={schedule} />
+            </div>
 
             {/* Analysis Section with Charts */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 mb-4">
