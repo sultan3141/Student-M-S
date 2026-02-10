@@ -138,7 +138,7 @@ export default function StudentLayout({ children }) {
             {/* Main Content Area */}
             <div className="lg:pl-64 flex flex-col min-h-screen">
                 {/* Premium Top Bar (Navy Colors Restored) */}
-                <header className="sticky top-0 z-30 bg-gradient-to-r from-[#0F172A] via-[#111827] to-[#1D4ED8] px-4 h-16 flex items-center shadow-xl border-b border-white/10">
+                <header className="sticky top-0 z-30 bg-[#1D4ED8] px-4 h-16 flex items-center shadow-xl border-b border-white/10">
                     <div className="absolute inset-0 bg-blue-600/5 pointer-events-none"></div>
                     <div className="flex-1 flex items-center space-x-4 relative z-10">
                         {/* Mobile Hamburger */}
@@ -206,8 +206,8 @@ export default function StudentLayout({ children }) {
                                 leaveTo="transform opacity-0 scale-95"
                             >
                                 <Menu.Items className="absolute right-0 top-full mt-0 w-52 origin-top-right divide-y divide-gray-100 rounded-b-[1.5rem] bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 transform">
-                                    {/* Dropdown Header (Premium Navy Gradient Matched to Top Bar) */}
-                                    <div className="bg-gradient-to-br from-[#0F172A] via-[#111827] to-[#1D4ED8] p-3 flex flex-col items-center">
+                                    {/* Dropdown Header (Solid Vibrant Blue Matched to Top Bar) */}
+                                    <div className="bg-[#1D4ED8] p-3 flex flex-col items-center">
                                         <div className="w-12 h-12 rounded-full bg-white p-0.5 shadow-xl mb-2 ring-4 ring-white/10">
                                             <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20 shadow-inner">
                                                 <img
