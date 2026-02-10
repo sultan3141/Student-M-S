@@ -134,9 +134,9 @@ export default function StudentLayout({ children }) {
                     })}
                 </nav>
 
-                {/* Sidebar Footer with Profile Actions - RESTORED */}
+                {/* Sidebar Footer with Profile - RESTORED (Name only) */}
                 <div className="p-4 border-t border-white border-opacity-10 bg-black/20 mt-auto">
-                    <div className="mb-4 flex items-center space-x-3">
+                    <div className="flex items-center space-x-3">
                         <img
                             className="w-10 h-10 rounded-lg ring-2 ring-white ring-opacity-20 shadow-xl object-cover"
                             src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=1E3A8A&color=fff`}
@@ -151,43 +151,12 @@ export default function StudentLayout({ children }) {
                             </p>
                         </div>
                     </div>
-
-                    <div className="space-y-1">
-                        <Link
-                            href={route('student.profile.edit')}
-                            onClick={() => setSidebarOpen(false)}
-                            className="flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 hover:text-white transition-all w-full text-left"
-                        >
-                            <UserIcon className="h-4 w-4" />
-                            <span>Profile</span>
-                        </Link>
-
-                        <Link
-                            href={route('student.password.edit')}
-                            onClick={() => setSidebarOpen(false)}
-                            className="flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 hover:text-white transition-all w-full text-left"
-                        >
-                            <KeyIcon className="h-4 w-4" />
-                            <span>Secure</span>
-                        </Link>
-
-                        <Link
-                            href={route('logout')}
-                            method="post"
-                            as="button"
-                            onClick={() => setSidebarOpen(false)}
-                            className="flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-red-400 hover:bg-white/10 hover:text-red-300 transition-all w-full text-left"
-                        >
-                            <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                            <span>Exit</span>
-                        </Link>
-                    </div>
                 </div>
             </aside>
 
             {/* Main Content Area */}
             <div className="lg:pl-64 flex flex-col min-h-screen">
-                {/* Premium Top Bar - More Bright & Visible Strategy */}
+                {/* Premium Top Bar (Navy Colors Restored) */}
                 <header className="sticky top-0 z-30 bg-gradient-to-r from-[#0F172A] via-[#111827] to-[#1D4ED8] px-4 h-16 flex items-center shadow-xl border-b border-white/10 overflow-hidden">
                     <div className="absolute inset-0 bg-blue-600/5 pointer-events-none"></div>
                     <div className="flex-1 flex items-center space-x-4 relative z-10">
@@ -232,7 +201,7 @@ export default function StudentLayout({ children }) {
                             <Squares2X2Icon className="h-5 w-5" />
                         </button>
 
-                        {/* User Profile Dropdown (Modern Design) */}
+                        {/* User Profile Dropdown (Navy Theme Restored) */}
                         <Menu as="div" className="relative ml-2 sm:ml-4 border-l border-white/10 pl-4 h-8 flex items-center">
                             <Menu.Button className="flex items-center focus:outline-none h-full group">
                                 <div className="w-9 h-9 rounded-full bg-white p-0.5 shadow-xl flex-shrink-0 flex items-center justify-center transform hover:rotate-12 transition-all duration-300 cursor-pointer">
@@ -254,7 +223,7 @@ export default function StudentLayout({ children }) {
                                 leaveTo="transform opacity-0 scale-95"
                             >
                                 <Menu.Items className="absolute right-0 top-full mt-4 w-64 origin-top-right divide-y divide-gray-100 rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50">
-                                    {/* Dropdown Header */}
+                                    {/* Dropdown Header (Navy Gradient) */}
                                     <div className="bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] p-6 flex flex-col items-center">
                                         <div className="w-16 h-16 rounded-full bg-white p-1 shadow-lg mb-3 ring-4 ring-white/10">
                                             <img
@@ -269,7 +238,7 @@ export default function StudentLayout({ children }) {
                                         </p>
                                     </div>
 
-                                    {/* Action Buttons */}
+                                    {/* Action Buttons (3-Column Layout Restored) */}
                                     <div className="p-4 grid grid-cols-3 gap-2 bg-gray-50">
                                         <Menu.Item>
                                             {({ active }) => (
