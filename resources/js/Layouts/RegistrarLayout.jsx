@@ -14,6 +14,7 @@ import {
     UsersIcon,
     XMarkIcon,
     ClipboardDocumentListIcon,
+    Bars3Icon,
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 
@@ -28,6 +29,7 @@ export default function RegistrarLayout({ user, children }) {
         { name: 'Student Management', href: '/registrar/students', icon: ClipboardDocumentListIcon },
         { name: 'Payments', href: '/registrar/payments', icon: BanknotesIcon },
         { name: 'Guardians', href: '/registrar/guardians', icon: UserGroupIcon },
+        { name: 'Student Promotion', href: '/registrar/promotion', icon: AcademicCapIcon },
         { name: 'Reports', href: '/registrar/reports', icon: ChartBarIcon },
     ];
 

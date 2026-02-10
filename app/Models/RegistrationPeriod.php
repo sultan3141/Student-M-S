@@ -59,4 +59,27 @@ class RegistrationPeriod extends Model
 
         return 0;
     }
+
+    /**
+     * Get current registration status for the current academic year.
+     */
+    public static function getCurrentStatus()
+    {
+        $currentYear = AcademicYear::whereRaw('is_current = true')->first();
+        if (!$currentYear) {
+            return [
+                'is_open' => false,
+                'period' => null,
+                'academic_year' => null
+            ];
+        }
+
+        $period = self::where('academic_year_id', $currentYear->id)->first();
+
+        return [
+            'is_open' => $period ? $period->isOpen() : false,
+            'period' => $period,
+            'academic_year' => $currentYear
+        ];
+    }
 }

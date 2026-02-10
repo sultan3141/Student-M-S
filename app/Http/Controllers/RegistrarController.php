@@ -19,7 +19,7 @@ class RegistrarController extends Controller
         });
 
         // Fetch recent students - Optimized
-        $recentStudents = \App\Models\Student::select(['id', 'user_id', 'grade_id', 'section_id', 'student_id', 'created_at'])
+        $recentStudents = \App\Models\Student::select(['id', 'user_id', 'grade_id', 'section_id', 'student_id', 'gender', 'created_at'])
             ->with([
                 'user:id,name', 
                 'grade:id,name', 

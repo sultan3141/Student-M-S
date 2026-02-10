@@ -360,20 +360,20 @@ class DirectorScheduleController extends Controller
      */
     public function getOverview()
     {
-        $totalClasses = \App\Models\Schedule::where('is_active', true)->count();
-        $activeSections = \App\Models\Schedule::where('is_active', true)->distinct('section_id')->count('section_id');
+        $totalClasses = \App\Models\Schedule::whereRaw('is_active = true')->count();
+        $activeSections = \App\Models\Schedule::whereRaw('is_active = true')->distinct('section_id')->count('section_id');
 
-        $classesPerDay = \App\Models\Schedule::where('is_active', true)
+        $classesPerDay = \App\Models\Schedule::whereRaw('is_active = true')
             ->selectRaw('day_of_week, count(*) as count')
             ->groupBy('day_of_week')
             ->pluck('count', 'day_of_week');
 
-        $earliestStart = \App\Models\Schedule::where('is_active', true)->min('start_time');
-        $latestEnd = \App\Models\Schedule::where('is_active', true)->max('end_time');
+        $earliestStart = \App\Models\Schedule::whereRaw('is_active = true')->min('start_time');
+        $latestEnd = \App\Models\Schedule::whereRaw('is_active = true')->max('end_time');
 
         // Today's schedule preview
         $today = now()->format('l');
-        $todaySchedule = \App\Models\Schedule::where('is_active', true)
+        $todaySchedule = \App\Models\Schedule::whereRaw('is_active = true')
             ->where('day_of_week', $today)
             ->with(['grade:id,name', 'section:id,name'])
             ->orderBy('start_time')

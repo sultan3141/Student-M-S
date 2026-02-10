@@ -8,7 +8,7 @@ cd /d "%~dp0"
 
 echo [1/2] Starting Laravel Backend...
 echo.
-start "Laravel Server" cmd /k "php artisan serve"
+start "Laravel Server" cmd /k ""C:\xampp\php\php.exe" artisan serve"
 
 timeout /t 3 /nobreak > nul
 

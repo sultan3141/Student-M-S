@@ -108,6 +108,11 @@ require __DIR__ . '/auth.php';
 Route::middleware(['auth', 'role:registrar'])->prefix('registrar')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\RegistrarController::class, 'dashboard'])->name('registrar.dashboard');
 
+    // Student Promotion
+    Route::get('/promotion', [\App\Http\Controllers\RegistrarPromotionController::class, 'index'])->name('registrar.promotion.index');
+    Route::post('/promotion/{student}/promote', [\App\Http\Controllers\RegistrarPromotionController::class, 'promote'])->name('registrar.promotion.promote');
+    Route::get('/promotion/status', [\App\Http\Controllers\RegistrarPromotionController::class, 'checkStatus'])->name('registrar.promotion.status');
+
     // Student Management
     Route::get('/students', [\App\Http\Controllers\RegistrarStudentController::class, 'index'])->name('registrar.students.index');
 

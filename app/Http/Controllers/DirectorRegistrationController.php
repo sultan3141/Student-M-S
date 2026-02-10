@@ -92,8 +92,7 @@ class DirectorRegistrationController extends Controller
         // Prevent closing if pending applications exist
         if ($validated['status'] === 'closed') {
             // Check for pending applications
-            // Assuming AdmissionApplication model exists, otherwise placeholder
-            $pendingCount = \App\Models\AdmissionApplication::where('status', 'pending')
+            $pendingCount = \App\Models\Registration::where('status', 'pending')
                 ->where('academic_year_id', $currentYear->id)
                 ->count();
                 

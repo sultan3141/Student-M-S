@@ -19,6 +19,8 @@ import {
     MagnifyingGlassIcon,
     CalendarIcon,
     LockClosedIcon,
+    UserCircleIcon,
+    ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 
