@@ -35,14 +35,14 @@ export default function Schedule({ student, schedule }) {
                     {/* Schedule Table */}
                     <div className="bg-white rounded-lg shadow-md overflow-hidden">
                         <div className="overflow-x-auto p-6">
-                            <table className="w-full border-collapse border-2 border-gray-600">
+                            <table className="w-full min-w-[1000px] table-fixed border-collapse border-2 border-gray-600">
                                 <thead>
                                     <tr className="bg-gray-200">
-                                        <th className="border-2 border-gray-600 px-6 py-4 text-center font-bold text-gray-700 text-lg">
+                                        <th className="border-2 border-gray-600 px-6 py-4 text-center font-bold text-gray-700 text-lg w-1/6">
                                             TIME
                                         </th>
                                         {days.map(day => (
-                                            <th key={day} className="border-2 border-gray-600 px-6 py-4 text-center font-bold text-gray-700 text-lg">
+                                            <th key={day} className="border-2 border-gray-600 px-6 py-4 text-center font-bold text-gray-700 text-lg w-1/6">
                                                 {day}
                                             </th>
                                         ))}
