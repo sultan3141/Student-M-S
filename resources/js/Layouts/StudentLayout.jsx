@@ -138,7 +138,7 @@ export default function StudentLayout({ children }) {
             {/* Main Content Area */}
             <div className="lg:pl-64 flex flex-col min-h-screen">
                 {/* Premium Top Bar (Navy Colors Restored) */}
-                <header className="sticky top-0 z-30 bg-gradient-to-r from-[#0F172A] via-[#111827] to-[#1D4ED8] px-4 h-16 flex items-center shadow-xl border-b border-white/10 overflow-hidden">
+                <header className="sticky top-0 z-30 bg-gradient-to-r from-[#0F172A] via-[#111827] to-[#1D4ED8] px-4 h-16 flex items-center shadow-xl border-b border-white/10">
                     <div className="absolute inset-0 bg-blue-600/5 pointer-events-none"></div>
                     <div className="flex-1 flex items-center space-x-4 relative z-10">
                         {/* Mobile Hamburger */}
