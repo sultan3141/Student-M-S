@@ -21,10 +21,7 @@ import {
     LockClosedIcon,
     UserCircleIcon,
     ClipboardDocumentListIcon,
-<<<<<<< HEAD
-=======
     Squares2X2Icon
->>>>>>> 8d6043d
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 
