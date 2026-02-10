@@ -1,9 +1,6 @@
-/**
- * Teacher Layout Component
- * Manages the sidebar and navigation for the Teacher Portal.
- */
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import { Menu, Transition } from '@headlessui/react';
 import {
     HomeIcon,
     AcademicCapIcon,
@@ -17,15 +14,18 @@ import {
     ChevronDownIcon,
     XMarkIcon,
     BellIcon,
-    Squares2X2Icon
+    Squares2X2Icon,
+    UserCircleIcon,
+    UserIcon,
+    KeyIcon,
+    ArrowUturnLeftIcon
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
-
-const classNames = (...classes) => classes.filter(Boolean).join(' ');
 
 export default function TeacherLayout({ children }) {
     const { auth } = usePage().props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [manageSchoolOpen, setManageSchoolOpen] = useState(true);
     const [expandedMenus, setExpandedMenus] = useState({
         'declare-result': route().current('teacher.declare-result.*'),
         'student-results': route().current('teacher.students.manage-results.*'),
@@ -45,6 +45,8 @@ export default function TeacherLayout({ children }) {
         return {};
     });
 
+    const currentPath = window.location.pathname;
+
     const toggleMenu = (id) => {
         setExpandedMenus(prev => ({
             ...prev,
@@ -60,7 +62,7 @@ export default function TeacherLayout({ children }) {
     };
 
     const navigation = [
-        { name: 'Dashboard Overview', href: route('teacher.dashboard'), icon: Squares2X2Icon, current: route().current('teacher.dashboard') },
+        { name: 'Dashboard Overview', href: route('teacher.dashboard'), icon: Squares2X2Icon },
         {
             name: 'Declare Result',
             icon: ClipboardDocumentCheckIcon,
@@ -91,15 +93,11 @@ export default function TeacherLayout({ children }) {
             children: auth?.teacher_grades?.length > 0 ? auth.teacher_grades : null,
             href: route('teacher.schedule')
         },
-        { name: 'Attendance', href: route('teacher.attendance.index'), icon: CalendarDaysIcon, current: route().current('teacher.attendance.*') },
-    ];
-
-    const bottomNavigation = [
-        { name: 'Profile Settings', href: route('teacher.profile.edit'), icon: Cog6ToothIcon, current: route().current('teacher.profile.edit') },
+        { name: 'Attendance', href: route('teacher.attendance.index'), icon: CalendarDaysIcon },
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="min-h-screen bg-gray-50">
             {/* Mobile sidebar backdrop */}
             {sidebarOpen && (
                 <div
@@ -108,22 +106,24 @@ export default function TeacherLayout({ children }) {
                 ></div>
             )}
 
-            {/* Main Sidebar - Fixed strategy to match Student portal */}
+            {/* Premium Sidebar - Synced with Student Portal Blue Theme */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#1E293B] text-white transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                    } director-sidebar shadow-2xl`}
+                style={{ background: 'linear-gradient(to top, #1D4ED8 0%, #F0F9FF 100%)' }}
             >
-                {/* Sidebar Header */}
-                <div className="p-3 border-b border-white border-opacity-20 bg-black/10">
+                {/* Sidebar Top Branding */}
+                <div className="p-3 bg-[#1D4ED8] border-b border-white/10 shadow-lg">
                     <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 rounded-full bg-white p-1 shadow-2xl group flex-shrink-0">
-                            <div className="w-full h-full rounded-full bg-gradient-to-tr from-[#0F172A] to-[#1E3A8A] flex items-center justify-center text-white overflow-hidden border border-white/20">
+                            <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100">
                                 <img
                                     src="/images/logo.png"
                                     alt="Logo"
                                     className="w-full h-full object-contain"
                                     onError={(e) => {
                                         e.target.onerror = null;
-                                        e.target.src = "https://ui-avatars.com/api/?name=Darul+Ulum&background=0F172A&color=fff";
+                                        e.target.src = "https://ui-avatars.com/api/?name=Darul+Ulum&background=1D4ED8&color=fff";
                                     }}
                                 />
                             </div>
@@ -132,232 +132,311 @@ export default function TeacherLayout({ children }) {
                             <h1 className="text-sm font-black text-white tracking-wider uppercase leading-tight truncate">
                                 Darul-Ulum
                             </h1>
-                            <p className="text-[8px] font-bold text-blue-200 tracking-[0.2em] uppercase mt-0.5 opacity-80 truncate">
+                            <p className="text-[8px] font-bold text-blue-100 tracking-[0.2em] uppercase mt-0.5 opacity-80 truncate">
                                 Islamic School (Teacher)
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex flex-col h-[calc(100vh-4rem)] justify-between">
-                    {/* Top Navigation */}
-                    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+                {/* Sidebar Managed Section */}
+                <div className="p-4 pb-2">
+                    <div
+                        onClick={() => setManageSchoolOpen(!manageSchoolOpen)}
+                        className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all"
+                    >
+                        <div className="flex items-center space-x-3">
+                            <div className="p-1 px-2 border-r border-white/20">
+                                <AcademicCapIcon className="h-6 w-6 text-white" />
+                            </div>
+                            <span className="text-white font-black text-sm whitespace-nowrap uppercase tracking-tighter">Manage School</span>
+                        </div>
+                        <div className="flex items-center">
+                            <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent ${manageSchoolOpen ? 'border-b-[10px] border-b-white/90' : 'border-t-[10px] border-t-white/90'
+                                } ml-2 transition-all duration-300`}></div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Navigation Links (Accordion Style) */}
+                <div className={`flex-1 transition-all duration-300 ease-in-out overflow-hidden ${manageSchoolOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                    <nav className="px-3 py-2 space-y-1 overflow-y-auto">
                         {navigation.map((item) => (
-                            <div key={item.name}>
+                            <div key={item.name} className="space-y-1">
                                 {item.children ? (
                                     <>
-                                        <div className="flex items-center group mb-1">
+                                        {/* Collapsible Menu Item */}
+                                        <div className="flex items-center group">
                                             <Link
                                                 href={item.href || '#'}
                                                 onClick={() => setSidebarOpen(false)}
-                                                className={classNames(
-                                                    item.current ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-gray-400 hover:bg-white/5 hover:text-white',
-                                                    'flex-1 flex items-center px-4 py-3 text-sm font-medium rounded-l-xl transition-all duration-200'
-                                                )}
+                                                className={`flex-1 flex items-center space-x-3 px-3 py-2.5 rounded-l-lg text-xs font-bold transition-all ${item.current ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm' : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'}`}
                                             >
-                                                <item.icon className={classNames(item.current ? 'text-white' : 'text-gray-400 group-hover:text-white', 'mr-3 flex-shrink-0 h-5 w-5')} />
-                                                <span className="flex-1 text-left">{item.name}</span>
+                                                <item.icon className="h-4 w-4 flex-shrink-0" />
+                                                <span className="truncate">{item.name}</span>
                                             </Link>
                                             <button
                                                 onClick={(e) => {
                                                     e.preventDefault();
-                                                    toggleMenu(item.id);
+                                                    setExpandedMenus((prev) => ({
+                                                        ...prev,
+                                                        [item.id]: !prev[item.id]
+                                                    }));
                                                 }}
-                                                className={classNames(
-                                                    item.current ? 'bg-blue-700 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white border-l border-gray-700/50',
-                                                    'px-3 py-3 rounded-r-xl transition-all duration-200'
-                                                )}
+                                                className={`px-3 py-2.5 rounded-r-lg border-l border-black/5 transition-all ${item.current ? 'bg-[#1D4ED8]/10 text-[#1D4ED8]' : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5'}`}
                                             >
-                                                <ChevronDownIcon className={classNames(
-                                                    expandedMenus[item.id] ? 'rotate-180' : '',
-                                                    'h-4 w-4 transition-transform'
-                                                )} />
+                                                <ChevronRightIcon className={`h-3 w-3 transform transition-transform duration-200 ${expandedMenus[item.id] ? 'rotate-90' : ''}`} />
                                             </button>
                                         </div>
-                                        {expandedMenus[item.id] && (
-                                            <div className="mt-1 mb-2 space-y-1 ml-9">
-                                                {item.children.map((grade) => (
-                                                    <div key={grade.id}>
-                                                        <div className="flex items-center justify-between group py-1">
-                                                            <Link
-                                                                href={item.id === 'declare-result'
-                                                                    ? route('teacher.declare-result.index', { grade_id: grade.id })
-                                                                    : item.id === 'student-results'
-                                                                        ? route('teacher.students.manage-results', { grade_id: grade.id })
-                                                                        : item.id === 'teacher-assessments'
-                                                                            ? route('teacher.assessments-simple.index', { grade_id: grade.id })
-                                                                            : route('teacher.schedule', { grade_id: grade.id })}
-                                                                onClick={() => setSidebarOpen(false)}
-                                                                className={classNames(
-                                                                    (item.id === 'declare-result' && route().current('teacher.declare-result.*') && route().params.grade_id == grade.id) ||
-                                                                        (item.id === 'student-results' && route().current('teacher.students.manage-results') && route().params.grade_id == grade.id) ||
-                                                                        (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && route().params.grade_id == grade.id) ||
-                                                                        (item.id === 'class-schedules' && route().current('teacher.schedule') && route().params.grade_id == grade.id)
-                                                                        ? 'text-blue-400 font-bold'
-                                                                        : 'text-gray-500 hover:text-white',
-                                                                    'flex-1 text-xs transition-colors'
-                                                                )}
+
+                                        {/* Dropdown Children */}
+                                        <div className={`overflow-hidden transition-all duration-300 space-y-1 mt-1 ${expandedMenus[item.id] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                            {item.children.map((grade) => (
+                                                <div key={grade.id} className="space-y-1">
+                                                    <div className="flex items-center justify-between group py-1">
+                                                        <Link
+                                                            href={item.id === 'declare-result'
+                                                                ? route('teacher.declare-result.index', { grade_id: grade.id })
+                                                                : item.id === 'student-results'
+                                                                    ? route('teacher.students.manage-results', { grade_id: grade.id })
+                                                                    : item.id === 'teacher-assessments'
+                                                                        ? route('teacher.assessments-simple.index', { grade_id: grade.id })
+                                                                        : route('teacher.schedule', { grade_id: grade.id })}
+                                                            onClick={() => setSidebarOpen(false)}
+                                                            className={`flex-1 text-[10px] font-bold transition-colors ${((item.id === 'declare-result' && route().current('teacher.declare-result.*') && route().params.grade_id == grade.id) ||
+                                                                (item.id === 'student-results' && route().current('teacher.students.manage-results') && route().params.grade_id == grade.id) ||
+                                                                (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && route().params.grade_id == grade.id) ||
+                                                                (item.id === 'class-schedules' && route().current('teacher.schedule') && route().params.grade_id == grade.id))
+                                                                ? 'text-[#1D4ED8]'
+                                                                : 'text-gray-500 hover:text-[#1D4ED8]'
+                                                                }`}
+                                                        >
+                                                            {grade.name}
+                                                        </Link>
+                                                        {grade.sections?.length > 0 && (
+                                                            <button
+                                                                onClick={() => toggleGrade(`${item.id}-${grade.id}`)}
+                                                                className="text-gray-400 hover:text-[#1D4ED8] p-1"
                                                             >
-                                                                {grade.name}
-                                                            </Link>
-                                                            {grade.sections?.length > 0 && (
-                                                                <button
-                                                                    onClick={() => toggleGrade(`${item.id}-${grade.id}`)}
-                                                                    className="text-gray-500 hover:text-white px-2"
-                                                                >
-                                                                    <ChevronDownIcon className={classNames(
-                                                                        expandedGrades[`${item.id}-${grade.id}`] ? 'rotate-180' : '',
-                                                                        'h-3 w-3 transition-transform'
-                                                                    )} />
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                        {expandedGrades[`${item.id}-${grade.id}`] && (
-                                                            <div className="ml-4 mt-1 space-y-1 border-l border-gray-700/50 pl-3">
-                                                                {grade.sections?.map((section) => {
-                                                                    const href = item.id === 'declare-result'
-                                                                        ? route('teacher.declare-result.index', { grade_id: grade.id, section_id: section.id })
-                                                                        : item.id === 'student-results'
-                                                                            ? route('teacher.students.manage-results', { grade_id: grade.id, section_id: section.id })
-                                                                            : item.id === 'teacher-assessments'
-                                                                                ? route('teacher.assessments-simple.index', { grade_id: grade.id, section_id: section.id })
-                                                                                : route('teacher.schedule', { grade_id: grade.id, section_id: section.id });
-
-                                                                    const isSectionCurrent = (item.id === 'declare-result' && route().current('teacher.declare-result.*') && route().params.section_id == section.id) ||
-                                                                        (item.id === 'student-results' && route().current('teacher.students.manage-results') && route().params.section_id == section.id) ||
-                                                                        (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && route().params.section_id == section.id) ||
-                                                                        (item.id === 'class-schedules' && route().current('teacher.schedule') && route().params.section_id == section.id);
-
-                                                                    return (
-                                                                        <Link
-                                                                            key={section.id}
-                                                                            href={href}
-                                                                            onClick={() => setSidebarOpen(false)}
-                                                                            className={classNames(
-                                                                                isSectionCurrent ? 'text-blue-300 font-bold' : 'text-gray-600 hover:text-gray-300',
-                                                                                'block py-1 text-[10px] transition-colors'
-                                                                            )}
-                                                                        >
-                                                                            Section {section.name}
-                                                                        </Link>
-                                                                    );
-                                                                })}
-                                                            </div>
+                                                                <ChevronDownIcon className={`h-3 w-3 transition-transform ${expandedGrades[`${item.id}-${grade.id}`] ? 'rotate-180' : ''}`} />
+                                                            </button>
                                                         )}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        )}
+                                                    {expandedGrades[`${item.id}-${grade.id}`] && (
+                                                        <div className="ml-4 mt-1 space-y-1 border-l border-[#1D4ED8]/10 pl-3">
+                                                            {grade.sections?.map((section) => {
+                                                                const href = item.id === 'declare-result'
+                                                                    ? route('teacher.declare-result.index', { grade_id: grade.id, section_id: section.id })
+                                                                    : item.id === 'student-results'
+                                                                        ? route('teacher.students.manage-results', { grade_id: grade.id, section_id: section.id })
+                                                                        : item.id === 'teacher-assessments'
+                                                                            ? route('teacher.assessments-simple.index', { grade_id: grade.id, section_id: section.id })
+                                                                            : route('teacher.schedule', { grade_id: grade.id, section_id: section.id });
+
+                                                                const isSectionActive = (item.id === 'declare-result' && route().current('teacher.declare-result.*') && route().params.section_id == section.id) ||
+                                                                    (item.id === 'student-results' && route().current('teacher.students.manage-results') && route().params.section_id == section.id) ||
+                                                                    (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && route().params.section_id == section.id) ||
+                                                                    (item.id === 'class-schedules' && route().current('teacher.schedule') && route().params.section_id == section.id);
+
+                                                                return (
+                                                                    <Link
+                                                                        key={section.id}
+                                                                        href={href}
+                                                                        onClick={() => setSidebarOpen(false)}
+                                                                        className={`block py-1 text-[9px] font-bold transition-colors ${isSectionActive ? 'text-[#1D4ED8]' : 'text-gray-400 hover:text-[#1D4ED8]'}`}
+                                                                    >
+                                                                        Section {section.name}
+                                                                    </Link>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
                                     </>
                                 ) : (
                                     <Link
                                         href={item.href}
                                         onClick={() => setSidebarOpen(false)}
-                                        className={classNames(
-                                            item.current ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-gray-400 hover:bg-white/5 hover:text-white',
-                                            'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200'
-                                        )}
+                                        className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath.startsWith(item.href)
+                                            ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm'
+                                            : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'
+                                            }`}
                                     >
-                                        <item.icon className={classNames(item.current ? 'text-white' : 'text-gray-400 group-hover:text-white', 'mr-3 flex-shrink-0 h-5 w-5')} />
-                                        {item.name}
+                                        <item.icon className="h-4 w-4 flex-shrink-0" />
+                                        <span className="truncate">{item.name}</span>
                                     </Link>
                                 )}
                             </div>
                         ))}
                     </nav>
-
-                    {/* Sidebar Profile & Notifications */}
-                    <div className="px-6 py-6 border-t border-gray-700/50 bg-[#1e1e2d]/30">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="relative group cursor-pointer">
-                                <img
-                                    className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30 transition-all group-hover:ring-blue-500"
-                                    src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Teacher'}&background=random`}
-                                    alt={auth?.user?.name || 'Teacher'}
-                                />
-                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[#1E293B] rounded-full"></div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-white truncate leading-tight">
-                                    {auth?.user?.name || 'Teacher'}
-                                </p>
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">Teacher</p>
-                            </div>
-                            <button className="relative p-2 text-gray-400 hover:text-white transition-colors">
-                                <BellIcon className="w-5 h-5" />
-                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-[#1E293B]"></span>
-                            </button>
-                        </div>
-
-                        <div className="space-y-1">
-                            {bottomNavigation.map((item) => (
-                                <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    onClick={() => setSidebarOpen(false)}
-                                    className={classNames(
-                                        item.current ? 'bg-blue-600/20 text-blue-400' : 'text-gray-400 hover:bg-white/5 hover:text-white',
-                                        'group flex items-center px-3 py-2 text-xs font-medium rounded-lg transition-all duration-200'
-                                    )}
-                                >
-                                    <item.icon className="mr-3 flex-shrink-0 h-4 w-4" />
-                                    {item.name}
-                                </Link>
-                            ))}
-
-                            <Link
-                                href={route('logout')}
-                                method="post"
-                                as="button"
-                                onClick={() => setSidebarOpen(false)}
-                                className="w-full group flex items-center px-3 py-2 text-xs font-medium text-red-400/80 rounded-lg hover:bg-red-500/10 hover:text-red-400 transition-all duration-200"
-                            >
-                                <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
-                                <span>Logout</span>
-                            </Link>
-                        </div>
-                    </div>
                 </div>
-            </aside >
+                {/* Sidebar Footer */}
+                <div className="p-3 border-t border-[#1D4ED8]/10">
+                    <Link
+                        href="/logout"
+                        method="post"
+                        as="button"
+                        className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-black text-red-600 hover:bg-red-50 transition-all w-full text-left uppercase tracking-widest shadow-sm border border-red-100/50"
+                    >
+                        <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                        <span>Sign Out</span>
+                    </Link>
+                </div>
+            </aside>
 
-            {/* Main Content Area - LG Padding Sync */}
-            < div className="lg:pl-64 flex flex-col min-h-screen" >
-                {/* Premium Mobile Top Bar - Synced with Student Design (lg breakpoint) */}
-                < div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10" >
-                    <div className="flex-1 flex items-center">
+            {/* Main Content Area */}
+            <div className="lg:pl-64 flex flex-col min-h-screen">
+
+                {/* Premium Desktop Top Header */}
+                <header className="sticky top-0 z-30 bg-[#1D4ED8] px-4 h-16 flex items-center shadow-xl border-b border-white/10">
+                    <div className="absolute inset-0 bg-blue-600/5 pointer-events-none"></div>
+                    <div className="flex-1 flex items-center space-x-4 relative z-10">
+                        {/* Mobile Hamburger */}
                         <button
                             onClick={() => setSidebarOpen(true)}
-                            className="p-2 -ml-2 text-white/80 hover:text-white transition-colors"
+                            className="p-2 -ml-2 text-white/80 hover:text-white transition-colors lg:hidden"
                         >
                             <Bars3Icon className="h-6 w-6" />
                         </button>
+
+                        <div className="hidden md:flex items-center space-x-8 ml-4">
+                            <Link
+                                href={route('teacher.dashboard')}
+                                className="text-white text-sm font-black uppercase tracking-wider border-b-2 border-white/40 pb-1"
+                            >
+                                Home
+                            </Link>
+                            <Link
+                                href="#"
+                                className="text-white/60 hover:text-white text-sm font-black uppercase tracking-wider transition-all"
+                            >
+                                Contact
+                            </Link>
+                        </div>
                     </div>
 
-                    <div className="flex-shrink-0">
-                        <h1 className="text-sm font-black text-white tracking-[0.2em] uppercase">
-                            Teacher Portal
-                        </h1>
+                    <div className="flex items-center space-x-1 sm:space-x-4 relative z-10">
+                        <button className="p-2 text-white/80 hover:text-white transition-all relative group rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95">
+                            <BellIcon className="h-5 w-5" />
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-pink-500 rounded-full border-2 border-[#1E293B] animate-pulse"></span>
+                        </button>
+
+                        <button className="p-2 text-white/80 hover:text-white transition-all rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95">
+                            <Squares2X2Icon className="h-5 w-5" />
+                        </button>
+
+                        {/* User Profile Dropdown */}
+                        <Menu as="div" className="relative ml-2 sm:ml-4 border-l border-white/10 pl-4 flex items-center">
+                            <Menu.Button className="flex items-center focus:outline-none group py-1">
+                                <div className="w-10 h-10 rounded-full bg-white p-0.5 shadow-2xl flex-shrink-0 flex items-center justify-center transform group-hover:scale-110 transition-all duration-300 ring-4 ring-white/10">
+                                    <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20">
+                                        <img
+                                            className="w-full h-full object-cover"
+                                            src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Teacher'}&background=0F172A&color=fff`}
+                                            alt={auth?.user?.name || 'Teacher'}
+                                        />
+                                    </div>
+                                </div>
+                            </Menu.Button>
+
+                            <Transition
+                                as={Fragment}
+                                enter="transition ease-out duration-200"
+                                enterFrom="transform opacity-0 scale-95"
+                                enterTo="transform opacity-100 scale-100"
+                                leave="transition ease-in duration-75"
+                                leaveFrom="transform opacity-100 scale-100"
+                                leaveTo="transform opacity-0 scale-95"
+                            >
+                                <Menu.Items className="absolute right-0 top-full mt-0 w-52 origin-top-right divide-y divide-gray-100 rounded-b-[1.5rem] bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 transform">
+                                    <div className="bg-[#1D4ED8] p-3 flex flex-col items-center">
+                                        <div className="w-12 h-12 rounded-full bg-white p-0.5 shadow-xl mb-2 ring-4 ring-white/10">
+                                            <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20 shadow-inner">
+                                                <img
+                                                    className="w-full h-full object-cover"
+                                                    src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Teacher'}&background=0F172A&color=fff`}
+                                                    alt={auth?.user?.name || 'Teacher'}
+                                                />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-white font-black text-xs tracking-tighter uppercase mb-1">Educator Portal</h3>
+                                        <p className="text-blue-200 text-[8px] font-bold truncate w-full text-center opacity-80 px-2 line-height-none">
+                                            {auth?.user?.name || 'Educator Name'}
+                                        </p>
+                                    </div>
+
+                                    <div className="p-2 bg-white space-y-1.5">
+                                        <div className="grid grid-cols-2 gap-1.5">
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <Link
+                                                        href={route('teacher.profile.edit')}
+                                                        className={`${active ? 'bg-[#1E40AF] scale-[1.02]' : 'bg-[#1D4ED8]'} flex items-center justify-center space-x-1 p-1.5 rounded-lg text-white transition-all shadow-md h-full`}
+                                                    >
+                                                        <UserIcon className="h-3 w-3" />
+                                                        <span className="text-[7.5px] font-black uppercase tracking-wider">Profile</span>
+                                                    </Link>
+                                                )}
+                                            </Menu.Item>
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <Link
+                                                        href="#"
+                                                        className={`${active ? 'bg-amber-600 scale-[1.02]' : 'bg-amber-500'} flex items-center justify-center space-x-1 p-1.5 rounded-lg text-white transition-all shadow-md h-full`}
+                                                    >
+                                                        <KeyIcon className="h-3 w-3" />
+                                                        <span className="text-[7.5px] font-black uppercase tracking-wider">Secure</span>
+                                                    </Link>
+                                                )}
+                                            </Menu.Item>
+                                        </div>
+                                        <Menu.Item>
+                                            {({ active }) => (
+                                                <Link
+                                                    href={route('logout')}
+                                                    method="post"
+                                                    as="button"
+                                                    className={`${active ? 'bg-red-700 scale-[1.02]' : 'bg-red-600'} flex items-center justify-center space-x-1.5 p-1.5 rounded-lg text-white transition-all shadow-md w-full`}
+                                                >
+                                                    <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                                                    <span className="text-[9px] font-black uppercase tracking-wider">Exit System</span>
+                                                </Link>
+                                            )}
+                                        </Menu.Item>
+                                    </div>
+                                </Menu.Items>
+                            </Transition>
+                        </Menu>
+                    </div>
+                </header>
+
+                {/* Page Breadcrumbs Header */}
+                <div className="bg-white/50 border-b border-gray-200 px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center space-x-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                        <span>Teacher</span>
+                        <span className="text-gray-300">/</span>
+                        <span className="text-[#1D4ED8]">Portal</span>
                     </div>
 
-                    <div className="flex-1 flex items-center justify-end">
-                        <Link
-                            href={route('logout')}
-                            method="post"
-                            as="button"
-                            className="p-2 -mr-2 text-red-400 hover:text-red-300 transition-colors"
-                        >
-                            <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                        </Link>
-                    </div>
-                </div >
+                    <button
+                        onClick={() => window.history.back()}
+                        className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all shadow-sm group"
+                    >
+                        <ArrowUturnLeftIcon className="h-4 w-4 text-gray-400 group-hover:text-[#1D4ED8]" />
+                        <span className="text-[10px] font-bold uppercase tracking-tighter">Go Back</span>
+                    </button>
+                </div>
 
-                {/* Main Scrollable Content */}
-                < main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50" >
+                {/* Main Content */}
+                <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
                     {children}
-                </main >
+                </main>
 
                 <Footer />
-            </div >
+            </div>
         </div >
     );
 }

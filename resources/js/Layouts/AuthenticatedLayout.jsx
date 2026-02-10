@@ -18,9 +18,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] lg:bg-white lg:from-transparent lg:to-transparent">
-                    <div className="flex h-16 justify-between items-center">
+            <nav className="border-b border-white/10 bg-[#1D4ED8]">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+                    <div className="absolute inset-0 bg-blue-600/5 pointer-events-none"></div>
+                    <div className="flex h-16 justify-between items-center relative z-10">
                         {/* Mobile Menu Button - Left (lg breakpoint) */}
                         <div className="flex flex-1 items-center lg:hidden">
                             <button
@@ -66,7 +67,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         {/* Desktop & Mobile Centered Logo/Branding (lg breakpoint) */}
                         <div className="flex-shrink-0 flex items-center">
                             <Link href="/" className="lg:block hidden">
-                                <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                                <ApplicationLogo className="block h-9 w-auto fill-current text-white" />
                             </Link>
                             <h1 className="text-sm font-black text-white tracking-[0.2em] uppercase lg:hidden">
                                 {user.roles?.some(r => r.name === 'student') ? 'Student Portal' : 'School Portal'}
@@ -88,7 +89,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                                                    className="inline-flex items-center rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-black leading-4 text-white transition duration-150 ease-in-out hover:bg-white/20 focus:outline-none uppercase tracking-wider shadow-sm"
                                                 >
                                                     {user.name}
 

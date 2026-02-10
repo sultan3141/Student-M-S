@@ -26,6 +26,7 @@ import Footer from '@/Components/Footer';
 export default function RegistrarLayout({ children }) {
     const { auth } = usePage().props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [manageSchoolOpen, setManageSchoolOpen] = useState(true);
 
     const navigation = [
         { name: 'Dashboard', href: '/registrar/dashboard', icon: Squares2X2Icon },
@@ -53,7 +54,8 @@ export default function RegistrarLayout({ children }) {
             {/* Larger Sidebar - Same Navy Gradient as Director/Student */}
             <aside
                 className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                    } director-sidebar`}
+                    } director-sidebar shadow-2xl`}
+                style={{ background: 'linear-gradient(to top, #1D4ED8 0%, #F0F9FF 100%)' }}
             >
                 {/* Sidebar Top Branding */}
                 <div className="p-3 bg-[#1D4ED8] border-b border-white/10 shadow-lg">
@@ -82,43 +84,50 @@ export default function RegistrarLayout({ children }) {
                     </div>
                 </div>
 
-                {/* Sidebar Managed Section (Styled Header) */}
-                <div className="p-4">
-                    <div className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all">
+                {/* Sidebar Managed Section */}
+                <div className="p-4 pb-2">
+                    <div
+                        onClick={() => setManageSchoolOpen(!manageSchoolOpen)}
+                        className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all"
+                    >
                         <div className="flex items-center space-x-3">
                             <div className="p-1 px-2 border-r border-white/20">
                                 <AcademicCapIcon className="h-6 w-6 text-white" />
                             </div>
-                            <span className="text-white font-black uppercase tracking-wider text-sm">Registrar Panel</span>
+                            <span className="text-white font-black text-sm whitespace-nowrap uppercase tracking-tighter">Manage School</span>
                         </div>
                         <div className="flex items-center">
-                            <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-white/90 border-b-[6px] border-b-transparent ml-2 group-hover:translate-x-0.5 transition-transform"></div>
+                            <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent ${manageSchoolOpen ? 'border-b-[10px] border-b-white/90' : 'border-t-[10px] border-t-white/90'
+                                } ml-2 transition-all duration-300`}></div>
                         </div>
                     </div>
                 </div>
 
-                {/* Navigation Links */}
-                <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-                    {navigation.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = currentPath.startsWith(item.href);
+                {/* Navigation Links (Accordion Style) */}
+                <div className={`flex-1 transition-all duration-300 ease-in-out overflow-hidden ${manageSchoolOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                    <nav className="px-3 py-2 space-y-1 overflow-y-auto">
+                        {navigation.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = currentPath.startsWith(item.href);
 
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                onClick={() => setSidebarOpen(false)}
-                                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${isActive
-                                    ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm'
-                                    : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'
-                                    }`}
-                            >
-                                <Icon className="h-5 w-5 flex-shrink-0" />
-                                <span className="truncate">{item.name}</span>
-                            </Link>
-                        );
-                    })}
-                </nav>
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    onClick={() => setSidebarOpen(false)}
+                                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${isActive
+                                        ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm'
+                                        : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'
+                                        }`}
+                                >
+                                    <Icon className="h-4 w-4 flex-shrink-0" />
+                                    <span className="truncate">{item.name}</span>
+                                </Link>
+                            );
+                        })}
+                    </nav>
+                </div>
             </aside>
 
             {/* Main Content Area */}
@@ -242,7 +251,7 @@ export default function RegistrarLayout({ children }) {
                                                     href={route('logout')}
                                                     method="post"
                                                     as="button"
-                                                    className={`${active ? 'bg-red-700 scale-[1.02]' : 'bg-red-600'} flex items-center justify-center space-x-1.5 p-1.5 rounded-lg text-white transition-all shadow-md w-full group`}
+                                                    className="inline-flex items-center rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-black leading-4 text-white transition duration-150 ease-in-out hover:bg-white/20 focus:outline-none uppercase tracking-wider shadow-sm"
                                                 >
                                                     <ArrowRightOnRectangleIcon className="h-4 w-4" />
                                                     <span className="text-[9px] font-black uppercase tracking-wider">Exit</span>
@@ -257,23 +266,20 @@ export default function RegistrarLayout({ children }) {
                 </header>
 
                 {/* Page Content Header / Breadcrumbs */}
-                <div className="bg-gray-50/50 px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-end">
-                    <nav className="flex items-center space-x-2 text-sm font-medium">
-                        <Link
-                            href="/registrar/dashboard"
-                            className="text-blue-500 hover:text-blue-700 transition-colors"
-                        >
-                            Home
-                        </Link>
-                        <span className="text-gray-400">/</span>
-                        <button
-                            onClick={() => window.history.back()}
-                            className="ml-2 p-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
-                            title="Go Back"
-                        >
-                            <ArrowUturnLeftIcon className="h-5 w-5" />
-                        </button>
-                    </nav>
+                <div className="bg-white/50 border-b border-gray-200 px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center space-x-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                        <span>Registrar</span>
+                        <span className="text-gray-300">/</span>
+                        <span className="text-[#1D4ED8]">Portal</span>
+                    </div>
+
+                    <button
+                        onClick={() => window.history.back()}
+                        className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all shadow-sm group"
+                    >
+                        <ArrowUturnLeftIcon className="h-4 w-4 text-gray-400 group-hover:text-[#1D4ED8]" />
+                        <span className="text-[10px] font-bold uppercase tracking-tighter">Go Back</span>
+                    </button>
                 </div>
 
                 {/* Page Content */}
@@ -282,7 +288,7 @@ export default function RegistrarLayout({ children }) {
                 </main>
 
                 <Footer />
-            </div >
-        </div >
+            </div>
+        </div>
     );
 }
