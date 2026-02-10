@@ -39,6 +39,7 @@ import Footer from '@/Components/Footer';
 export default function StudentLayout({ children }) {
     const { auth } = usePage().props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [manageStudentOpen, setManageStudentOpen] = useState(true);
 
     const navigation = [
         {
@@ -124,9 +125,12 @@ export default function StudentLayout({ children }) {
                     </div>
                 </div>
 
-                {/* Sidebar Managed Section (Styled Header - Reference Form) */}
-                <div className="p-4">
-                    <div className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all">
+                {/* Sidebar Managed Section (Styled Header - Collapsible) */}
+                <div className="p-4 pb-2">
+                    <div
+                        onClick={() => setManageStudentOpen(!manageStudentOpen)}
+                        className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all"
+                    >
                         <div className="flex items-center space-x-3">
                             <div className="p-1 px-2 border-r border-white/20">
                                 <AcademicCapIcon className="h-6 w-6 text-white" />
@@ -134,33 +138,37 @@ export default function StudentLayout({ children }) {
                             <span className="text-white font-black uppercase tracking-wider text-sm">Manage Student</span>
                         </div>
                         <div className="flex items-center">
-                            <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-white/90 border-b-[6px] border-b-transparent ml-2 group-hover:translate-x-0.5 transition-transform"></div>
+                            <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent ${manageStudentOpen ? 'border-b-[10px] border-b-white/90' : 'border-t-[10px] border-t-white/90'
+                                } ml-2 transition-all duration-300`}></div>
                         </div>
                     </div>
                 </div>
 
-                {/* Navigation Links (Darker for Contrast) */}
-                <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-                    {navigation.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = currentPath.startsWith(item.href);
+                {/* Navigation Links (Collapsible/Accordion) */}
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${manageStudentOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                    <nav className="px-3 py-2 space-y-1">
+                        {navigation.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = currentPath.startsWith(item.href);
 
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                onClick={() => setSidebarOpen(false)}
-                                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${isActive
-                                    ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm'
-                                    : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'
-                                    }`}
-                            >
-                                <Icon className="h-5 w-5 flex-shrink-0" />
-                                <span className="truncate">{item.name}</span>
-                            </Link>
-                        );
-                    })}
-                </nav>
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    onClick={() => setSidebarOpen(false)}
+                                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${isActive
+                                        ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm'
+                                        : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'
+                                        }`}
+                                >
+                                    <Icon className="h-5 w-5 flex-shrink-0" />
+                                    <span className="truncate">{item.name}</span>
+                                </Link>
+                            );
+                        })}
+                    </nav>
+                </div>
             </aside>
 
             {/* Main Content Area */}
