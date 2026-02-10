@@ -221,6 +221,28 @@ export default function AcademicYearRecordShow({
                                             </tr>
                                         ))}
                                     </tbody>
+                                    <tfoot className="bg-gray-50 border-t-2 border-gray-100">
+                                        <tr>
+                                            <td className="px-4 py-4 text-left text-sm font-black text-gray-900 uppercase tracking-wider">
+                                                Total Average
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`font-bold text-base ${semester1_average ? 'text-gray-900' : 'text-gray-400'}`}>
+                                                    {semester1_average ? `${semester1_average}%` : '-'}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`font-bold text-base ${semester2_average ? 'text-gray-900' : 'text-gray-400'}`}>
+                                                    {semester2_average ? `${semester2_average}%` : '-'}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`font-black text-lg ${final_average ? 'text-blue-700' : 'text-gray-400'}`}>
+                                                    {final_average ? `${final_average}%` : '-'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         ) : (
