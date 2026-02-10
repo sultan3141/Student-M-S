@@ -272,17 +272,17 @@ export default function AcademicYearRecordShow({
                                             </td>
                                             <td className="px-4 py-4 text-center">
                                                 <span className={`font-bold text-base ${rank_s1 !== '-' ? 'text-gray-900' : 'text-gray-400'}`}>
-                                                    {rank_s1 !== '-' ? `#${rank_s1}` : '-'}
+                                                    {rank_s1 !== '-' ? `${rank_s1}` : '-'}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-4 text-center">
                                                 <span className={`font-bold text-base ${rank_s2 !== '-' ? 'text-gray-900' : 'text-gray-400'}`}>
-                                                    {rank_s2 !== '-' ? `#${rank_s2}` : '-'}
+                                                    {rank_s2 !== '-' ? `${rank_s2}` : '-'}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-4 text-center">
                                                 <span className={`font-black text-lg ${final_rank !== '-' ? 'text-blue-700' : 'text-gray-400'}`}>
-                                                    {final_rank !== '-' ? `#${final_rank}` : '-'}
+                                                    {final_rank !== '-' ? `${final_rank}` : '-'}
                                                 </span>
                                             </td>
                                         </tr>
