@@ -205,10 +205,10 @@ export default function StudentLayout({ children }) {
                                 leaveFrom="transform opacity-100 scale-100"
                                 leaveTo="transform opacity-0 scale-95"
                             >
-                                <Menu.Items className="absolute right-0 top-full mt-4 w-72 origin-top-right divide-y divide-gray-100 rounded-[2rem] bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 transform border-8 border-white">
+                                <Menu.Items className="absolute right-0 top-full mt-4 w-64 origin-top-right divide-y divide-gray-100 rounded-[2rem] bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 transform border-8 border-white">
                                     {/* Dropdown Header (Premium Navy Gradient) */}
-                                    <div className="bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#1E3A8A] p-10 flex flex-col items-center">
-                                        <div className="w-28 h-28 rounded-full bg-white p-1.5 shadow-2xl mb-6 ring-8 ring-white/10">
+                                    <div className="bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#1E3A8A] p-6 flex flex-col items-center">
+                                        <div className="w-20 h-20 rounded-full bg-white p-1 shadow-2xl mb-4 ring-8 ring-white/10">
                                             <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20 shadow-inner">
                                                 <img
                                                     className="w-full h-full object-cover"
@@ -217,24 +217,24 @@ export default function StudentLayout({ children }) {
                                                 />
                                             </div>
                                         </div>
-                                        <h3 className="text-white font-black text-2xl tracking-tighter uppercase mb-1">Welcome!</h3>
-                                        <div className="h-0.5 w-12 bg-blue-400/50 rounded-full mb-2"></div>
-                                        <p className="text-blue-200 text-xs font-bold truncate w-full text-center opacity-80 px-4">
+                                        <h3 className="text-white font-black text-lg tracking-tighter uppercase mb-1">Welcome!</h3>
+                                        <div className="h-0.5 w-8 bg-blue-400/50 rounded-full mb-2"></div>
+                                        <p className="text-blue-200 text-[10px] font-bold truncate w-full text-center opacity-80 px-4">
                                             {auth?.user?.name || 'Student Name'}
                                         </p>
                                     </div>
 
                                     {/* Action Buttons (Refined Horizontal Styles) */}
-                                    <div className="p-4 bg-white space-y-3">
-                                        <div className="grid grid-cols-2 gap-3">
+                                    <div className="p-3 bg-white space-y-2">
+                                        <div className="grid grid-cols-2 gap-2">
                                             <Menu.Item>
                                                 {({ active }) => (
                                                     <Link
                                                         href={route('student.profile.edit')}
-                                                        className={`${active ? 'bg-[#1E40AF] scale-[1.02]' : 'bg-[#1D4ED8]'} flex flex-col items-center justify-center p-4 rounded-2xl text-white transition-all shadow-lg shadow-blue-900/10 group h-full`}
+                                                        className={`${active ? 'bg-[#1E40AF] scale-[1.02]' : 'bg-[#1D4ED8]'} flex flex-col items-center justify-center p-2.5 rounded-xl text-white transition-all shadow-lg shadow-blue-900/10 group h-full`}
                                                     >
-                                                        <UserIcon className="h-6 w-6 mb-2" />
-                                                        <span className="text-[10px] font-black uppercase tracking-wider">Profile</span>
+                                                        <UserIcon className="h-5 w-5 mb-1" />
+                                                        <span className="text-[9px] font-black uppercase tracking-wider">Profile</span>
                                                     </Link>
                                                 )}
                                             </Menu.Item>
@@ -243,10 +243,10 @@ export default function StudentLayout({ children }) {
                                                 {({ active }) => (
                                                     <Link
                                                         href={route('student.password.edit')}
-                                                        className={`${active ? 'bg-amber-600 scale-[1.02]' : 'bg-amber-500'} flex flex-col items-center justify-center p-4 rounded-2xl text-white transition-all shadow-lg shadow-amber-900/10 group h-full`}
+                                                        className={`${active ? 'bg-amber-600 scale-[1.02]' : 'bg-amber-500'} flex flex-col items-center justify-center p-2.5 rounded-xl text-white transition-all shadow-lg shadow-amber-900/10 group h-full`}
                                                     >
-                                                        <KeyIcon className="h-6 w-6 mb-2" />
-                                                        <span className="text-[10px] font-black uppercase tracking-wider">Secure</span>
+                                                        <KeyIcon className="h-5 w-5 mb-1" />
+                                                        <span className="text-[9px] font-black uppercase tracking-wider">Secure</span>
                                                     </Link>
                                                 )}
                                             </Menu.Item>
@@ -258,10 +258,10 @@ export default function StudentLayout({ children }) {
                                                     href={route('logout')}
                                                     method="post"
                                                     as="button"
-                                                    className={`${active ? 'bg-red-700 scale-[1.02]' : 'bg-red-600'} flex items-center justify-center space-x-3 p-4 rounded-2xl text-white transition-all shadow-lg shadow-red-900/10 w-full group`}
+                                                    className={`${active ? 'bg-red-700 scale-[1.02]' : 'bg-red-600'} flex items-center justify-center space-x-2 p-2.5 rounded-xl text-white transition-all shadow-lg shadow-red-900/10 w-full group`}
                                                 >
-                                                    <ArrowRightOnRectangleIcon className="h-6 w-6" />
-                                                    <span className="text-sm font-black uppercase tracking-wider">Exit</span>
+                                                    <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                                                    <span className="text-xs font-black uppercase tracking-wider">Exit</span>
                                                 </Link>
                                             )}
                                         </Menu.Item>
