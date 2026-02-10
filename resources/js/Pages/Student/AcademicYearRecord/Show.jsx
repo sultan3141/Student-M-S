@@ -51,40 +51,7 @@ export default function AcademicYearRecordShow({
             <Head title={`Academic Year - ${academic_year?.name}`} />
 
             <div className="max-w-7xl mx-auto space-y-6 pb-12">
-                {/* Header */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <Link
-                            href={route('student.dashboard')}
-                            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-                        >
-                            <ArrowLeftIcon className="w-5 h-5 mr-2" />
-                            <span className="font-medium">Back to Dashboard</span>
-                        </Link>
-                        {is_complete ? (
-                            <div className="flex items-center space-x-2 bg-green-50 text-green-700 px-4 py-2 rounded-lg border border-green-200">
-                                <CheckCircleIcon className="w-5 h-5" />
-                                <span className="font-semibold text-sm">Complete</span>
-                            </div>
-                        ) : (
-                            <div className="flex items-center space-x-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-lg border border-amber-200">
-                                <ClockIcon className="w-5 h-5" />
-                                <span className="font-semibold text-sm">In Progress</span>
-                            </div>
-                        )}
-                    </div>
-                    <div className="flex items-center space-x-3">
-                        <div className="p-3 bg-blue-50 rounded-lg">
-                            <AcademicCapIcon className="w-8 h-8 text-blue-600" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                Academic Year {academic_year?.name}
-                            </h1>
-                            <p className="text-gray-600">Annual Performance Report</p>
-                        </div>
-                    </div>
-                </div>
+                {/* Header Removed as per request */}
 
                 {/* Performance Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
