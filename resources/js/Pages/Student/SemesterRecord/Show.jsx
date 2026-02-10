@@ -85,7 +85,7 @@ export default function SemesterRecordShow({ student, semester, academic_year, s
                 </div>
 
                 {/* KPI Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Overall Average */}
                     <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-4 text-white shadow-lg border border-blue-500">
                         <p className="text-blue-100 text-xs font-bold uppercase mb-1">Semester Average</p>
@@ -116,21 +116,7 @@ export default function SemesterRecordShow({ student, semester, academic_year, s
                         </div>
                     </div>
 
-                    {/* Total Credits */}
-                    <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-200">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <p className="text-gray-600 text-xs font-bold uppercase mb-1">Total Credits</p>
-                                <h2 className="text-3xl font-black text-gray-900">
-                                    {subject_records?.reduce((acc, curr) => acc + (curr.subject.credit_hours || 3), 0)}
-                                </h2>
-                                <p className="text-gray-500 text-xs font-semibold mt-1">Credits Earned</p>
-                            </div>
-                            <div className="bg-indigo-100 p-2 rounded-lg">
-                                <DocumentTextIcon className="w-6 h-6 text-indigo-600" />
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
 
                 {/* Subject Performance Table */}
