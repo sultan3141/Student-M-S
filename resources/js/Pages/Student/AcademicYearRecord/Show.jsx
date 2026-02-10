@@ -55,46 +55,6 @@ export default function AcademicYearRecordShow({
 
                 {/* Performance Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Semester 1 */}
-                    <Link href={route('student.academic.semester.show', { semester: '1', academicYear: academic_year?.id })} className="block group">
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-blue-300 transition-all">
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="text-sm font-semibold text-gray-600">Semester 1</span>
-                                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                                    <span className="text-blue-600 font-bold text-sm">1</span>
-                                </div>
-                            </div>
-                            <div className="mb-2">
-                                <div className="text-3xl font-bold text-gray-900">
-                                    {(totalScoreS1 > 0) ? parseFloat(totalScoreS1.toFixed(2)) : 'N/A'}
-                                </div>
-                            </div>
-                            <div className="text-xs text-blue-600 font-medium group-hover:underline">
-                                View Details →
-                            </div>
-                        </div>
-                    </Link>
-
-                    {/* Semester 2 */}
-                    <Link href={route('student.academic.semester.show', { semester: '2', academicYear: academic_year?.id })} className="block group">
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-indigo-300 transition-all">
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="text-sm font-semibold text-gray-600">Semester 2</span>
-                                <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center">
-                                    <span className="text-indigo-600 font-bold text-sm">2</span>
-                                </div>
-                            </div>
-                            <div className="mb-2">
-                                <div className="text-3xl font-bold text-gray-900">
-                                    {(totalScoreS2 > 0) ? parseFloat(totalScoreS2.toFixed(2)) : 'N/A'}
-                                </div>
-                            </div>
-                            <div className="text-xs text-indigo-600 font-medium group-hover:underline">
-                                View Details →
-                            </div>
-                        </div>
-                    </Link>
-
                     {/* Final Score */}
                     <div className="bg-blue-600 rounded-lg shadow-sm p-6">
                         <div className="flex items-center justify-between mb-3">
