@@ -205,7 +205,7 @@ export default function StudentLayout({ children }) {
                                 leaveFrom="transform opacity-100 scale-100"
                                 leaveTo="transform opacity-0 scale-95"
                             >
-                                <Menu.Items className="absolute right-0 top-full mt-2 w-52 origin-top-right divide-y divide-gray-100 rounded-[1.5rem] bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 transform border-4 border-white">
+                                <Menu.Items className="absolute right-0 top-full mt-0 w-52 origin-top-right divide-y divide-gray-100 rounded-b-[1.5rem] bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 transform">
                                     {/* Dropdown Header (Premium Navy Gradient Matched to Top Bar) */}
                                     <div className="bg-gradient-to-br from-[#0F172A] via-[#111827] to-[#1D4ED8] p-3 flex flex-col items-center">
                                         <div className="w-12 h-12 rounded-full bg-white p-0.5 shadow-xl mb-2 ring-4 ring-white/10">
