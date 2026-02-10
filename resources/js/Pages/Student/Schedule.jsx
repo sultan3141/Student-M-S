@@ -16,34 +16,32 @@ export default function Schedule({ student, schedule }) {
             <div className="py-8 bg-gray-50 min-h-screen">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header Card */}
-                    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-blue-100 rounded-full">
-                                    <CalendarIcon className="w-8 h-8 text-blue-600" />
-                                </div>
-                                <div>
-                                    <h1 className="text-3xl font-bold text-gray-800">CLASS SCHEDULE</h1>
-                                    <p className="text-gray-600">
-                                        {student.grade?.name} - {student.section?.name}
-                                    </p>
-                                </div>
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl shadow-lg p-8 mb-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-blue-500/20 rounded-xl">
+                                <CalendarIcon className="w-10 h-10 text-blue-300" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold text-white tracking-wide">CLASS SCHEDULE</h1>
+                                <p className="text-blue-200 text-sm mt-1">
+                                    {student.grade?.name} - {student.section?.name}
+                                </p>
                             </div>
                         </div>
                     </div>
 
                     {/* Schedule Table */}
-                    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                        <div className="overflow-x-auto p-6">
-                            <table className="w-full min-w-[1000px] table-fixed border-collapse border-2 border-gray-600">
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                        <div className="overflow-x-auto">
+                            <table className="w-full border-collapse">
                                 <thead>
-                                    <tr className="bg-gray-200">
-                                        <th className="border-2 border-gray-600 px-6 py-4 text-center font-bold text-gray-700 text-lg w-1/6">
+                                    <tr className="bg-gray-50 border-b-2 border-gray-300">
+                                        <th className="border-r border-gray-300 px-4 py-3 text-center font-bold text-gray-700 text-sm uppercase tracking-wider w-32">
                                             TIME
                                         </th>
                                         {days.map(day => (
-                                            <th key={day} className="border-2 border-gray-600 px-6 py-4 text-center font-bold text-gray-700 text-lg w-1/6">
-                                                {day}
+                                            <th key={day} className="border-r border-gray-300 last:border-r-0 px-4 py-3 text-center font-bold text-gray-700 text-sm uppercase tracking-wider">
+                                                {day.substring(0, 3)}
                                             </th>
                                         ))}
                                     </tr>
@@ -73,7 +71,7 @@ export default function Schedule({ student, schedule }) {
                                         if (allSlots.length === 0) {
                                             return (
                                                 <tr>
-                                                    <td colSpan="6" className="border-2 border-gray-600 px-4 py-8 text-center text-gray-500 italic">
+                                                    <td colSpan="6" className="px-4 py-12 text-center text-gray-400 italic">
                                                         No schedule entries found for your class.
                                                     </td>
                                                 </tr>
@@ -81,9 +79,12 @@ export default function Schedule({ student, schedule }) {
                                         }
 
                                         return allSlots.map((slot, idx) => (
-                                            <tr key={idx}>
-                                                <td className="border-2 border-gray-600 px-4 py-4 text-center font-semibold bg-gray-100 text-gray-700">
-                                                    {slot.start} - {slot.end}
+                                            <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                                                <td className="border-r border-gray-300 px-4 py-4 text-center font-semibold bg-gray-50 text-gray-700 text-sm">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span>{slot.start}</span>
+                                                        <span className="text-gray-400 text-xs">{slot.end}</span>
+                                                    </div>
                                                 </td>
                                                 {days.map(day => {
                                                     const daySchedule = schedule[day] || [];
@@ -97,14 +98,19 @@ export default function Schedule({ student, schedule }) {
                                                     return (
                                                         <td
                                                             key={day}
-                                                            className="border-2 border-gray-600 px-4 py-4 text-center min-h-[60px]"
+                                                            className="border-r border-gray-200 last:border-r-0 px-4 py-4 text-center"
                                                         >
                                                             {item ? (
-                                                                <div className="font-semibold text-gray-900 text-base">
-                                                                    {item.activity}
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold uppercase">
+                                                                        CLASS
+                                                                    </span>
+                                                                    <span className="font-semibold text-gray-900 text-sm">
+                                                                        {item.activity}
+                                                                    </span>
                                                                 </div>
                                                             ) : (
-                                                                <span className="text-gray-300">-</span>
+                                                                <span className="text-gray-300 text-lg">-</span>
                                                             )}
                                                         </td>
                                                     );
