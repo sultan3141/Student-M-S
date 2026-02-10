@@ -133,25 +133,6 @@ export default function StudentLayout({ children }) {
                         );
                     })}
                 </nav>
-
-                {/* Sidebar Footer with Profile - RESTORED (Name only) */}
-                <div className="p-4 border-t border-white border-opacity-10 bg-black/20 mt-auto">
-                    <div className="flex items-center space-x-3">
-                        <img
-                            className="w-10 h-10 rounded-lg ring-2 ring-white ring-opacity-20 shadow-xl object-cover"
-                            src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=1E3A8A&color=fff`}
-                            alt={auth?.user?.name || 'Student'}
-                        />
-                        <div className="flex-1 min-w-0">
-                            <p className="text-white text-xs font-bold truncate">
-                                {auth?.user?.name || 'Student Name'}
-                            </p>
-                            <p className="text-blue-300 text-[10px] uppercase font-black tracking-widest opacity-80 mt-0.5">
-                                Student
-                            </p>
-                        </div>
-                    </div>
-                </div>
             </aside>
 
             {/* Main Content Area */}
