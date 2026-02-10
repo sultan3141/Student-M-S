@@ -87,7 +87,7 @@ export default function AcademicYearRecordShow({
                 </div>
 
                 {/* Performance Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Semester 1 */}
                     <Link href={route('student.academic.semester.show', { semester: '1', academicYear: academic_year?.id })} className="block group">
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-blue-300 transition-all">
@@ -142,24 +142,6 @@ export default function AcademicYearRecordShow({
                         {final_average && (
                             <div className={`inline-block px-3 py-1 rounded-md font-bold text-sm ${getGradeColor(final_average)}`}>
                                 Grade {getLetterGrade(final_average)}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Rank */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-semibold text-gray-600">Class Rank</span>
-                            <TrophySolid className="w-6 h-6 text-amber-500" />
-                        </div>
-                        <div className="mb-2">
-                            <div className="text-3xl font-bold text-gray-900">
-                                #{final_rank || '-'}
-                            </div>
-                        </div>
-                        {total_students && (
-                            <div className="text-sm text-gray-600">
-                                of {total_students} students
                             </div>
                         )}
                     </div>
