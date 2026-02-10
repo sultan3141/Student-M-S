@@ -21,6 +21,11 @@ export default function AcademicYearRecordShow({
     total_students,
     is_complete
 }) {
+    // Calculate totals from subjects
+    const totalScoreS1 = subjects.reduce((acc, sub) => acc + (parseFloat(sub.semester1_average) || 0), 0);
+    const totalScoreS2 = subjects.reduce((acc, sub) => acc + (parseFloat(sub.semester2_average) || 0), 0);
+    const totalScoreFinal = subjects.reduce((acc, sub) => acc + (parseFloat(sub.final_average) || 0), 0);
+
     const getGradeColor = (average) => {
         if (!average) return 'text-gray-400 bg-gray-100';
         if (average >= 90) return 'text-emerald-700 bg-emerald-50 border-emerald-200';
@@ -92,8 +97,7 @@ export default function AcademicYearRecordShow({
                             </div>
                             <div className="mb-2">
                                 <div className="text-3xl font-bold text-gray-900">
-                                    {semester1_average || 'N/A'}
-                                    {semester1_average && <span className="text-lg text-gray-500">%</span>}
+                                    {(totalScoreS1 > 0) ? parseFloat(totalScoreS1.toFixed(2)) : 'N/A'}
                                 </div>
                             </div>
                             <div className="text-xs text-blue-600 font-medium group-hover:underline">
@@ -113,8 +117,7 @@ export default function AcademicYearRecordShow({
                             </div>
                             <div className="mb-2">
                                 <div className="text-3xl font-bold text-gray-900">
-                                    {semester2_average || 'N/A'}
-                                    {semester2_average && <span className="text-lg text-gray-500">%</span>}
+                                    {(totalScoreS2 > 0) ? parseFloat(totalScoreS2.toFixed(2)) : 'N/A'}
                                 </div>
                             </div>
                             <div className="text-xs text-indigo-600 font-medium group-hover:underline">
@@ -123,16 +126,15 @@ export default function AcademicYearRecordShow({
                         </div>
                     </Link>
 
-                    {/* Final Average */}
+                    {/* Final Score */}
                     <div className="bg-blue-600 rounded-lg shadow-sm p-6">
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-semibold text-blue-100">Final Average</span>
+                            <span className="text-sm font-semibold text-blue-100">Final Score</span>
                             <ChartBarIcon className="w-6 h-6 text-blue-200" />
                         </div>
                         <div className="mb-2">
                             <div className="text-3xl font-bold text-white">
-                                {final_average || '--'}
-                                {final_average && <span className="text-lg text-blue-200">%</span>}
+                                {(totalScoreFinal > 0) ? parseFloat(totalScoreFinal.toFixed(2)) : '--'}
                             </div>
                         </div>
                         {final_average && (
@@ -205,17 +207,17 @@ export default function AcademicYearRecordShow({
                                                 </td>
                                                 <td className="px-4 py-4 text-center">
                                                     <span className={`font-semibold ${subject.semester1_average !== null ? 'text-gray-900' : 'text-gray-400'}`}>
-                                                        {subject.semester1_average !== null ? `${subject.semester1_average}%` : '-'}
+                                                        {subject.semester1_average !== null ? subject.semester1_average : '-'}
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-4 text-center">
                                                     <span className={`font-semibold ${subject.semester2_average !== null ? 'text-gray-900' : 'text-gray-400'}`}>
-                                                        {subject.semester2_average !== null ? `${subject.semester2_average}%` : '-'}
+                                                        {subject.semester2_average !== null ? subject.semester2_average : '-'}
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-4 text-center">
                                                     <span className={`font-bold text-lg ${subject.final_average ? 'text-gray-900' : 'text-gray-400'}`}>
-                                                        {subject.final_average ? `${subject.final_average}%` : '-'}
+                                                        {subject.final_average ? subject.final_average : '-'}
                                                     </span>
                                                 </td>
                                             </tr>
@@ -224,21 +226,21 @@ export default function AcademicYearRecordShow({
                                     <tfoot className="bg-gray-50 border-t-2 border-gray-100">
                                         <tr>
                                             <td className="px-4 py-4 text-left text-sm font-black text-gray-900 uppercase tracking-wider">
-                                                Total Average
+                                                Total Score
                                             </td>
                                             <td className="px-4 py-4 text-center">
-                                                <span className={`font-bold text-base ${semester1_average ? 'text-gray-900' : 'text-gray-400'}`}>
-                                                    {semester1_average ? `${semester1_average}%` : '-'}
+                                                <span className={`font-bold text-base ${(totalScoreS1 > 0) ? 'text-gray-900' : 'text-gray-400'}`}>
+                                                    {(totalScoreS1 > 0) ? parseFloat(totalScoreS1.toFixed(2)) : '-'}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-4 text-center">
-                                                <span className={`font-bold text-base ${semester2_average ? 'text-gray-900' : 'text-gray-400'}`}>
-                                                    {semester2_average ? `${semester2_average}%` : '-'}
+                                                <span className={`font-bold text-base ${(totalScoreS2 > 0) ? 'text-gray-900' : 'text-gray-400'}`}>
+                                                    {(totalScoreS2 > 0) ? parseFloat(totalScoreS2.toFixed(2)) : '-'}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-4 text-center">
-                                                <span className={`font-black text-lg ${final_average ? 'text-blue-700' : 'text-gray-400'}`}>
-                                                    {final_average ? `${final_average}%` : '-'}
+                                                <span className={`font-black text-lg ${(totalScoreFinal > 0) ? 'text-blue-700' : 'text-gray-400'}`}>
+                                                    {(totalScoreFinal > 0) ? parseFloat(totalScoreFinal.toFixed(2)) : '-'}
                                                 </span>
                                             </td>
                                         </tr>
