@@ -16,7 +16,8 @@ import {
     Bars3Icon,
     ChevronDownIcon,
     XMarkIcon,
-    BellIcon
+    BellIcon,
+    Squares2X2Icon
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 
@@ -59,7 +60,7 @@ export default function TeacherLayout({ children }) {
     };
 
     const navigation = [
-        { name: 'Dashboard Overview', href: route('teacher.dashboard'), icon: HomeIcon, current: route().current('teacher.dashboard') },
+        { name: 'Dashboard Overview', href: route('teacher.dashboard'), icon: Squares2X2Icon, current: route().current('teacher.dashboard') },
         {
             name: 'Declare Result',
             icon: ClipboardDocumentCheckIcon,
@@ -107,19 +108,24 @@ export default function TeacherLayout({ children }) {
                 ></div>
             )}
 
-            {/* Main Sidebar */}
-            <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#1E293B] text-white transform transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                {/* Logo Section */}
-                <div className="h-16 flex items-center px-6 border-b border-gray-700/50">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <AcademicCapIcon className="w-5 h-5 text-white" />
+            {/* Main Sidebar - Fixed strategy to match Student portal */}
+            <aside
+                className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#1E293B] text-white transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+            >
+                {/* Sidebar Header */}
+                <div className="p-4 border-b border-white border-opacity-20">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-lg font-bold text-white">Teacher</h1>
+                            <p className="text-sm text-blue-200">Portal</p>
                         </div>
-                        <span className="text-lg font-bold tracking-wide">EduPanel</span>
+                        <button
+                            onClick={() => setSidebarOpen(false)}
+                            className="lg:hidden text-white hover:text-blue-200"
+                        >
+                            <XMarkIcon className="h-5 w-5" />
+                        </button>
                     </div>
-                    <button className="md:hidden ml-auto text-gray-400" onClick={() => setSidebarOpen(false)}>
-                        <XMarkIcon className="w-6 h-6" />
-                    </button>
                 </div>
 
                 <div className="flex flex-col h-[calc(100vh-4rem)] justify-between">
@@ -245,87 +251,88 @@ export default function TeacherLayout({ children }) {
                         ))}
                     </nav>
 
-                    {/* Bottom Navigation (Settings & Logout) */}
-                    <div className="px-4 py-6 space-y-1 border-t border-gray-700/50">
-                        {bottomNavigation.map((item) => (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className={classNames(
-                                    item.current ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white',
-                                    'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200'
-                                )}
-                            >
-                                <item.icon className="mr-3 flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-white" />
-                                {item.name}
-                            </Link>
-                        ))}
+                    {/* Sidebar Profile & Notifications */}
+                    <div className="px-6 py-6 border-t border-gray-700/50 bg-[#1e1e2d]/30">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="relative group cursor-pointer">
+                                <img
+                                    className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30 transition-all group-hover:ring-blue-500"
+                                    src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Teacher'}&background=random`}
+                                    alt={auth?.user?.name || 'Teacher'}
+                                />
+                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[#1E293B] rounded-full"></div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-white truncate leading-tight">
+                                    {auth?.user?.name || 'Teacher'}
+                                </p>
+                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">Teacher</p>
+                            </div>
+                            <button className="relative p-2 text-gray-400 hover:text-white transition-colors">
+                                <BellIcon className="w-5 h-5" />
+                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-[#1E293B]"></span>
+                            </button>
+                        </div>
 
-                        <Link
-                            href={route('logout')}
-                            method="post"
-                            as="button"
-                            className="w-full group flex items-center px-4 py-3 text-sm font-medium text-gray-400 rounded-xl hover:bg-white/5 hover:text-white transition-all duration-200"
-                        >
-                            <ArrowRightOnRectangleIcon className="h-5 w-5 mr-3" />
-                            <span>Logout</span>
-                        </Link>
+                        <div className="space-y-1">
+                            {bottomNavigation.map((item) => (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className={classNames(
+                                        item.current ? 'bg-blue-600/20 text-blue-400' : 'text-gray-400 hover:bg-white/5 hover:text-white',
+                                        'group flex items-center px-3 py-2 text-xs font-medium rounded-lg transition-all duration-200'
+                                    )}
+                                >
+                                    <item.icon className="mr-3 flex-shrink-0 h-4 w-4" />
+                                    {item.name}
+                                </Link>
+                            ))}
+
+                            <Link
+                                href={route('logout')}
+                                method="post"
+                                as="button"
+                                className="w-full group flex items-center px-3 py-2 text-xs font-medium text-red-400/80 rounded-lg hover:bg-red-500/10 hover:text-red-400 transition-all duration-200"
+                            >
+                                <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
+                                <span>Logout</span>
+                            </Link>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </aside>
 
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                {/* Premium Header - Refactored for Mobile Centered Branding */}
-                <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 h-16 flex items-center shadow-sm border-b border-gray-100">
-                    {/* Mobile Menu Button - Left */}
-                    <div className="flex-1 flex items-center px-4 md:hidden">
-                        <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 text-gray-500 hover:text-navy-900 transition-colors">
-                            <Bars3Icon className="w-6 h-6" />
+            {/* Main Content Area - LG Padding Sync */}
+            <div className="lg:pl-64 flex flex-col min-h-screen">
+                {/* Premium Mobile Top Bar - Synced with Student Design (lg breakpoint) */}
+                <div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10">
+                    <div className="flex-1 flex items-center">
+                        <button
+                            onClick={() => setSidebarOpen(true)}
+                            className="p-2 -ml-2 text-white/80 hover:text-white transition-colors"
+                        >
+                            <Bars3Icon className="h-6 w-6" />
                         </button>
                     </div>
 
-                    {/* Desktop Content - Left */}
-                    <div className="hidden md:flex flex-1 items-center px-8 gap-4">
-                        <div className="flex items-center gap-2">
-                            <HomeIcon className="w-5 h-5 text-blue-600" />
-                            <span className="text-xs font-black text-navy-900 uppercase tracking-[0.3em]">Teacher Dashboard</span>
-                        </div>
-                    </div>
-
-                    {/* Centered Branding - Mobile Only */}
-                    <div className="md:hidden flex-shrink-0">
-                        <h1 className="text-base font-bold text-navy-900 tracking-tight">
+                    <div className="flex-shrink-0">
+                        <h1 className="text-sm font-black text-white tracking-[0.2em] uppercase">
                             Teacher Portal
                         </h1>
                     </div>
 
-                    {/* Right Side Content (Profile/Notifications) */}
-                    <div className="flex items-center px-4 md:px-8 space-x-4 flex-1 justify-end">
-                        {/* Notifications */}
-                        <button className="relative p-2 text-gray-400 hover:text-blue-600 rounded-xl transition-all">
-                            <BellIcon className="w-6 h-6" />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-400 rounded-full ring-2 ring-white"></span>
-                        </button>
-
-                        <div className="h-8 w-px bg-gray-100 hidden sm:block"></div>
-
-                        {/* Profile Dropdown Snippet */}
-                        <div className="flex items-center group cursor-pointer">
-                            <span className="text-sm font-bold text-navy-900 mr-3 hidden sm:block group-hover:text-blue-600 transition-colors uppercase tracking-wider">
-                                {auth?.user?.name || 'Teacher'}
-                            </span>
-                            <div className="relative">
-                                <img
-                                    className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-100 shadow-md group-hover:ring-blue-600 transition-all"
-                                    src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Teacher'}&background=random`}
-                                    alt={auth?.user?.name || 'Teacher'}
-                                />
-                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
-                            </div>
-                        </div>
+                    <div className="flex-1 flex items-center justify-end">
+                        <Link
+                            href={route('logout')}
+                            method="post"
+                            as="button"
+                            className="p-2 -mr-2 text-red-400 hover:text-red-300 transition-colors"
+                        >
+                            <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                        </Link>
                     </div>
-                </header>
+                </div>
 
                 {/* Main Scrollable Content */}
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50">
