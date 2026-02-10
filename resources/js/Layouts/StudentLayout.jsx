@@ -135,7 +135,7 @@ export default function StudentLayout({ children }) {
                             <div className="p-1 px-2 border-r border-white/20">
                                 <AcademicCapIcon className="h-6 w-6 text-white" />
                             </div>
-                            <span className="text-white font-black uppercase tracking-wider text-sm">Manage Student</span>
+                            <span className="text-white font-black text-sm whitespace-nowrap">Manage Student</span>
                         </div>
                         <div className="flex items-center">
                             <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent ${manageStudentOpen ? 'border-b-[10px] border-b-white/90' : 'border-t-[10px] border-t-white/90'
