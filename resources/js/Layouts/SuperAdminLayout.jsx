@@ -82,11 +82,28 @@ export default function SuperAdminLayout({ children }) {
                 className={`fixed inset-y-0 left-0 z-50 h-screen w-64 bg-gradient-to-b from-indigo-900 to-indigo-950 text-white transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
                 {/* Sidebar Header */}
-                <div className="p-4 border-b border-white border-opacity-20">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-lg font-bold text-white">Super Admin</h1>
-                            <p className="text-sm text-indigo-200">Portal</p>
+                <div className="p-3 border-b border-white border-opacity-20 bg-black/10">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-white p-1 shadow-2xl group flex-shrink-0">
+                            <div className="w-full h-full rounded-full bg-gradient-to-tr from-[#0F172A] to-[#1E3A8A] flex items-center justify-center text-white overflow-hidden border border-white/20">
+                                <img
+                                    src="/images/logo.png"
+                                    alt="Logo"
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "https://ui-avatars.com/api/?name=Darul+Ulum&background=0F172A&color=fff";
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="min-w-0">
+                            <h1 className="text-sm font-black text-white tracking-wider uppercase leading-tight truncate">
+                                Darul-Ulum
+                            </h1>
+                            <p className="text-[8px] font-bold text-indigo-200 tracking-[0.2em] uppercase mt-0.5 opacity-80 truncate">
+                                Islamic School (Super Admin)
+                            </p>
                         </div>
                     </div>
                 </div>
