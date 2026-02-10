@@ -53,26 +53,7 @@ export default function AcademicYearRecordShow({
             <div className="max-w-7xl mx-auto space-y-6 pb-12">
                 {/* Header Removed as per request */}
 
-                {/* Performance Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Final Score */}
-                    <div className="bg-blue-600 rounded-lg shadow-sm p-6">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-semibold text-blue-100">Final Score</span>
-                            <ChartBarIcon className="w-6 h-6 text-blue-200" />
-                        </div>
-                        <div className="mb-2">
-                            <div className="text-3xl font-bold text-white">
-                                {(totalScoreFinal > 0) ? parseFloat(totalScoreFinal.toFixed(2)) : '--'}
-                            </div>
-                        </div>
-                        {final_average && (
-                            <div className={`inline-block px-3 py-1 rounded-md font-bold text-sm ${getGradeColor(final_average)}`}>
-                                Grade {getLetterGrade(final_average)}
-                            </div>
-                        )}
-                    </div>
-                </div>
+                {/* Performance Summary Cards Removed as per request */}
 
                 {/* Subject Performance */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200">
