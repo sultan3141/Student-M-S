@@ -137,13 +137,13 @@ export default function DirectorLayout({ children }) {
                         <span>Logout</span>
                     </Link>
                 </div>
-            </aside >
+            </aside>
 
             {/* Main Content Area - LG Padding Sync */}
-            < div className="lg:pl-64 flex flex-col min-h-screen" >
+            <div className="lg:pl-64 flex flex-col min-h-screen">
 
                 {/* Premium Mobile Top Bar - Synced with Student Design */}
-                < div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10" >
+                <div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10">
                     <div className="flex-1 flex items-center">
                         <button
                             onClick={() => setSidebarOpen(true)}
@@ -169,15 +169,15 @@ export default function DirectorLayout({ children }) {
                             <ArrowRightOnRectangleIcon className="h-5 w-5" />
                         </Link>
                     </div>
-                </div >
+                </div>
 
                 {/* Ultra Compact Page Content */}
-                < main className="p-3 lg:p-5 flex-1 bg-gray-50/50" >
+                <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
                     {children}
-                </main >
+                </main>
 
                 <Footer />
-            </div >
-        </div >
+            </div>
+        </div>
     );
 }

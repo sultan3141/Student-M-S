@@ -43,7 +43,7 @@ export default function Dashboard({ statistics, recentData, semesterStatus }) {
                                                 <LockClosedIcon className="h-4 w-4 text-gray-300" />
                                             )}
                                             <span className="text-white text-sm">
-                                                Semester {sem.semester}: 
+                                                Semester {sem.semester}:
                                                 <span className={`ml-1 font-semibold ${sem.is_open ? 'text-green-300' : 'text-gray-300'}`}>
                                                     {sem.status.toUpperCase()}
                                                 </span>
@@ -133,8 +133,16 @@ export default function Dashboard({ statistics, recentData, semesterStatus }) {
 
             {/* Analysis Section with Charts and Gender Distribution */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                <StudentBarChart studentCount={students.total} instructorCount={instructors} />
-                <StudentDonutChart data={students} title="Student Gender Distribution" />
+                <StudentBarChart total={students.total} male={students.male} female={students.female} />
+                <StudentDonutChart
+                    data={{
+                        labels: ['Male', 'Female'],
+                        values: [students.male, students.female],
+                        percentages: [students.malePercent, students.femalePercent],
+                        total: students.total
+                    }}
+                    title="Student Gender Distribution"
+                />
             </div>
 
             {/* Gender Distribution Analysis */}
@@ -147,8 +155,8 @@ export default function Dashboard({ statistics, recentData, semesterStatus }) {
                             <span className="font-semibold">{students.male} ({students.malePercent}%)</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                                className="bg-blue-500 h-2 rounded-full transition-all" 
+                            <div
+                                className="bg-blue-500 h-2 rounded-full transition-all"
                                 style={{ width: `${students.malePercent}%` }}
                             ></div>
                         </div>
@@ -159,8 +167,8 @@ export default function Dashboard({ statistics, recentData, semesterStatus }) {
                             <span className="font-semibold">{students.female} ({students.femalePercent}%)</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                                className="bg-pink-500 h-2 rounded-full transition-all" 
+                            <div
+                                className="bg-pink-500 h-2 rounded-full transition-all"
                                 style={{ width: `${students.femalePercent}%` }}
                             ></div>
                         </div>

@@ -10,6 +10,7 @@ import {
     Legend,
     Tooltip,
 } from 'recharts';
+import { ChartBarIcon } from '@heroicons/react/24/outline';
 
 /**
  * Functional component for the dynamic assessment donut chart.

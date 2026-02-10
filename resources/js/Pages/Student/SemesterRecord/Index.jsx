@@ -48,24 +48,22 @@ const SemesterCard = memo(({ sem }) => (
             semester: sem.semester,
             academicYear: sem.academic_year_id
         })}
-        className="group relative bg-white rounded-lg p-3 border border-blue-100 shadow-sm hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all duration-300"
+        className="group relative bg-white rounded-lg p-2.5 border border-blue-100 shadow-sm hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all duration-300"
     >
-        <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center space-x-2.5">
-                <div className={`w-8 h-8 rounded-md flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300 ${sem.status === 'open'
+        <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-2">
+                <div className={`w-7 h-7 rounded flex items-center justify-center shadow-sm transform group-hover:scale-110 transition-transform duration-300 ${sem.status === 'open'
                     ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
                     : 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white'
                     }`}>
-                    <DocumentChartBarIcon className="w-4 h-4" />
+                    <DocumentChartBarIcon className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                    <div className="flex items-center gap-1.5">
-                        <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
-                            Semester {sem.semester}
-                        </h3>
-                    </div>
-                    <div className="mt-0 flex items-center gap-1">
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border ${sem.status === 'open'
+                    <h3 className="text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors leading-none">
+                        Semester {sem.semester}
+                    </h3>
+                    <div className="mt-0.5 flex items-center">
+                        <span className={`px-1 py-0 rounded-[3px] text-[8px] font-bold uppercase tracking-wider border ${sem.status === 'open'
                             ? 'bg-green-50 text-green-700 border-green-100'
                             : 'bg-blue-50 text-blue-700 border-blue-100'
                             }`}>
@@ -74,28 +72,23 @@ const SemesterCard = memo(({ sem }) => (
                     </div>
                 </div>
             </div>
-            <div className="p-1 rounded-full bg-gray-50 group-hover:bg-blue-50 text-gray-400 group-hover:text-blue-600 transition-colors">
-                <ChevronRightIcon className="w-3.5 h-3.5" />
+            <div className="p-1 rounded bg-gray-50 group-hover:bg-blue-50 text-gray-400 group-hover:text-blue-600 transition-colors">
+                <ChevronRightIcon className="w-3 h-3" />
             </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100/50">
-            <div className="space-y-0.5">
-                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Average Score</p>
-                <p className={`text-base font-black ${sem.status === 'open' ? 'text-green-600' : 'text-blue-700'}`}>
-                    {sem.average}
-                    <span className="text-[10px] text-gray-400 ml-0.5 font-bold">%</span>
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100/50">
+            <div className="flex items-center gap-1">
+                <p className="text-[9px] font-bold text-gray-400 uppercase">Avg:</p>
+                <p className={`text-sm font-black ${sem.status === 'open' ? 'text-green-600' : 'text-blue-700'}`}>
+                    {sem.average}%
                 </p>
             </div>
-            <div className="space-y-0.5">
-                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Class Rank</p>
-                <div className="flex items-center space-x-1">
-                    <TrophyIcon className="w-3 h-3 text-amber-500" />
-                    <p className="text-sm font-black text-gray-900">
-                        {sem.rank}
-                        <span className="text-[9px] font-bold text-gray-400 ml-0.5 tracking-tight">/ {sem.total_students}</span>
-                    </p>
-                </div>
+            <div className="flex items-center gap-1">
+                <TrophyIcon className="w-3 h-3 text-amber-500" />
+                <p className="text-[10px] font-black text-gray-900">
+                    Rank: {sem.rank}<span className="text-gray-400 font-bold ml-0.5">/ {sem.total_students}</span>
+                </p>
             </div>
         </div>
     </Link>
@@ -145,7 +138,7 @@ export default function SemesterRecordIndex({ student, history = [] }) {
                             <h2 className="text-sm font-black text-blue-900 uppercase tracking-widest">Select Your Grade</h2>
                         </div>
                         {history.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 gap-4">
                                 {history.map((entry) => (
                                     <GradeCard key={entry.id} entry={entry} onSelect={setSelectedGrade} />
                                 ))}
@@ -161,7 +154,7 @@ export default function SemesterRecordIndex({ student, history = [] }) {
                             <DocumentChartBarIcon className="w-5 h-5 text-indigo-600" />
                             <h2 className="text-sm font-black text-indigo-900 uppercase tracking-widest">Select Semester Result</h2>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-4">
                             {selectedGrade.semesters.map((sem, index) => (
                                 <SemesterCard key={index} sem={sem} />
                             ))}

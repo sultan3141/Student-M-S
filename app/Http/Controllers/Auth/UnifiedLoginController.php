@@ -44,27 +44,20 @@ class UnifiedLoginController extends Controller
         ]);
 
         if ($user->hasRole('super_admin')) {
-            \Log::info('Redirecting to super_admin.dashboard');
             return redirect()->route('super_admin.dashboard');
         } elseif ($user->hasRole('admin')) {
-            \Log::info('Redirecting to director.dashboard');
             return redirect()->route('director.dashboard');
         } elseif ($user->hasRole('registrar')) {
-            \Log::info('Redirecting to registrar.dashboard');
             return redirect()->route('registrar.dashboard');
         } elseif ($user->hasRole('teacher')) {
-            \Log::info('Redirecting to teacher.dashboard');
             return redirect()->route('teacher.dashboard');
         } elseif ($user->hasRole('student') || $user->student) {
-            \Log::info('Redirecting to student.dashboard');
             return redirect()->route('student.dashboard');
         } elseif ($user->hasRole('parent')) {
-            \Log::info('Redirecting to parent.dashboard');
             return redirect()->route('parent.dashboard');
         }
 
         // Default fallback
-        \Log::warning('No role matched, using default redirect');
         return redirect()->intended(route('dashboard'));
 
     }

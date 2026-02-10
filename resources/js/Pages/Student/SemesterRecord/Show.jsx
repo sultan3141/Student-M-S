@@ -56,67 +56,15 @@ export default function SemesterRecordShow({ student, semester, academic_year, s
             <Head title={`Semester ${semester} - ${academic_year?.name}`} />
 
             <div className="max-w-7xl mx-auto space-y-5 pb-8">
-                {/* Navigation and Header */}
+                {/* Navigation */}
                 <div>
                     <Link
                         href={route('student.academic.semesters')}
-                        className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors mb-3 group"
+                        className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors mb-2 group"
                     >
                         <ArrowLeftIcon className="w-4 h-4 mr-1.5 group-hover:-translate-x-1 transition-transform" />
                         <span className="text-sm font-semibold">Back to All Semesters</span>
                     </Link>
-
-                    <div className="flex flex-col md:flex-row md:items-end justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                Semester {semester} Report
-                            </h1>
-                            <p className="mt-1 text-sm text-gray-600 font-medium">{academic_year?.name} Academic Year</p>
-                        </div>
-                        <div className="flex space-x-2 mt-3 md:mt-0">
-                            <span className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase">
-                                Grade {student?.grade?.name || 'N/A'}
-                            </span>
-                            <span className="px-3 py-1.5 bg-gray-700 text-white rounded-lg text-xs font-bold uppercase">
-                                Section {student?.section?.name || 'N/A'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* KPI Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Overall Average */}
-                    <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-4 text-white shadow-lg border border-blue-500">
-                        <p className="text-blue-100 text-xs font-bold uppercase mb-1">Semester Average</p>
-                        <div className="flex items-baseline space-x-1">
-                            <h2 className="text-4xl font-black">{semester_average}</h2>
-                            <span className="text-xl font-bold">%</span>
-                        </div>
-                        <div className="mt-2">
-                            <span className="bg-white/20 px-2 py-0.5 rounded text-xs font-bold uppercase">
-                                Grade {getLetterGrade(semester_average)}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Class Rank */}
-                    <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-200">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <p className="text-gray-600 text-xs font-bold uppercase mb-1">Class Rank</p>
-                                <h2 className="text-3xl font-black text-gray-900">
-                                    <span className="text-amber-500">#</span>{rank}
-                                </h2>
-                                <p className="text-gray-500 text-xs font-semibold mt-1">out of {total_students} students</p>
-                            </div>
-                            <div className="bg-amber-100 p-2 rounded-lg">
-                                <TrophyIcon className="w-6 h-6 text-amber-600" />
-                            </div>
-                        </div>
-                    </div>
-
-
                 </div>
 
                 {/* Subject Performance Table */}
@@ -150,38 +98,67 @@ export default function SemesterRecordShow({ student, semester, academic_year, s
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {subject_records && subject_records.length > 0 ? (
-                                    subject_records.map((record, index) => (
-                                        <tr key={index} className="hover:bg-blue-50 transition-colors">
-                                            <td className="px-4 py-3 whitespace-nowrap">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-gray-900">{record.subject.name}</span>
-                                                    <span className="text-xs text-gray-600 font-mono">{record.subject.code}</span>
-                                                    {record.graded_assessments < record.total_assessments && (
-                                                        <span className="text-xs text-yellow-700 font-semibold mt-0.5">
-                                                            {record.graded_assessments}/{record.total_assessments} graded
+                                    <>
+                                        {subject_records.map((record, index) => (
+                                            <tr key={index} className="hover:bg-blue-50 transition-colors">
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-bold text-gray-900">{record.subject.name}</span>
+                                                        <span className="text-xs text-gray-600 font-mono">{record.subject.code}</span>
+                                                        {record.graded_assessments < record.total_assessments && (
+                                                            <span className="text-xs text-yellow-700 font-semibold mt-0.5">
+                                                                {record.graded_assessments}/{record.total_assessments} graded
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-center">
+                                                    {record.graded_assessments > 0 ? (
+                                                        <span className="text-base font-bold text-blue-600">
+                                                            {record.total_score} / {record.total_max_score}
                                                         </span>
+                                                    ) : (
+                                                        <span className="text-sm text-gray-500 font-semibold">Not Graded</span>
                                                     )}
-                                                </div>
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-right">
+                                                    <button
+                                                        onClick={() => openModal(record)}
+                                                        className="px-3 py-1.5 bg-blue-600 rounded-lg font-bold text-xs text-white uppercase hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                                    >
+                                                        View Details
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+
+                                        {/* Total Row */}
+                                        <tr className="bg-gray-100/80 font-bold border-t-2 border-gray-300">
+                                            <td className="px-4 py-3 text-sm text-gray-900 uppercase tracking-wider">Total Marks</td>
+                                            <td className="px-4 py-3 text-center text-lg text-blue-700">
+                                                {subject_records.reduce((acc, curr) => acc + (curr.total_score || 0), 0)} / {subject_records.reduce((acc, curr) => acc + (curr.total_max_score || 0), 0)}
                                             </td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-center">
-                                                {record.graded_assessments > 0 ? (
-                                                    <span className="text-base font-bold text-blue-600">
-                                                        {record.total_score} / {record.total_max_score}
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-sm text-gray-500 font-semibold">Not Graded</span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-right">
-                                                <button
-                                                    onClick={() => openModal(record)}
-                                                    className="px-3 py-1.5 bg-blue-600 rounded-lg font-bold text-xs text-white uppercase hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                                                >
-                                                    View Details
-                                                </button>
-                                            </td>
+                                            <td className="px-4 py-3"></td>
                                         </tr>
-                                    ))
+
+                                        {/* Average Row */}
+                                        <tr className="bg-blue-50/50 font-bold">
+                                            <td className="px-4 py-3 text-sm text-gray-900 uppercase tracking-wider">Average Percentage</td>
+                                            <td className="px-4 py-3 text-center text-lg text-blue-700">
+                                                {semester_average}%
+                                            </td>
+                                            <td className="px-4 py-3"></td>
+                                        </tr>
+
+                                        {/* Rank Row */}
+                                        <tr className="bg-amber-50/30 font-bold">
+                                            <td className="px-4 py-3 text-sm text-gray-900 uppercase tracking-wider">Class Rank</td>
+                                            <td className="px-4 py-3 text-center text-lg text-amber-600">
+                                                #{rank} <span className="text-xs text-gray-400 font-bold whitespace-nowrap">/ {total_students}</span>
+                                            </td>
+                                            <td className="px-4 py-3"></td>
+                                        </tr>
+                                    </>
                                 ) : (
                                     <tr>
                                         <td colSpan="3" className="px-4 py-8 text-center">
