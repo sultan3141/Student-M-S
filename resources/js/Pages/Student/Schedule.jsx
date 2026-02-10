@@ -33,10 +33,10 @@ export default function Schedule({ student, schedule }) {
                     {/* Schedule Table */}
                     <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
                         <div className="overflow-x-auto">
-                            <table className="w-full border-collapse">
+                            <table className="w-full table-fixed border-collapse">
                                 <thead>
                                     <tr className="bg-gray-50 border-b-2 border-gray-300">
-                                        <th className="border-r border-gray-300 px-4 py-3 text-center font-bold text-gray-700 text-sm uppercase tracking-wider w-32">
+                                        <th className="border-r border-gray-300 px-4 py-3 text-center font-bold text-gray-700 text-sm uppercase tracking-wider w-[15%]">
                                             TIME
                                         </th>
                                         {days.map(day => (
