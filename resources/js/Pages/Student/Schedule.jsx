@@ -1,28 +1,35 @@
 import React from 'react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import StudentLayout from '@/Layouts/StudentLayout';
+import { Head, Link } from '@inertiajs/react';
+import {
+    CalendarIcon,
+    ArrowLeftIcon,
+} from '@heroicons/react/24/outline';
 
 export default function Schedule({ student, schedule }) {
-    return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    My Class Schedule
-                </h2>
-            }
-        >
-            <Head title="My Schedule" />
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
-            <div className="py-8">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    {/* Header */}
+    return (
+        <StudentLayout>
+            <Head title="Class Schedule" />
+
+            <div className="py-8 bg-gray-50 min-h-screen">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Header Card */}
                     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
-                            CLASS SCHEDULE
-                        </h1>
-                        <p className="text-center text-xl text-gray-600">
-                            {student.grade?.name} - {student.section?.name}
-                        </p>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-blue-100 rounded-full">
+                                    <CalendarIcon className="w-8 h-8 text-blue-600" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold text-gray-800">CLASS SCHEDULE</h1>
+                                    <p className="text-gray-600">
+                                        {student.grade?.name} - {student.section?.name}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Schedule Table */}
@@ -34,7 +41,7 @@ export default function Schedule({ student, schedule }) {
                                         <th className="border-2 border-gray-600 px-6 py-4 text-center font-bold text-gray-700 text-lg">
                                             TIME
                                         </th>
-                                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => (
+                                        {days.map(day => (
                                             <th key={day} className="border-2 border-gray-600 px-6 py-4 text-center font-bold text-gray-700 text-lg">
                                                 {day}
                                             </th>
@@ -78,7 +85,7 @@ export default function Schedule({ student, schedule }) {
                                                 <td className="border-2 border-gray-600 px-4 py-4 text-center font-semibold bg-gray-100 text-gray-700">
                                                     {slot.start} - {slot.end}
                                                 </td>
-                                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => {
+                                                {days.map(day => {
                                                     const daySchedule = schedule[day] || [];
                                                     const item = Array.isArray(daySchedule)
                                                         ? daySchedule.find(i =>
@@ -111,13 +118,22 @@ export default function Schedule({ student, schedule }) {
                     </div>
 
                     {/* Footer Info */}
-                    <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p className="text-sm text-blue-800 text-center">
-                            📅 This is your class schedule. Please arrive on time for each period.
-                        </p>
+                    <div className="mt-8 flex justify-between items-center">
+                        <Link
+                            href={route('student.dashboard')}
+                            className="flex items-center gap-2 text-blue-600 font-bold hover:underline"
+                        >
+                            <ArrowLeftIcon className="w-4 h-4" />
+                            Return to Dashboard
+                        </Link>
+                        <div className="bg-blue-50 border border-blue-100 rounded-lg px-6 py-3">
+                            <p className="text-sm text-blue-800 italic">
+                                📅 Official weekly timetable as assigned by the school registry.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </StudentLayout>
     );
 }
