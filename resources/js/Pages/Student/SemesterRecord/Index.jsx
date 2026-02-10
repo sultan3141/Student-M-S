@@ -113,26 +113,26 @@ export default function SemesterRecordIndex({ student, history = [] }) {
 
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <div className="flex items-center gap-3">
-                            {selectedGrade && (
+                {selectedGrade && (
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => setSelectedGrade(null)}
                                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors group"
                                 >
                                     <ArrowLeftIcon className="w-6 h-6 text-gray-600 group-hover:text-blue-600" />
                                 </button>
-                            )}
-                            <h1 className="text-3xl font-bold text-gray-900">
-                                {selectedGrade ? `Results for ${selectedGrade.grade?.name}` : 'Semester Academic Records'}
-                            </h1>
+                                <h1 className="text-3xl font-bold text-gray-900">
+                                    Results for {selectedGrade.grade?.name}
+                                </h1>
+                            </div>
+                            <p className="mt-2 text-gray-600 ml-1">
+                                Academic Year {selectedGrade.academic_year?.name}
+                            </p>
                         </div>
-                        <p className="mt-2 text-gray-600 ml-1">
-                            {selectedGrade ? `Academic Year ${selectedGrade.academic_year?.name}` : 'Track your academic journey across all grades and semesters'}
-                        </p>
                     </div>
-                </div>
+                )}
 
 
 
