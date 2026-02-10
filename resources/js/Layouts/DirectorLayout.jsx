@@ -66,11 +66,28 @@ export default function DirectorLayout({ children }) {
                     } director-sidebar`}
             >
                 {/* Minimal Sidebar Header */}
-                <div className="p-3 border-b border-white border-opacity-20">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-base font-bold text-white">Director</h1>
-                            <p className="text-xs text-gold-400">Portal</p>
+                <div className="p-3 border-b border-white border-opacity-20 bg-black/10">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-white p-1 shadow-2xl group flex-shrink-0">
+                            <div className="w-full h-full rounded-full bg-gradient-to-tr from-[#0F172A] to-[#1E3A8A] flex items-center justify-center text-white overflow-hidden border border-white/20">
+                                <img
+                                    src="/images/logo.png"
+                                    alt="Logo"
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "https://ui-avatars.com/api/?name=Darul+Ulum&background=0F172A&color=fff";
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="min-w-0">
+                            <h1 className="text-sm font-black text-white tracking-wider uppercase leading-tight truncate">
+                                Darul-Ulum
+                            </h1>
+                            <p className="text-[8px] font-bold text-gold-400 tracking-[0.2em] uppercase mt-0.5 opacity-80 truncate">
+                                Islamic School (Director)
+                            </p>
                         </div>
                     </div>
                 </div>

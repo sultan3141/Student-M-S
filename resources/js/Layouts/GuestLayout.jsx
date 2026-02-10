@@ -18,7 +18,7 @@ export default function GuestLayout({ children }) {
                         Darul-Ulum
                     </h1>
                     <p className="text-sm font-bold text-amber-200 tracking-[0.3em] uppercase mt-1 opacity-90">
-                        Education Portal
+                        Islamic School
                     </p>
                 </div>
             </div>
