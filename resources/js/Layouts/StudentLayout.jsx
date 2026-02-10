@@ -202,97 +202,95 @@ export default function StudentLayout({ children }) {
                         </button>
 
                         {/* User Profile Dropdown (Refined Navy Style) */}
-                        <div className="relative ml-2 sm:ml-4 border-l border-white/10 pl-4 h-8 flex items-center">
-                            <Menu as="div" className="relative h-full flex items-center">
-                                <Menu.Button className="flex items-center focus:outline-none h-full group">
-                                    <div className="w-10 h-10 rounded-full bg-white p-0.5 shadow-2xl flex-shrink-0 flex items-center justify-center transform group-hover:scale-110 transition-all duration-300 ring-4 ring-white/10">
-                                        <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20">
-                                            <img
-                                                className="w-full h-full object-cover"
-                                                src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=0F172A&color=fff`}
-                                                alt={auth?.user?.name || 'Student'}
-                                            />
-                                        </div>
+                        <Menu as="div" className="relative ml-2 sm:ml-4 border-l border-white/10 pl-4 flex items-center">
+                            <Menu.Button className="flex items-center focus:outline-none group py-1">
+                                <div className="w-10 h-10 rounded-full bg-white p-0.5 shadow-2xl flex-shrink-0 flex items-center justify-center transform group-hover:scale-110 transition-all duration-300 ring-4 ring-white/10">
+                                    <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20">
+                                        <img
+                                            className="w-full h-full object-cover"
+                                            src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=0F172A&color=fff`}
+                                            alt={auth?.user?.name || 'Student'}
+                                        />
                                     </div>
-                                </Menu.Button>
+                                </div>
+                            </Menu.Button>
 
-                                <Transition
-                                    as={Fragment}
-                                    enter="transition ease-out duration-200"
-                                    enterFrom="transform opacity-0 scale-95"
-                                    enterTo="transform opacity-100 scale-100"
-                                    leave="transition ease-in duration-75"
-                                    leaveFrom="transform opacity-100 scale-100"
-                                    leaveTo="transform opacity-0 scale-95"
-                                >
-                                    <Menu.Items className="absolute right-0 top-full mt-4 w-72 origin-top-right divide-y divide-gray-100 rounded-[2rem] bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 transform border-8 border-white">
-                                        {/* Dropdown Header (Premium Navy Gradient) */}
-                                        <div className="bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#1E3A8A] p-8 flex flex-col items-center">
-                                            <div className="w-20 h-20 rounded-full bg-white p-1 shadow-2xl mb-4 ring-8 ring-white/5">
-                                                <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20 shadow-inner">
-                                                    <img
-                                                        className="w-full h-full object-cover"
-                                                        src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=0F172A&color=fff`}
-                                                        alt={auth?.user?.name || 'Student'}
-                                                    />
-                                                </div>
+                            <Transition
+                                as={Fragment}
+                                enter="transition ease-out duration-200"
+                                enterFrom="transform opacity-0 scale-95"
+                                enterTo="transform opacity-100 scale-100"
+                                leave="transition ease-in duration-75"
+                                leaveFrom="transform opacity-100 scale-100"
+                                leaveTo="transform opacity-0 scale-95"
+                            >
+                                <Menu.Items className="absolute right-0 top-full mt-4 w-72 origin-top-right divide-y divide-gray-100 rounded-[2rem] bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 transform border-8 border-white">
+                                    {/* Dropdown Header (Premium Navy Gradient) */}
+                                    <div className="bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#1E3A8A] p-8 flex flex-col items-center">
+                                        <div className="w-20 h-20 rounded-full bg-white p-1 shadow-2xl mb-4 ring-8 ring-white/5">
+                                            <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20 shadow-inner">
+                                                <img
+                                                    className="w-full h-full object-cover"
+                                                    src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=0F172A&color=fff`}
+                                                    alt={auth?.user?.name || 'Student'}
+                                                />
                                             </div>
-                                            <h3 className="text-white font-black text-xl tracking-tight uppercase">Welcome!</h3>
-                                            <p className="text-blue-200 text-xs font-bold truncate w-full text-center mt-1 opacity-80 px-4">
-                                                {auth?.user?.name || 'Student Name'}
-                                            </p>
                                         </div>
+                                        <h3 className="text-white font-black text-xl tracking-tight uppercase">Welcome!</h3>
+                                        <p className="text-blue-200 text-xs font-bold truncate w-full text-center mt-1 opacity-80 px-4">
+                                            {auth?.user?.name || 'Student Name'}
+                                        </p>
+                                    </div>
 
-                                        {/* Action Buttons (Refined Horizontal Styles) */}
-                                        <div className="p-5 space-y-3 bg-white">
-                                            <Menu.Item>
-                                                {({ active }) => (
-                                                    <Link
-                                                        href={route('student.profile.edit')}
-                                                        className={`${active ? 'bg-[#1E40AF] scale-[1.02]' : 'bg-[#1D4ED8]'} flex items-center space-x-4 p-4 rounded-2xl text-white transition-all shadow-lg shadow-blue-900/10 group`}
-                                                    >
-                                                        <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors">
-                                                            <UserIcon className="h-6 w-6" />
-                                                        </div>
-                                                        <span className="text-sm font-black uppercase tracking-wider">Profile</span>
-                                                    </Link>
-                                                )}
-                                            </Menu.Item>
+                                    {/* Action Buttons (Refined Horizontal Styles) */}
+                                    <div className="p-5 space-y-3 bg-white">
+                                        <Menu.Item>
+                                            {({ active }) => (
+                                                <Link
+                                                    href={route('student.profile.edit')}
+                                                    className={`${active ? 'bg-[#1E40AF] scale-[1.02]' : 'bg-[#1D4ED8]'} flex items-center space-x-4 p-4 rounded-2xl text-white transition-all shadow-lg shadow-blue-900/10 group`}
+                                                >
+                                                    <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors">
+                                                        <UserIcon className="h-6 w-6" />
+                                                    </div>
+                                                    <span className="text-sm font-black uppercase tracking-wider">Profile</span>
+                                                </Link>
+                                            )}
+                                        </Menu.Item>
 
-                                            <Menu.Item>
-                                                {({ active }) => (
-                                                    <Link
-                                                        href={route('student.password.edit')}
-                                                        className={`${active ? 'bg-amber-600 scale-[1.02]' : 'bg-amber-500'} flex items-center space-x-4 p-4 rounded-2xl text-white transition-all shadow-lg shadow-amber-900/10 group`}
-                                                    >
-                                                        <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors">
-                                                            <KeyIcon className="h-6 w-6" />
-                                                        </div>
-                                                        <span className="text-sm font-black uppercase tracking-wider">Secure</span>
-                                                    </Link>
-                                                )}
-                                            </Menu.Item>
+                                        <Menu.Item>
+                                            {({ active }) => (
+                                                <Link
+                                                    href={route('student.password.edit')}
+                                                    className={`${active ? 'bg-amber-600 scale-[1.02]' : 'bg-amber-500'} flex items-center space-x-4 p-4 rounded-2xl text-white transition-all shadow-lg shadow-amber-900/10 group`}
+                                                >
+                                                    <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors">
+                                                        <KeyIcon className="h-6 w-6" />
+                                                    </div>
+                                                    <span className="text-sm font-black uppercase tracking-wider">Secure</span>
+                                                </Link>
+                                            )}
+                                        </Menu.Item>
 
-                                            <Menu.Item>
-                                                {({ active }) => (
-                                                    <Link
-                                                        href={route('logout')}
-                                                        method="post"
-                                                        as="button"
-                                                        className={`${active ? 'bg-red-700 scale-[1.02]' : 'bg-red-600'} flex items-center space-x-4 p-4 rounded-2xl text-white transition-all shadow-lg shadow-red-900/10 w-full group`}
-                                                    >
-                                                        <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors">
-                                                            <ArrowRightOnRectangleIcon className="h-6 w-6" />
-                                                        </div>
-                                                        <span className="text-sm font-black uppercase tracking-wider">Exit</span>
-                                                    </Link>
-                                                )}
-                                            </Menu.Item>
-                                        </div>
-                                    </Menu.Items>
-                                </Transition>
-                            </Menu>
-                        </div>
+                                        <Menu.Item>
+                                            {({ active }) => (
+                                                <Link
+                                                    href={route('logout')}
+                                                    method="post"
+                                                    as="button"
+                                                    className={`${active ? 'bg-red-700 scale-[1.02]' : 'bg-red-600'} flex items-center space-x-4 p-4 rounded-2xl text-white transition-all shadow-lg shadow-red-900/10 w-full group`}
+                                                >
+                                                    <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors">
+                                                        <ArrowRightOnRectangleIcon className="h-6 w-6" />
+                                                    </div>
+                                                    <span className="text-sm font-black uppercase tracking-wider">Exit</span>
+                                                </Link>
+                                            )}
+                                        </Menu.Item>
+                                    </div>
+                                </Menu.Items>
+                            </Transition>
+                        </Menu>
                     </div>
                 </header>
 
@@ -322,7 +320,7 @@ export default function StudentLayout({ children }) {
                 </main>
 
                 <Footer />
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
