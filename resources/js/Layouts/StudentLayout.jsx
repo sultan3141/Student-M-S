@@ -230,10 +230,10 @@ export default function StudentLayout({ children }) {
                                                 {({ active }) => (
                                                     <Link
                                                         href={route('student.profile.edit')}
-                                                        className={`${active ? 'bg-[#1E40AF] scale-[1.02]' : 'bg-[#1D4ED8]'} flex flex-col items-center justify-center p-1.5 rounded-lg text-white transition-all shadow-md group h-full`}
+                                                        className={`${active ? 'bg-[#1E40AF] scale-[1.02]' : 'bg-[#1D4ED8]'} flex items-center justify-center space-x-1 p-1.5 rounded-lg text-white transition-all shadow-md group h-full`}
                                                     >
-                                                        <UserIcon className="h-4 w-4 mb-0.5" />
-                                                        <span className="text-[7px] font-black uppercase tracking-wider">Profile</span>
+                                                        <UserIcon className="h-3 w-3" />
+                                                        <span className="text-[7.5px] font-black uppercase tracking-wider">Profile</span>
                                                     </Link>
                                                 )}
                                             </Menu.Item>
@@ -242,10 +242,10 @@ export default function StudentLayout({ children }) {
                                                 {({ active }) => (
                                                     <Link
                                                         href={route('student.password.edit')}
-                                                        className={`${active ? 'bg-amber-600 scale-[1.02]' : 'bg-amber-500'} flex flex-col items-center justify-center p-1.5 rounded-lg text-white transition-all shadow-md group h-full`}
+                                                        className={`${active ? 'bg-amber-600 scale-[1.02]' : 'bg-amber-500'} flex items-center justify-center space-x-1 p-1.5 rounded-lg text-white transition-all shadow-md group h-full`}
                                                     >
-                                                        <KeyIcon className="h-4 w-4 mb-0.5" />
-                                                        <span className="text-[7px] font-black uppercase tracking-wider">Secure</span>
+                                                        <KeyIcon className="h-3 w-3" />
+                                                        <span className="text-[7.5px] font-black uppercase tracking-wider">Secure</span>
                                                     </Link>
                                                 )}
                                             </Menu.Item>
