@@ -134,9 +134,9 @@ export default function StudentLayout({ children }) {
                     })}
                 </nav>
 
-                {/* Sidebar Footer with Profile - RESTORED */}
+                {/* Sidebar Footer with Profile Actions - RESTORED */}
                 <div className="p-4 border-t border-white border-opacity-10 bg-black/20 mt-auto">
-                    <div className="flex items-center space-x-3">
+                    <div className="mb-4 flex items-center space-x-3">
                         <img
                             className="w-10 h-10 rounded-lg ring-2 ring-white ring-opacity-20 shadow-xl object-cover"
                             src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=1E3A8A&color=fff`}
@@ -150,6 +150,37 @@ export default function StudentLayout({ children }) {
                                 Student
                             </p>
                         </div>
+                    </div>
+
+                    <div className="space-y-1">
+                        <Link
+                            href={route('student.profile.edit')}
+                            onClick={() => setSidebarOpen(false)}
+                            className="flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 hover:text-white transition-all w-full text-left"
+                        >
+                            <UserIcon className="h-4 w-4" />
+                            <span>Profile</span>
+                        </Link>
+
+                        <Link
+                            href={route('student.password.edit')}
+                            onClick={() => setSidebarOpen(false)}
+                            className="flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 hover:text-white transition-all w-full text-left"
+                        >
+                            <KeyIcon className="h-4 w-4" />
+                            <span>Secure</span>
+                        </Link>
+
+                        <Link
+                            href={route('logout')}
+                            method="post"
+                            as="button"
+                            onClick={() => setSidebarOpen(false)}
+                            className="flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-red-400 hover:bg-white/10 hover:text-red-300 transition-all w-full text-left"
+                        >
+                            <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                            <span>Exit</span>
+                        </Link>
                     </div>
                 </div>
             </aside>
