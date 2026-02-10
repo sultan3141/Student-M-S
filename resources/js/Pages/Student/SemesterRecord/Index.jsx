@@ -6,37 +6,37 @@ import { memo, useState } from 'react';
 const GradeCard = memo(({ entry, onSelect }) => (
     <div
         onClick={() => onSelect(entry)}
-        className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 transform transition-all hover:scale-[1.02] hover:shadow-lg group cursor-pointer"
+        className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 transform transition-all hover:scale-[1.02] hover:shadow-md group cursor-pointer"
     >
-        <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md">
-                    <AcademicCapIcon className="w-8 h-8 text-white" />
+        <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                    <AcademicCapIcon className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors leading-tight">
                         {entry.grade?.name}
                     </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                        <CalendarIcon className="w-4 h-4 text-gray-400" />
-                        <p className="text-sm font-semibold text-gray-600">
+                    <div className="flex items-center gap-1 mt-0">
+                        <CalendarIcon className="w-3 h-3 text-gray-400" />
+                        <p className="text-[10px] font-semibold text-gray-500">
                             {entry.academic_year?.name}
                         </p>
                     </div>
                 </div>
             </div>
-            <div className="p-2 rounded-xl bg-gray-50 group-hover:bg-blue-50 transition-colors border border-gray-200 group-hover:border-blue-200">
-                <ChevronRightIcon className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+            <div className="p-1 rounded-md bg-gray-50 group-hover:bg-blue-50 transition-colors border border-gray-100 group-hover:border-blue-100">
+                <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-600 transition-colors" />
             </div>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-                <UserGroupIcon className="w-4 h-4" />
-                <span className="font-medium">Section: <span className="text-gray-900 font-bold">{entry.section?.name}</span></span>
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+            <div className="flex items-center gap-1 text-[10px] text-gray-500">
+                <UserGroupIcon className="w-3 h-3" />
+                <span className="font-medium">Sec: <span className="text-gray-900 font-bold">{entry.section?.name}</span></span>
             </div>
-            <span className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider">
-                {entry.semesters?.length} Semester{entry.semesters?.length !== 1 ? 's' : ''}
+            <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border border-blue-100">
+                {entry.semesters?.length} Sem
             </span>
         </div>
     </div>
