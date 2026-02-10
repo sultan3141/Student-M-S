@@ -119,12 +119,6 @@ export default function TeacherLayout({ children }) {
                             <h1 className="text-lg font-bold text-white">Teacher</h1>
                             <p className="text-sm text-blue-200">Portal</p>
                         </div>
-                        <button
-                            onClick={() => setSidebarOpen(false)}
-                            className="lg:hidden text-white hover:text-blue-200"
-                        >
-                            <XMarkIcon className="h-5 w-5" />
-                        </button>
                     </div>
                 </div>
 
@@ -138,6 +132,7 @@ export default function TeacherLayout({ children }) {
                                         <div className="flex items-center group mb-1">
                                             <Link
                                                 href={item.href || '#'}
+                                                onClick={() => setSidebarOpen(false)}
                                                 className={classNames(
                                                     item.current ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-gray-400 hover:bg-white/5 hover:text-white',
                                                     'flex-1 flex items-center px-4 py-3 text-sm font-medium rounded-l-xl transition-all duration-200'
@@ -175,6 +170,7 @@ export default function TeacherLayout({ children }) {
                                                                         : item.id === 'teacher-assessments'
                                                                             ? route('teacher.assessments-simple.index', { grade_id: grade.id })
                                                                             : route('teacher.schedule', { grade_id: grade.id })}
+                                                                onClick={() => setSidebarOpen(false)}
                                                                 className={classNames(
                                                                     (item.id === 'declare-result' && route().current('teacher.declare-result.*') && route().params.grade_id == grade.id) ||
                                                                         (item.id === 'student-results' && route().current('teacher.students.manage-results') && route().params.grade_id == grade.id) ||
@@ -219,6 +215,7 @@ export default function TeacherLayout({ children }) {
                                                                         <Link
                                                                             key={section.id}
                                                                             href={href}
+                                                                            onClick={() => setSidebarOpen(false)}
                                                                             className={classNames(
                                                                                 isSectionCurrent ? 'text-blue-300 font-bold' : 'text-gray-600 hover:text-gray-300',
                                                                                 'block py-1 text-[10px] transition-colors'
@@ -238,6 +235,7 @@ export default function TeacherLayout({ children }) {
                                 ) : (
                                     <Link
                                         href={item.href}
+                                        onClick={() => setSidebarOpen(false)}
                                         className={classNames(
                                             item.current ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-gray-400 hover:bg-white/5 hover:text-white',
                                             'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200'
@@ -279,6 +277,7 @@ export default function TeacherLayout({ children }) {
                                 <Link
                                     key={item.name}
                                     href={item.href}
+                                    onClick={() => setSidebarOpen(false)}
                                     className={classNames(
                                         item.current ? 'bg-blue-600/20 text-blue-400' : 'text-gray-400 hover:bg-white/5 hover:text-white',
                                         'group flex items-center px-3 py-2 text-xs font-medium rounded-lg transition-all duration-200'
@@ -293,6 +292,7 @@ export default function TeacherLayout({ children }) {
                                 href={route('logout')}
                                 method="post"
                                 as="button"
+                                onClick={() => setSidebarOpen(false)}
                                 className="w-full group flex items-center px-3 py-2 text-xs font-medium text-red-400/80 rounded-lg hover:bg-red-500/10 hover:text-red-400 transition-all duration-200"
                             >
                                 <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
@@ -301,12 +301,12 @@ export default function TeacherLayout({ children }) {
                         </div>
                     </div>
                 </div>
-            </aside>
+            </aside >
 
             {/* Main Content Area - LG Padding Sync */}
-            <div className="lg:pl-64 flex flex-col min-h-screen">
+            < div className="lg:pl-64 flex flex-col min-h-screen" >
                 {/* Premium Mobile Top Bar - Synced with Student Design (lg breakpoint) */}
-                <div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10">
+                < div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10" >
                     <div className="flex-1 flex items-center">
                         <button
                             onClick={() => setSidebarOpen(true)}
@@ -332,15 +332,15 @@ export default function TeacherLayout({ children }) {
                             <ArrowRightOnRectangleIcon className="h-5 w-5" />
                         </Link>
                     </div>
-                </div>
+                </div >
 
                 {/* Main Scrollable Content */}
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50">
+                < main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50" >
                     {children}
-                </main>
+                </main >
 
                 <Footer />
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
