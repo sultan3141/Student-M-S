@@ -1,4 +1,16 @@
-/**
+/**- [x] Save and Prepare New Logo Image
+- [x] Implement Logo in Student Portal (Updated Layout)
+- [x] Implement Logo in Admin Portal Sidebar
+- [x] Implement Logo in Director Portal Sidebar
+- [x] Implement Logo in Teacher Portal Sidebar
+- [x] Implement Logo in Parent Portal Sidebar
+- [x] Implement Logo in Registrar Portal Sidebar
+- [x] Implement Logo in Super Admin Portal Sidebar
+- [x] Update Login/Auth Pages with New Logo
+- [x] Restore Profile Actions (Profile, Secure, Exit) and Refine Dropdown (Compact, Grid, Color Matched)
+- [/] Transition to Green Gradient Theme (Bottom-to-Top Dark-to-Light)
+- [ ] Update `director-theme.css` for Green Aesthetics
+- [ ] Final Verification & Walkthrough
  * Student Layout Component
  * Provides the sidebar navigation and mobile top bar for the Student Portal.
  */
@@ -84,35 +96,21 @@ export default function StudentLayout({ children }) {
                 className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     } director-sidebar`}
             >
-                {/* Sidebar Header */}
-                <div className="p-3 border-b border-white border-opacity-20 bg-black/10">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-white p-1 shadow-2xl group flex-shrink-0">
-                            <div className="w-full h-full rounded-full bg-gradient-to-tr from-[#0F172A] to-[#1E3A8A] flex items-center justify-center text-white overflow-hidden border border-white/20">
-                                <img
-                                    src="/images/logo.png"
-                                    alt="Logo"
-                                    className="w-full h-full object-contain"
-                                    onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = "https://ui-avatars.com/api/?name=Darul+Ulum&background=0F172A&color=fff";
-                                    }}
-                                />
+                {/* Sidebar Header (Manage Student Style) */}
+                <div className="p-4">
+                    <div className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all">
+                        <div className="flex items-center space-x-3">
+                            <div className="p-1.5 bg-white/20 rounded-lg">
+                                <TrophyIcon className="h-5 w-5 text-white" />
                             </div>
+                            <span className="text-white font-black uppercase tracking-wider text-xs">Manage Student</span>
                         </div>
-                        <div className="min-w-0">
-                            <h1 className="text-sm font-black text-white tracking-wider uppercase leading-tight truncate">
-                                Darul-Ulum
-                            </h1>
-                            <p className="text-[8px] font-bold text-blue-300 tracking-[0.2em] uppercase mt-0.5 opacity-80 truncate">
-                                Islamic School (Student)
-                            </p>
-                        </div>
+                        <ChevronRightIcon className="h-4 w-4 text-white/70 group-hover:translate-x-0.5 transition-transform" />
                     </div>
                 </div>
 
-                {/* Navigation Links */}
-                <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                {/* Navigation Links (Darker for Contrast) */}
+                <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
                     {navigation.map((item) => {
                         const Icon = item.icon;
                         const isActive = currentPath.startsWith(item.href);
@@ -122,9 +120,9 @@ export default function StudentLayout({ children }) {
                                 key={item.name}
                                 href={item.href}
                                 onClick={() => setSidebarOpen(false)}
-                                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive
-                                    ? 'bg-white bg-opacity-20 text-white shadow-sm'
-                                    : 'text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
+                                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${isActive
+                                    ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm'
+                                    : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'
                                     }`}
                             >
                                 <Icon className="h-5 w-5 flex-shrink-0" />
