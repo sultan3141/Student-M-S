@@ -48,52 +48,52 @@ const SemesterCard = memo(({ sem }) => (
             semester: sem.semester,
             academicYear: sem.academic_year_id
         })}
-        className="executive-card !p-6 transform transition-all hover:scale-[1.02] group"
+        className="group relative bg-white rounded-2xl p-6 border border-blue-100 shadow-sm hover:shadow-xl hover:border-blue-300 hover:-translate-y-1 transition-all duration-300"
     >
         <div className="flex items-start justify-between mb-6">
             <div className="flex items-center space-x-4">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm border ${sem.status === 'open'
-                    ? 'bg-emerald-50 border-emerald-50'
-                    : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-50'
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300 ${sem.status === 'open'
+                    ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
+                    : 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white'
                     }`}>
-                    <DocumentChartBarIcon className={`w-7 h-7 ${sem.status === 'open' ? 'text-emerald-600' : 'text-blue-600'}`} />
+                    <DocumentChartBarIcon className="w-8 h-8" />
                 </div>
                 <div>
                     <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        <h3 className="text-xl font-black text-gray-900 group-hover:text-blue-700 transition-colors">
                             Semester {sem.semester}
                         </h3>
-                        {sem.status === 'open' && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">
-                                Active
-                            </span>
-                        )}
                     </div>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">{sem.status === 'open' ? 'In Progress' : 'Finalized'}</p>
+                    <div className="mt-1 flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${sem.status === 'open'
+                            ? 'bg-green-50 text-green-700 border-green-100'
+                            : 'bg-blue-50 text-blue-700 border-blue-100'
+                            }`}>
+                            {sem.status === 'open' ? 'In Progress' : 'Finalized'}
+                        </span>
+                    </div>
                 </div>
             </div>
-            <div className="p-2 rounded-xl bg-gray-50 group-hover:bg-blue-50 transition-colors border border-gray-100 group-hover:border-blue-100 shadow-sm">
-                <ChevronRightIcon className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+            <div className="p-2 rounded-full bg-gray-50 group-hover:bg-blue-50 text-gray-400 group-hover:text-blue-600 transition-colors">
+                <ChevronRightIcon className="w-5 h-5" />
             </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-            <div className="space-y-1">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Average Score</p>
-                <div className="flex items-baseline space-x-1">
-                    <p className={`text-2xl font-black ${sem.status === 'open' ? 'text-emerald-600' : 'text-blue-700'}`}>
-                        {sem.average}
-                    </p>
-                    {sem.status === 'open' && <span className="text-xs text-gray-400">(Prov.)</span>}
-                </div>
+        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100/50">
+            <div className="space-y-0.5">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Average Score</p>
+                <p className={`text-2xl font-black ${sem.status === 'open' ? 'text-green-600' : 'text-blue-700'}`}>
+                    {sem.average}
+                    <span className="text-sm text-gray-400 ml-1 font-bold">%</span>
+                </p>
             </div>
-            <div className="space-y-1">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Class Rank</p>
-                <div className="flex items-center space-x-2">
-                    <TrophyIcon className="w-5 h-5 text-amber-500" />
-                    <p className="text-2xl font-black text-gray-900">
+            <div className="space-y-0.5">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Class Rank</p>
+                <div className="flex items-center space-x-1.5">
+                    <TrophyIcon className="w-4 h-4 text-amber-500" />
+                    <p className="text-xl font-black text-gray-900">
                         {sem.rank}
-                        <span className="text-xs font-bold text-gray-400 ml-1 tracking-tighter">/ {sem.total_students}</span>
+                        <span className="text-xs font-bold text-gray-400 ml-1 tracking-tight">/ {sem.total_students}</span>
                     </p>
                 </div>
             </div>
@@ -157,9 +157,9 @@ export default function SemesterRecordIndex({ student, history = [] }) {
                 ) : (
                     // Semester Selection View
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                        <div className="flex items-center space-x-2 border-l-4 border-emerald-600 pl-4 py-1 bg-emerald-50/50 rounded-r-lg">
-                            <DocumentChartBarIcon className="w-5 h-5 text-emerald-600" />
-                            <h2 className="text-sm font-black text-emerald-900 uppercase tracking-widest">Select Semester Result</h2>
+                        <div className="flex items-center space-x-2 border-l-4 border-indigo-600 pl-4 py-1 bg-indigo-50/50 rounded-r-lg">
+                            <DocumentChartBarIcon className="w-5 h-5 text-indigo-600" />
+                            <h2 className="text-sm font-black text-indigo-900 uppercase tracking-widest">Select Semester Result</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {selectedGrade.semesters.map((sem, index) => (
