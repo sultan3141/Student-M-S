@@ -69,12 +69,6 @@ export default function DirectorLayout({ children }) {
                             <h1 className="text-base font-bold text-white">Director</h1>
                             <p className="text-xs text-gold-400">Portal</p>
                         </div>
-                        <button
-                            onClick={() => setSidebarOpen(false)}
-                            className="lg:hidden text-white hover:text-gold-400"
-                        >
-                            <XMarkIcon className="h-4 w-4" />
-                        </button>
                     </div>
                 </div>
 
@@ -88,6 +82,7 @@ export default function DirectorLayout({ children }) {
                             <Link
                                 key={item.name}
                                 href={item.href}
+                                onClick={() => setSidebarOpen(false)}
                                 className={`flex items-center space-x-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${isActive
                                     ? 'bg-white bg-opacity-20 text-white shadow-sm'
                                     : 'text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
@@ -118,19 +113,20 @@ export default function DirectorLayout({ children }) {
                         href="/logout"
                         method="post"
                         as="button"
+                        onClick={() => setSidebarOpen(false)}
                         className="flex items-center space-x-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-200 hover:bg-white hover:bg-opacity-10 hover:text-white transition-all w-full text-left"
                     >
                         <ArrowRightOnRectangleIcon className="h-3.5 w-3.5" />
                         <span>Logout</span>
                     </Link>
                 </div>
-            </aside>
+            </aside >
 
             {/* Main Content Area - LG Padding Sync */}
-            <div className="lg:pl-64 flex flex-col min-h-screen">
+            < div className="lg:pl-64 flex flex-col min-h-screen" >
 
                 {/* Premium Mobile Top Bar - Synced with Student Design */}
-                <div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10">
+                < div className="sticky top-0 z-30 lg:hidden bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-4 h-16 flex items-center shadow-lg border-b border-white/10" >
                     <div className="flex-1 flex items-center">
                         <button
                             onClick={() => setSidebarOpen(true)}
@@ -156,15 +152,15 @@ export default function DirectorLayout({ children }) {
                             <ArrowRightOnRectangleIcon className="h-5 w-5" />
                         </Link>
                     </div>
-                </div>
+                </div >
 
                 {/* Ultra Compact Page Content */}
-                <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
+                < main className="p-3 lg:p-5 flex-1 bg-gray-50/50" >
                     {children}
-                </main>
+                </main >
 
                 <Footer />
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
