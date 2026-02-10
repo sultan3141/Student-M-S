@@ -35,18 +35,19 @@ class SemesterStatus extends Model
         if ($academicYearId) {
             $status = self::where('academic_year_id', $academicYearId)
                 ->where('grade_id', $gradeId)
-                ->where('semester', $semester)
+                ->where('semester', (int) $semester)
                 ->first();
             return $status ? $status->status === 'open' : false; // Default closed if not found for specific year
         }
 
         // Get current academic year
         $year = AcademicYear::whereRaw('is_current = true')->first();
-        if (!$year) return true; // Fail safe
+        if (!$year)
+            return true; // Fail safe
 
         $status = self::where('academic_year_id', $year->id)
             ->where('grade_id', $gradeId)
-            ->where('semester', $semester)
+            ->where('semester', (int) $semester)
             ->first();
 
         // Default to 'open' if no record exists? 

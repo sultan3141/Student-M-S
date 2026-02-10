@@ -112,7 +112,7 @@ class Mark extends Model
 
     public function scopeBySemester($query, $semester)
     {
-        return $query->where('semester', $semester);
+        return $query->whereRaw('semester = ?', [(string) $semester]);
     }
 
     public function scopeByAssessment($query, $typeId)

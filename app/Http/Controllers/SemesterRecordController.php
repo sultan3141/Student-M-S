@@ -37,14 +37,14 @@ class SemesterRecordController extends Controller
                 $hasMarks = Mark::where('student_id', $student->id)
                     ->where('academic_year_id', $reg->academic_year_id)
                     ->where('grade_id', $reg->grade_id)
-                    ->where('semester', (string) $semesterNum)
+                    ->bySemester($semesterNum)
                     ->exists();
 
                 // Check if any assessments exist for this class
                 $hasAssessments = Assessment::where('academic_year_id', $reg->academic_year_id)
                     ->where('grade_id', $reg->grade_id)
                     ->where('section_id', $reg->section_id)
-                    ->where('semester', (string) $semesterNum)
+                    ->bySemester($semesterNum)
                     ->exists();
 
                 // Check if this is the current academic year
@@ -66,7 +66,7 @@ class SemesterRecordController extends Controller
                 $marks = Mark::where('student_id', $student->id)
                     ->where('academic_year_id', $academicYearId)
                     ->where('grade_id', $reg->grade_id) // Match the grade from the registration
-                    ->where('semester', (string) $semesterNum)
+                    ->bySemester($semesterNum)
                     ->get();
 
                 // Subject count for this specific GRADE
@@ -156,7 +156,7 @@ class SemesterRecordController extends Controller
         // Get semester status to display to student (but don't block access)
         $semesterStatus = SemesterStatus::where('academic_year_id', $academicYearId)
             ->where('grade_id', $viewGradeId)
-            ->where('semester', (string) $semester)
+            ->where('semester', (int) $semester)
             ->first();
 
         $status = $semesterStatus ? $semesterStatus->status : 'open';
@@ -175,13 +175,13 @@ class SemesterRecordController extends Controller
         // This allows students to see pending assessments in their dashboard
         $assessments = \App\Models\Assessment::where('grade_id', $viewGradeId)
             ->where('section_id', $viewSectionId)
-            ->where('semester', (string) $semester)
+            ->bySemester($semester)
             ->where('academic_year_id', $academicYearId)
             ->with(['subject', 'assessmentType'])
             ->get();
 
         $marks = \App\Models\Mark::where('student_id', $student->id)
-            ->where('semester', (string) $semester)
+            ->bySemester($semester)
             ->where('academic_year_id', $academicYearId)
             ->with(['subject', 'assessment.assessmentType', 'assessmentType'])
             ->get();
@@ -306,7 +306,7 @@ class SemesterRecordController extends Controller
             // Calculate percentage average for each student for ranking
             // Using same logic as show() method for consistency (lines 208-212)
             return Mark::whereIn('student_id', $sectionStudents)
-                ->where('semester', (string) $semester)
+                ->bySemester($semester)
                 ->where('academic_year_id', $academicYearId)
                 ->get()
                 ->groupBy('student_id')

@@ -90,13 +90,13 @@ class Assessment extends Model
     public function scopeForClass($query, $gradeId, $sectionId, $subjectId)
     {
         return $query->where('grade_id', $gradeId)
-                    ->where('section_id', $sectionId)
-                    ->where('subject_id', $subjectId);
+            ->where('section_id', $sectionId)
+            ->where('subject_id', $subjectId);
     }
 
     public function scopeBySemester($query, $semester)
     {
-        return $query->where('semester', $semester);
+        return $query->whereRaw('semester = ?', [(string) $semester]);
     }
 
     public function scopeEditable($query)
@@ -113,8 +113,9 @@ class Assessment extends Model
     public function getCompletionPercentageAttribute()
     {
         $totalStudents = Student::where('section_id', $this->section_id)->count();
-        if ($totalStudents === 0) return 0;
-        
+        if ($totalStudents === 0)
+            return 0;
+
         $marksEntered = $this->marks()->whereNotNull('score')->count();
         return round(($marksEntered / $totalStudents) * 100, 2);
     }

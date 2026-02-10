@@ -246,13 +246,6 @@ class TeacherStudentController extends Controller
                     ->get()
                     ->pluck('subject')
                     ->unique('id')
-                    ->map(function ($subject) {
-                        return [
-                            'id' => $subject->id,
-                            'name' => $subject->name,
-                            'code' => $subject->code,
-                        ];
-                    })
                     ->values();
 
                 // Get students in this section
@@ -267,16 +260,16 @@ class TeacherStudentController extends Controller
                 foreach ($subjects as $subject) {
                     $assessmentsQuery = Assessment::where('grade_id', $gradeId)
                         ->where('section_id', $sectionId)
-                        ->where('subject_id', $subject['id'])
+                        ->where('subject_id', $subject->id)
                         ->where('academic_year_id', $academicYear->id);
 
                     if ($semesterFilter) {
-                        $assessmentsQuery->where('semester', $semesterFilter);
+                        $assessmentsQuery->bySemester($semesterFilter);
                     }
 
                     $assessments = $assessmentsQuery->get();
 
-                    $assessmentsBySubject[$subject['id']] = $assessments;
+                    $assessmentsBySubject[$subject->id] = $assessments;
                 }
 
                 // Get all marks for these students
@@ -286,7 +279,7 @@ class TeacherStudentController extends Controller
                     ->whereNotNull('assessment_id');
 
                 if ($semesterFilter) {
-                    $marksQuery->where('semester', $semesterFilter);
+                    $marksQuery->bySemester($semesterFilter);
                 }
 
                 $marks = $marksQuery->get()
@@ -307,11 +300,11 @@ class TeacherStudentController extends Controller
                     $totalAssessments = 0;
 
                     foreach ($subjects as $subject) {
-                        $subjectAssessments = $assessmentsBySubject[$subject['id']] ?? collect();
+                        $subjectAssessments = $assessmentsBySubject[$subject->id] ?? collect();
                         $assessmentCount = $subjectAssessments->count();
                         $totalAssessments += $assessmentCount;
 
-                        $filledCount = $studentMarks->where('subject_id', $subject['id'])->count();
+                        $filledCount = $studentMarks->where('subject_id', $subject->id)->count();
                         $totalFilled += $filledCount;
 
                         // Check if ANY assessment for this subject is in an open semester
@@ -323,7 +316,7 @@ class TeacherStudentController extends Controller
                             }
                         }
 
-                        $subjectStatus[$subject['id']] = [
+                        $subjectStatus[$subject->id] = [
                             'filled' => $filledCount,
                             'total' => $assessmentCount,
                             'percentage' => $assessmentCount > 0 ? round(($filledCount / $assessmentCount) * 100) : 0,

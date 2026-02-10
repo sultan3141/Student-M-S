@@ -96,7 +96,7 @@ class SemesterPeriod extends Model
     {
         // Lock all assessments for this semester
         Assessment::where('academic_year_id', $this->academic_year_id)
-            ->where('semester', $this->semester)
+            ->bySemester($this->semester)
             ->update([
                 'is_editable' => false,
                 'locked_at' => now(),
@@ -104,7 +104,7 @@ class SemesterPeriod extends Model
 
         // Lock all marks for this semester
         Mark::where('academic_year_id', $this->academic_year_id)
-            ->where('semester', $this->semester)
+            ->bySemester($this->semester)
             ->update([
                 'is_locked' => true,
                 'locked_at' => now(),
@@ -118,7 +118,7 @@ class SemesterPeriod extends Model
     {
         // Unlock all assessments for this semester
         Assessment::where('academic_year_id', $this->academic_year_id)
-            ->where('semester', $this->semester)
+            ->bySemester($this->semester)
             ->update([
                 'is_editable' => true,
                 'locked_at' => null,
@@ -126,7 +126,7 @@ class SemesterPeriod extends Model
 
         // Unlock all marks for this semester
         Mark::where('academic_year_id', $this->academic_year_id)
-            ->where('semester', $this->semester)
+            ->bySemester($this->semester)
             ->update([
                 'is_locked' => false,
                 'locked_at' => null,
@@ -139,16 +139,16 @@ class SemesterPeriod extends Model
     public function getStatistics()
     {
         $assessmentCount = Assessment::where('academic_year_id', $this->academic_year_id)
-            ->where('semester', $this->semester)
+            ->bySemester($this->semester)
             ->count();
 
         $markCount = Mark::where('academic_year_id', $this->academic_year_id)
-            ->where('semester', $this->semester)
+            ->bySemester($this->semester)
             ->whereNotNull('score')
             ->count();
 
         $totalMarks = Mark::where('academic_year_id', $this->academic_year_id)
-            ->where('semester', $this->semester)
+            ->bySemester($this->semester)
             ->count();
 
         return [

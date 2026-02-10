@@ -162,25 +162,6 @@ export default function ParentLayout({ children }) {
                     </nav>
                 </div>
 
-                {/* Sidebar Footer */}
-                <div className="p-3 border-t border-[#1D4ED8]/10">
-                    <button
-                        onClick={() => setShowPasswordModal(true)}
-                        className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-black text-[#1E3A8A] hover:bg-white/50 transition-all w-full text-left uppercase tracking-widest mb-1 shadow-sm border border-white/20"
-                    >
-                        <LockClosedIcon className="h-4 w-4" />
-                        <span>Security</span>
-                    </button>
-                    <Link
-                        href="/logout"
-                        method="post"
-                        as="button"
-                        className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-black text-red-600 hover:bg-red-50 transition-all w-full text-left uppercase tracking-widest shadow-sm border border-red-100/50"
-                    >
-                        <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                        <span>Sign Out</span>
-                    </Link>
-                </div>
             </aside>
 
             {/* Main Content Area */}

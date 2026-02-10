@@ -273,18 +273,6 @@ export default function TeacherLayout({ children }) {
                         ))}
                     </nav>
                 </div>
-                {/* Sidebar Footer */}
-                <div className="p-3 border-t border-[#1D4ED8]/10">
-                    <Link
-                        href="/logout"
-                        method="post"
-                        as="button"
-                        className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-black text-red-600 hover:bg-red-50 transition-all w-full text-left uppercase tracking-widest shadow-sm border border-red-100/50"
-                    >
-                        <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                        <span>Sign Out</span>
-                    </Link>
-                </div>
             </aside>
 
             {/* Main Content Area */}

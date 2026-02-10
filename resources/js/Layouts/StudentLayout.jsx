@@ -1,16 +1,4 @@
-/**- [x] Save and Prepare New Logo Image
-- [x] Implement Logo in Student Portal (Updated Layout)
-- [x] Implement Logo in Admin Portal Sidebar
-- [x] Implement Logo in Director Portal Sidebar
-- [x] Implement Logo in Teacher Portal Sidebar
-- [x] Implement Logo in Parent Portal Sidebar
-- [x] Implement Logo in Registrar Portal Sidebar
-- [x] Implement Logo in Super Admin Portal Sidebar
-- [x] Update Login/Auth Pages with New Logo
-- [x] Restore Profile Actions (Profile, Secure, Exit) and Refine Dropdown (Compact, Grid, Color Matched)
-- [/] Transition to Green Gradient Theme (Bottom-to-Top Dark-to-Light)
-- [ ] Update `director-theme.css` for Green Aesthetics
-- [ ] Final Verification & Walkthrough
+/**
  * Student Layout Component
  * Provides the sidebar navigation and mobile top bar for the Student Portal.
  */

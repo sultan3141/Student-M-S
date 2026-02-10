@@ -19,7 +19,7 @@ class SemesterControlController extends Controller
     public function index()
     {
         $currentYear = AcademicYear::whereRaw('is_current = true')->first();
-        
+
         if (!$currentYear) {
             return Inertia::render('Director/SemesterControl/Index', [
                 'error' => 'No active academic year found.',
@@ -28,19 +28,19 @@ class SemesterControlController extends Controller
         }
 
         $grades = Grade::orderBy('level')->get();
-        
+
         // Fetch existing statuses for this year
         $statuses = SemesterStatus::where('academic_year_id', $currentYear->id)
             ->get()
             ->groupBy('grade_id');
 
-        $matrix = $grades->map(function($grade) use ($statuses, $currentYear) {
+        $matrix = $grades->map(function ($grade) use ($statuses, $currentYear) {
             $gradeStatuses = $statuses->get($grade->id, collect());
-            
+
             // Get statistics for each semester
             $stats1 = $this->getSemesterStatistics($currentYear->id, $grade->id, 1);
             $stats2 = $this->getSemesterStatistics($currentYear->id, $grade->id, 2);
-            
+
             return [
                 'grade' => $grade,
                 'semester_1' => array_merge(
@@ -73,29 +73,29 @@ class SemesterControlController extends Controller
     {
         // Count students in this grade
         $studentCount = Student::where('grade_id', $gradeId)->count();
-        
+
         // Count assessments
         $assessmentCount = Assessment::where('academic_year_id', $academicYearId)
             ->where('grade_id', $gradeId)
-            ->where('semester', $semester)
+            ->bySemester($semester)
             ->count();
-        
+
         // Count marks entered
         $markCount = Mark::where('academic_year_id', $academicYearId)
             ->where('grade_id', $gradeId)
-            ->where('semester', $semester)
+            ->bySemester($semester)
             ->whereNotNull('score')
             ->count();
-        
+
         $totalPossibleMarks = $studentCount * $assessmentCount;
-        
+
         return [
             'students' => $studentCount,
             'assessments' => $assessmentCount,
             'marks_entered' => $markCount,
             'total_possible' => $totalPossibleMarks,
-            'completion_rate' => $totalPossibleMarks > 0 
-                ? round(($markCount / $totalPossibleMarks) * 100, 2) 
+            'completion_rate' => $totalPossibleMarks > 0
+                ? round(($markCount / $totalPossibleMarks) * 100, 2)
                 : 0,
         ];
     }
@@ -128,7 +128,7 @@ class SemesterControlController extends Controller
                 // Lock all assessments for this grade/semester
                 Assessment::where('academic_year_id', $currentYear->id)
                     ->where('grade_id', $request->grade_id)
-                    ->where('semester', $request->semester)
+                    ->bySemester($request->semester)
                     ->update([
                         'is_editable' => false,
                         'locked_at' => now(),
@@ -137,7 +137,7 @@ class SemesterControlController extends Controller
                 // Lock all marks for this grade/semester
                 Mark::where('academic_year_id', $currentYear->id)
                     ->where('grade_id', $request->grade_id)
-                    ->where('semester', $request->semester)
+                    ->bySemester($request->semester)
                     ->update([
                         'is_locked' => true,
                         'locked_at' => now(),
@@ -146,7 +146,7 @@ class SemesterControlController extends Controller
                 // Unlock all assessments for this grade/semester
                 Assessment::where('academic_year_id', $currentYear->id)
                     ->where('grade_id', $request->grade_id)
-                    ->where('semester', $request->semester)
+                    ->bySemester($request->semester)
                     ->update([
                         'is_editable' => true,
                         'locked_at' => null,
@@ -155,7 +155,7 @@ class SemesterControlController extends Controller
                 // Unlock all marks for this grade/semester
                 Mark::where('academic_year_id', $currentYear->id)
                     ->where('grade_id', $request->grade_id)
-                    ->where('semester', $request->semester)
+                    ->bySemester($request->semester)
                     ->update([
                         'is_locked' => false,
                         'locked_at' => null,
@@ -163,7 +163,7 @@ class SemesterControlController extends Controller
             }
         });
 
-        $message = $request->status === 'closed' 
+        $message = $request->status === 'closed'
             ? 'Semester closed successfully. All assessments and marks are now locked.'
             : 'Semester opened successfully. Teachers can now enter/edit marks.';
 
