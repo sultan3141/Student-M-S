@@ -96,7 +96,34 @@ export default function StudentLayout({ children }) {
                 className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     } director-sidebar`}
             >
-                {/* Sidebar Header (Manage Student Style) */}
+                {/* Sidebar Top Branding (Restored) */}
+                <div className="p-3 bg-[#1D4ED8] border-b border-white/10 shadow-lg">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-white p-1 shadow-2xl group flex-shrink-0">
+                            <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100">
+                                <img
+                                    src="/images/logo.png"
+                                    alt="Logo"
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "https://ui-avatars.com/api/?name=Darul+Ulum&background=1D4ED8&color=fff";
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="min-w-0">
+                            <h1 className="text-sm font-black text-white tracking-wider uppercase leading-tight truncate">
+                                Darul-Ulum
+                            </h1>
+                            <p className="text-[8px] font-bold text-blue-100 tracking-[0.2em] uppercase mt-0.5 opacity-80 truncate">
+                                Islamic School (Student)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sidebar Managed Section (Styled Header) */}
                 <div className="p-4">
                     <div className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all">
                         <div className="flex items-center space-x-3">
