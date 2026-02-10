@@ -134,51 +134,7 @@ export default function SemesterRecordIndex({ student, history = [] }) {
                     </div>
                 </div>
 
-                {/* Student Info Card (Mini version when grade is selected) */}
-                <div className={`transition-all duration-500 overflow-hidden ${selectedGrade ? 'opacity-90 scale-[0.98]' : ''}`}>
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-lg p-1 text-white">
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 lg:p-8">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 text-center sm:text-left">
-                                <div className="flex flex-col sm:flex-row items-center sm:items-start space-x-3">
-                                    <div className="p-2 bg-white/20 rounded-lg shrink-0 mb-3 sm:mb-0">
-                                        <IdentificationIcon className="w-6 h-6 text-blue-50" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-medium text-blue-200 uppercase tracking-widest mb-1">Student</p>
-                                        <p className="font-bold text-lg leading-tight">{student.user?.name}</p>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col sm:flex-row items-center sm:items-start space-x-3 border-t sm:border-t-0 sm:border-l border-white/10 pt-4 sm:pt-0 sm:pl-8">
-                                    <div className="p-2 bg-white/20 rounded-lg shrink-0 mb-3 sm:mb-0">
-                                        <span className="text-lg font-bold font-mono text-blue-50">#</span>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-medium text-blue-200 uppercase tracking-widest mb-1">ID Number</p>
-                                        <p className="font-bold text-lg leading-tight">{student.student_id}</p>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col sm:flex-row items-center sm:items-start space-x-3 border-t sm:border-t-0 sm:border-l border-white/10 pt-4 sm:pt-0 sm:pl-8">
-                                    <div className="p-2 bg-white/20 rounded-lg shrink-0 mb-3 sm:mb-0">
-                                        <BookOpenIcon className="w-6 h-6 text-blue-50" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-medium text-blue-200 uppercase tracking-widest mb-1">Current Grade</p>
-                                        <p className="font-bold text-lg leading-tight">{student.grade?.name}</p>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col sm:flex-row items-center sm:items-start space-x-3 border-t sm:border-t-0 sm:border-l border-white/10 pt-4 sm:pt-0 sm:pl-8">
-                                    <div className="p-2 bg-white/20 rounded-lg shrink-0 mb-3 sm:mb-0">
-                                        <DocumentChartBarIcon className="w-6 h-6 text-blue-50" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-medium text-blue-200 uppercase tracking-widest mb-1">Status</p>
-                                        <p className="font-bold text-lg leading-tight">Enrolled</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
 
                 {/* Content Area */}
                 {!selectedGrade ? (
