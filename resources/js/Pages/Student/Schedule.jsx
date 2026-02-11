@@ -6,7 +6,7 @@ import {
     ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
 
-export default function Schedule({ student, schedule }) {
+export default function Schedule({ student = {}, schedule = {} }) {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
     return (

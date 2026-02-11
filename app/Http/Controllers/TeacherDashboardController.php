@@ -14,55 +14,69 @@ class TeacherDashboardController extends Controller
 {
     public function index()
     {
-        $teacher = Teacher::firstOrCreate(
-            ['user_id' => Auth::id()],
-            ['employee_id' => 'EMP' . Auth::id(), 'qualification' => 'PhD', 'specialization' => 'General']
-        );
+        try {
+            $teacher = Teacher::firstOrCreate(
+                ['user_id' => Auth::id()],
+                ['employee_id' => 'EMP' . Auth::id(), 'qualification' => 'PhD', 'specialization' => 'General']
+            );
 
-        // Get current semester information
-        $currentSemester = $this->getCurrentSemesterInfo();
+            // Get current semester information
+            $currentSemester = $this->getCurrentSemesterInfo();
 
-        // Fetch statistics using the new cached method
-        $stats = $this->getStatistics($teacher);
+            // Fetch statistics using the new cached method
+            $stats = $this->getStatistics($teacher);
 
-        // Fetch recent activities using the new optimized method
-        $activities = $this->getRecentActivities($teacher);
+            // Fetch recent activities using the new optimized method
+            $activities = $this->getRecentActivities($teacher);
 
-        // Fetch upcoming deadlines using the new optimized method
-        $upcomingDeadlines = $this->getUpcomingDeadlines($teacher);
+            // Fetch upcoming deadlines using the new optimized method
+            $upcomingDeadlines = $this->getUpcomingDeadlines($teacher);
 
-        // Get today's schedule for all sections assigned to this teacher
-        $today = Carbon::now()->format('l'); // e.g., "Monday"
-        $todaySchedule = \App\Models\Schedule::whereIn('section_id', function ($query) use ($teacher) {
-            $query->select('section_id')
-                ->from('teacher_assignments')
-                ->where('teacher_id', $teacher->id);
-        })
-            ->where('day_of_week', $today)
-            ->whereRaw('is_active = true')
-            ->with(['section.grade'])
-            ->orderBy('start_time')
-            ->get()
-            ->map(function ($schedule) {
-                return [
-                    'start_time' => Carbon::parse($schedule->start_time)->format('H:i'),
-                    'end_time' => Carbon::parse($schedule->end_time)->format('H:i'),
-                    'grade' => $schedule->section->grade->name ?? 'N/A',
-                    'section' => $schedule->section->name ?? 'N/A',
-                    'activity' => $schedule->activity ?? 'Class',
-                    'location' => $schedule->location ?? 'Classroom',
-                ];
-            });
+            // Get today's schedule for all sections assigned to this teacher
+            $today = Carbon::now()->format('l'); // e.g., "Monday"
+            $todaySchedule = \App\Models\Schedule::whereIn('section_id', function ($query) use ($teacher) {
+                $query->select('section_id')
+                    ->from('teacher_assignments')
+                    ->where('teacher_id', $teacher->id);
+            })
+                ->where('day_of_week', $today)
+                ->whereRaw('is_active = true')
+                ->with(['section.grade'])
+                ->orderBy('start_time')
+                ->get()
+                ->map(function ($schedule) {
+                    return [
+                        'start_time' => Carbon::parse($schedule->start_time)->format('H:i'),
+                        'end_time' => Carbon::parse($schedule->end_time)->format('H:i'),
+                        'grade' => $schedule->section?->grade?->name ?? 'N/A',
+                        'section' => $schedule->section?->name ?? 'N/A',
+                        'activity' => $schedule->activity ?? 'Class',
+                        'location' => $schedule->location ?? 'Classroom',
+                    ];
+                });
 
-        return Inertia::render('Teacher/Dashboard', [
-            'stats' => $stats,
-            'recentActivity' => $activities,
-            'deadlines' => $upcomingDeadlines,
-            'teacher' => $teacher->load('user'),
-            'currentSemester' => $currentSemester,
-            'todaySchedule' => $todaySchedule,
-            'today' => Carbon::now()->format('l, F j, Y'),
-        ]);
+            return Inertia::render('Teacher/Dashboard', [
+                'stats' => $stats,
+                'recentActivity' => $activities,
+                'deadlines' => $upcomingDeadlines,
+                'teacher' => $teacher->load('user'),
+                'currentSemester' => $currentSemester,
+                'todaySchedule' => $todaySchedule,
+                'today' => Carbon::now()->format('l, F j, Y'),
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Teacher Dashboard Error: ' . $e->getMessage());
+            return Inertia::render('Teacher/Dashboard', [
+                'stats' => [],
+                'recentActivity' => [],
+                'deadlines' => [],
+                'teacher' => Auth::user(),
+                'currentSemester' => null,
+                'todaySchedule' => [],
+                'today' => Carbon::now()->format('l, F j, Y'),
+                'error' => 'Dashboard loaded with limited functionality due to an error.'
+            ]);
+        }
     }
 
     /**
@@ -124,7 +138,7 @@ class TeacherDashboardController extends Controller
                         'id' => $mark->id,
                         'type' => 'grade_entry',
                         'title' => 'Grade Entered',
-                        'description' => "Entered " . ($mark->assessmentType->name ?? 'mark') . " for " . ($mark->student->user->name ?? 'Student'),
+                        'description' => "Entered " . ($mark->assessmentType?->name ?? 'mark') . " for " . ($mark->student?->user?->name ?? 'Student'),
                         'time' => $mark->created_at->diffForHumans(),
                         'status' => 'completed'
                     ];

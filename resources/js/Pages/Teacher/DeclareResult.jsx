@@ -15,7 +15,7 @@ import {
 const classNames = (...classes) => classes.filter(Boolean).join(' ');
 
 export default function DeclareResult({
-    grades,
+    grades = [],
     currentSemester = 1,
     initialStep = 1,
     initialGradeId = null,
@@ -29,10 +29,11 @@ export default function DeclareResult({
 
     // Selection State
     const [selectedGrade, setSelectedGrade] = useState(() => {
-        if (!initialGradeId) return null;
+        if (!initialGradeId || !grades) return null;
         return grades.find(g => g.id === parseInt(initialGradeId)) || null;
     });
     const [selectedSection, setSelectedSection] = useState(() => {
+        if (!grades) return null;
         const grade = grades.find(g => g.id === parseInt(initialGradeId));
         return grade?.sections?.find(s => s.id === parseInt(initialSectionId)) || null;
     });
@@ -210,9 +211,9 @@ export default function DeclareResult({
         <TeacherLayout>
             <Head title="Declare Result | Teacher Portal" />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 min-h-screen">
                 {/* Minimalist Professional Header */}
-                <div className="mb-10">
+                <div className="mb-8">
                     <div className="flex items-center gap-2 mb-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                         <Link href={route('teacher.dashboard')} className="hover:text-blue-600 transition-colors">Dashboard</Link>
                         <span className="text-gray-300">/</span>
@@ -246,44 +247,125 @@ export default function DeclareResult({
                     </div>
                 </div>
 
-                {/* Progress Visualizer */}
-                <div className="flex items-center gap-4 mb-10 overflow-x-auto pb-2 custom-scrollbar">
+                {/* Progress Visualizer - Minimal Size */}
+                <div className="flex items-center justify-between gap-1 mb-4 max-w-2xl mx-auto">
                     {[1, 2, 3].map((s) => (
-                        <div key={s} className="flex items-center gap-4 shrink-0">
+                        <div key={s} className="flex items-center gap-1 flex-1">
                             <div className={classNames(
-                                "flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all duration-300",
-                                step === s ? "bg-white border-blue-200 shadow-md shadow-blue-50/50" :
-                                    step > s ? "bg-gray-50 border-gray-100 opacity-60" : "bg-white border-gray-100 opacity-40"
+                                "flex items-center gap-1.5 px-2 py-1.5 rounded-md border transition-all duration-300 w-full",
+                                step === s ? "bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-700" :
+                                    step > s ? "bg-gradient-to-r from-green-500 to-emerald-500 border-green-600" : "bg-white border-gray-300"
                             )}>
                                 <div className={classNames(
-                                    "w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black",
-                                    step >= s ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400"
+                                    "w-5 h-5 rounded flex items-center justify-center text-[10px] font-black flex-shrink-0",
+                                    step >= s ? "bg-white text-blue-600" : "bg-gray-200 text-gray-500"
                                 )}>
                                     {step > s ? "✓" : `0${s}`}
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Step {s}</span>
-                                    <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">
-                                        {s === 1 ? "Students" : s === 2 ? "Subject" : "Marks Entry"}
+                                <div className="flex flex-col min-w-0">
+                                    <span className={classNames(
+                                        "text-[7px] font-bold uppercase tracking-wide leading-none",
+                                        step >= s ? "text-blue-100" : "text-gray-500"
+                                    )}>Step {s}</span>
+                                    <span className={classNames(
+                                        "text-[9px] font-black uppercase tracking-tight truncate leading-none mt-0.5",
+                                        step >= s ? "text-white" : "text-gray-700"
+                                    )}>
+                                        {s === 1 ? "Students" : s === 2 ? "Subject" : "Marks"}
                                     </span>
                                 </div>
                             </div>
-                            {s < 3 && <ChevronRightIcon className="w-4 h-4 text-gray-200" />}
+                            {s < 3 && <ChevronRightIcon className={classNames(
+                                "w-3 h-3 flex-shrink-0",
+                                step > s ? "text-green-500" : step === s ? "text-blue-500" : "text-gray-300"
+                            )} />}
                         </div>
                     ))}
                 </div>
 
-                {!selectedSection && (
-                    <div className="bg-white rounded-[2rem] border border-gray-100 p-20 text-center shadow-sm">
-                        <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-8 animate-pulse">
-                            <PlusIcon className="w-10 h-10" />
+                {/* Class Configuration Card */}
+                <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-8 shadow-sm">
+                    <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                        Class Configuration
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {/* Grade Selection */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Grade Level</label>
+                            <select
+                                value={selectedGrade?.id || ''}
+                                onChange={(e) => {
+                                    const grade = grades.find(g => g.id === parseInt(e.target.value));
+                                    setSelectedGrade(grade);
+                                    setSelectedSection(null);
+                                    setSubjects([]);
+                                    setSelectedSubject(null);
+                                    setStep(1);
+                                }}
+                                className="w-full text-sm font-bold text-gray-700 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 focus:border-blue-500 focus:ring-0 cursor-pointer"
+                            >
+                                <option value="">Select Grade</option>
+                                {grades.map(grade => (
+                                    <option key={grade.id} value={grade.id}>{grade.name}</option>
+                                ))}
+                            </select>
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900 uppercase tracking-tight mb-4">Initialize Session</h2>
-                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] max-w-sm mx-auto leading-relaxed italic">
-                            Select a target Grade and Section from the sidebar to activate the result declaration workflow
-                        </p>
+
+                        {/* Section Selection */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Section</label>
+                            <select
+                                value={selectedSection?.id || ''}
+                                onChange={(e) => {
+                                    const section = selectedGrade?.sections?.find(s => s.id === parseInt(e.target.value));
+                                    setSelectedSection(section);
+                                    if (selectedGrade && section) {
+                                        fetchStudents(selectedGrade.id, section.id);
+                                        fetchSubjects(selectedGrade.id, section.id);
+                                    }
+                                    setStep(1);
+                                }}
+                                disabled={!selectedGrade}
+                                className="w-full text-sm font-bold text-gray-700 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 focus:border-blue-500 focus:ring-0 disabled:opacity-50 cursor-pointer"
+                            >
+                                <option value="">Select Section</option>
+                                {selectedGrade?.sections?.map(section => (
+                                    <option key={section.id} value={section.id}>{section.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Subject Selection */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Subject</label>
+                            <select
+                                value={selectedSubject?.id || ''}
+                                onChange={(e) => {
+                                    const subject = subjects.find(s => s.id === parseInt(e.target.value));
+                                    handleSubjectSelect(subject);
+                                }}
+                                disabled={!selectedSection || subjects.length === 0}
+                                className="w-full text-sm font-bold text-gray-700 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 focus:border-blue-500 focus:ring-0 disabled:opacity-50 cursor-pointer"
+                            >
+                                <option value="">Select Subject</option>
+                                {subjects.map(subject => (
+                                    <option key={subject.id} value={subject.id}>{subject.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Reset Button */}
+                        <div className="flex items-end">
+                            <button
+                                onClick={() => window.location.href = route('teacher.declare-result.index')}
+                                className="w-full py-2.5 bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-gray-100 transition-colors"
+                            >
+                                Reset Filters
+                            </button>
+                        </div>
                     </div>
-                )}
+                </div>
 
                 {/* --- Step 1: Student Selection --- */}
                 {selectedSection && step === 1 && (

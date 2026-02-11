@@ -5,7 +5,8 @@ import UpdatePasswordForm from '@/Components/Security/UpdatePasswordForm';
 import { UserCircleIcon, KeyIcon } from '@heroicons/react/24/outline';
 
 export default function Edit({ mustVerifyEmail, status, teacher, initialTab = 'profile' }) {
-    const user = usePage().props.auth.user;
+    const { auth } = usePage().props;
+    const user = auth?.user || {};
     const [activeTab, setActiveTab] = useState(initialTab); // profile, password
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({

@@ -254,6 +254,12 @@ Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () 
 Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [\App\Http\Controllers\TeacherDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard-simple', function () {
+        return \Inertia\Inertia::render('Teacher/DashboardSimple');
+    })->name('dashboard-simple');
+    Route::get('/dashboard-minimal', function () {
+        return \Inertia\Inertia::render('Teacher/DashboardMinimal');
+    })->name('dashboard-minimal');
     Route::get('/schedule', [\App\Http\Controllers\TeacherDashboardController::class, 'schedule'])->name('schedule');
 
     // Declare Result (NEW) - Protected by semester open check

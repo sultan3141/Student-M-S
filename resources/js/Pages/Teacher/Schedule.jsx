@@ -6,7 +6,7 @@ import {
     ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
 
-export default function Schedule({ sections, selectedSectionId, schedule }) {
+export default function Schedule({ sections = [], selectedSectionId, schedule = {} }) {
     const selectedSection = sections.find(s => s.id == selectedSectionId);
 
     const handleSectionChange = (e) => {

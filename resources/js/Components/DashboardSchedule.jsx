@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardSchedule = ({ schedule }) => {
+const DashboardSchedule = ({ schedule = {} }) => {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
     // Get all unique time slots across all days
@@ -87,8 +87,8 @@ const DashboardSchedule = ({ schedule }) => {
                                             {item ? (
                                                 <div className="space-y-1">
                                                     <div className={`inline-flex px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${item.type === 'break'
-                                                            ? 'bg-amber-100 text-amber-700'
-                                                            : 'bg-blue-100 text-blue-700'
+                                                        ? 'bg-amber-100 text-amber-700'
+                                                        : 'bg-blue-100 text-blue-700'
                                                         }`}>
                                                         {item.type || 'Class'}
                                                     </div>

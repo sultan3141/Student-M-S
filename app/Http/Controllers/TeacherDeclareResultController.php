@@ -17,7 +17,20 @@ class TeacherDeclareResultController extends Controller
 {
     public function index(Request $request)
     {
-        $grades = Grade::with('sections')->orderBy('level')->get();
+        $grades = Grade::with('sections')->orderBy('level')->get()->map(function($grade) {
+            return [
+                'id' => $grade->id,
+                'name' => $grade->name,
+                'level' => $grade->level,
+                'sections' => $grade->sections->map(function($section) {
+                    return [
+                        'id' => $section->id,
+                        'name' => $section->name,
+                    ];
+                })->values()
+            ];
+        })->values();
+        
         $assessmentTypes = AssessmentType::all();
         $currentAcademicYear = AcademicYear::whereRaw('is_current = true')->first();
         $currentSemester = $currentAcademicYear ? $currentAcademicYear->getCurrentSemester() : 1;

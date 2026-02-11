@@ -9,7 +9,7 @@ import {
     Cell,
 } from 'recharts';
 
-export default function StudentPerformanceChart({ marks, currentAverage, currentRank }) {
+export default function StudentPerformanceChart({ marks = [], currentAverage, currentRank }) {
     // Prepare data for the chart
     const chartData = marks && marks.length > 0
         ? marks.slice(0, 6).map(mark => ({

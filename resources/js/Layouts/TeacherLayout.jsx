@@ -23,24 +23,36 @@ import {
 import Footer from '@/Components/Footer';
 
 export default function TeacherLayout({ children }) {
-    const { auth } = usePage().props;
+    const { auth } = usePage().props || {};
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [manageSchoolOpen, setManageSchoolOpen] = useState(true);
-    const [expandedMenus, setExpandedMenus] = useState({
-        'declare-result': route().current('teacher.declare-result.*'),
-        'student-results': route().current('teacher.students.manage-results.*'),
-        'teacher-assessments': route().current('teacher.assessments-simple.*'),
-        'class-schedules': route().current('teacher.schedule.*')
+    const [expandedMenus, setExpandedMenus] = useState(() => {
+        try {
+            return {
+                'declare-result': route().current('teacher.declare-result.*'),
+                'student-results': route().current('teacher.students.manage-results.*'),
+                'teacher-assessments': route().current('teacher.assessments-simple.*'),
+                'class-schedules': route().current('teacher.schedule.*')
+            };
+        } catch (e) {
+            console.error("Route check error:", e);
+            return {};
+        }
     });
     const [expandedGrades, setExpandedGrades] = useState(() => {
-        const gradeId = route().params.grade_id;
-        if (gradeId) {
-            return {
-                [`declare-result-${gradeId}`]: route().current('teacher.declare-result.*'),
-                [`student-results-${gradeId}`]: route().current('teacher.students.manage-results.*'),
-                [`teacher-assessments-${gradeId}`]: route().current('teacher.assessments-simple.*'),
-                [`class-schedules-${gradeId}`]: route().current('teacher.schedule.*')
-            };
+        try {
+            const params = route().params || {};
+            const gradeId = params.grade_id;
+            if (gradeId) {
+                return {
+                    [`declare-result-${gradeId}`]: route().current('teacher.declare-result.*'),
+                    [`student-results-${gradeId}`]: route().current('teacher.students.manage-results.*'),
+                    [`teacher-assessments-${gradeId}`]: route().current('teacher.assessments-simple.*'),
+                    [`class-schedules-${gradeId}`]: route().current('teacher.schedule.*')
+                };
+            }
+        } catch (e) {
+            console.error("Route param error:", e);
         }
         return {};
     });
@@ -61,39 +73,58 @@ export default function TeacherLayout({ children }) {
         }));
     };
 
+    const safeCurrent = (pattern) => {
+        try {
+            return route().current(pattern);
+        } catch (e) {
+            return false;
+        }
+    };
+
+    const safeRoute = (name, params = undefined) => {
+        try {
+            return route(name, params);
+        } catch (e) {
+            console.error(`Route error for ${name}:`, e);
+            return '#';
+        }
+    };
+
     const navigation = [
-        { name: 'Dashboard Overview', href: route('teacher.dashboard'), icon: Squares2X2Icon },
+        { name: 'Dashboard Overview', href: safeRoute('teacher.dashboard'), icon: Squares2X2Icon },
         {
             name: 'Declare Result',
             icon: ClipboardDocumentCheckIcon,
             id: 'declare-result',
-            current: route().current('teacher.declare-result.*'),
-            children: auth?.teacher_grades?.length > 0 ? auth.teacher_grades : null
+            current: safeCurrent('teacher.declare-result.*'),
+            children: auth?.teacher_grades?.length > 0 ? auth.teacher_grades : null,
+            href: safeRoute('teacher.declare-result.index')
         },
         {
             name: 'Student Results',
             icon: ChartBarIcon,
             id: 'student-results',
-            current: route().current('teacher.students.manage-results'),
-            children: auth?.teacher_grades?.length > 0 ? auth.teacher_grades : null
+            current: safeCurrent('teacher.students.manage-results'),
+            children: auth?.teacher_grades?.length > 0 ? auth.teacher_grades : null,
+            href: safeRoute('teacher.students.manage-results')
         },
         {
             name: 'Assessments',
             icon: ClipboardDocumentCheckIcon,
             id: 'teacher-assessments',
-            current: route().current('teacher.assessments-simple.*') || route().current('teacher.custom-assessments.*'),
+            current: safeCurrent('teacher.assessments-simple.*') || safeCurrent('teacher.custom-assessments.*'),
             children: auth?.teacher_grades?.length > 0 ? auth.teacher_grades : null,
-            href: route('teacher.assessments-simple.index')
+            href: safeRoute('teacher.assessments-simple.index')
         },
         {
             name: 'Class Schedules',
             icon: CalendarDaysIcon,
             id: 'class-schedules',
-            current: route().current('teacher.schedule'),
+            current: safeCurrent('teacher.schedule'),
             children: auth?.teacher_grades?.length > 0 ? auth.teacher_grades : null,
-            href: route('teacher.schedule')
+            href: safeRoute('teacher.schedule')
         },
-        { name: 'Attendance', href: route('teacher.attendance.index'), icon: CalendarDaysIcon },
+        { name: 'Attendance', href: safeRoute('teacher.attendance.index'), icon: CalendarDaysIcon },
     ];
 
     return (
@@ -197,20 +228,27 @@ export default function TeacherLayout({ children }) {
                                                     <div className="flex items-center justify-between group py-1">
                                                         <Link
                                                             href={item.id === 'declare-result'
-                                                                ? route('teacher.declare-result.index', { grade_id: grade.id })
+                                                                ? safeRoute('teacher.declare-result.index', { grade_id: grade.id })
                                                                 : item.id === 'student-results'
-                                                                    ? route('teacher.students.manage-results', { grade_id: grade.id })
+                                                                    ? safeRoute('teacher.students.manage-results', { grade_id: grade.id })
                                                                     : item.id === 'teacher-assessments'
-                                                                        ? route('teacher.assessments-simple.index', { grade_id: grade.id })
-                                                                        : route('teacher.schedule', { grade_id: grade.id })}
+                                                                        ? safeRoute('teacher.assessments-simple.index', { grade_id: grade.id })
+                                                                        : safeRoute('teacher.schedule', { grade_id: grade.id })}
                                                             onClick={() => setSidebarOpen(false)}
-                                                            className={`flex-1 text-[10px] font-bold transition-colors ${((item.id === 'declare-result' && route().current('teacher.declare-result.*') && route().params.grade_id == grade.id) ||
-                                                                (item.id === 'student-results' && route().current('teacher.students.manage-results') && route().params.grade_id == grade.id) ||
-                                                                (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && route().params.grade_id == grade.id) ||
-                                                                (item.id === 'class-schedules' && route().current('teacher.schedule') && route().params.grade_id == grade.id))
-                                                                ? 'text-[#1D4ED8]'
-                                                                : 'text-gray-500 hover:text-[#1D4ED8]'
-                                                                }`}
+                                                            className={`flex-1 text-[10px] font-bold transition-colors ${(() => {
+                                                                try {
+                                                                    const params = route().params || {};
+                                                                    return ((item.id === 'declare-result' && route().current('teacher.declare-result.*') && params.grade_id == grade.id) ||
+                                                                        (item.id === 'student-results' && route().current('teacher.student-results.*') && params.grade_id == grade.id) ||
+                                                                        (item.id === 'student-results' && route().current('teacher.students.manage-results') && params.grade_id == grade.id) ||
+                                                                        (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && params.grade_id == grade.id) ||
+                                                                        (item.id === 'class-schedules' && route().current('teacher.schedule') && params.grade_id == grade.id))
+                                                                        ? 'text-[#1D4ED8]'
+                                                                        : 'text-gray-500 hover:text-[#1D4ED8]';
+                                                                } catch (e) {
+                                                                    return 'text-gray-500 hover:text-[#1D4ED8]';
+                                                                }
+                                                            })()}`}
                                                         >
                                                             {grade.name}
                                                         </Link>
@@ -227,17 +265,23 @@ export default function TeacherLayout({ children }) {
                                                         <div className="ml-4 mt-1 space-y-1 border-l border-[#1D4ED8]/10 pl-3">
                                                             {grade.sections?.map((section) => {
                                                                 const href = item.id === 'declare-result'
-                                                                    ? route('teacher.declare-result.index', { grade_id: grade.id, section_id: section.id })
+                                                                    ? safeRoute('teacher.declare-result.index', { grade_id: grade.id, section_id: section.id })
                                                                     : item.id === 'student-results'
-                                                                        ? route('teacher.students.manage-results', { grade_id: grade.id, section_id: section.id })
+                                                                        ? safeRoute('teacher.students.manage-results', { grade_id: grade.id, section_id: section.id })
                                                                         : item.id === 'teacher-assessments'
-                                                                            ? route('teacher.assessments-simple.index', { grade_id: grade.id, section_id: section.id })
-                                                                            : route('teacher.schedule', { grade_id: grade.id, section_id: section.id });
+                                                                            ? safeRoute('teacher.assessments-simple.index', { grade_id: grade.id, section_id: section.id })
+                                                                            : safeRoute('teacher.schedule', { grade_id: grade.id, section_id: section.id });
 
-                                                                const isSectionActive = (item.id === 'declare-result' && route().current('teacher.declare-result.*') && route().params.section_id == section.id) ||
-                                                                    (item.id === 'student-results' && route().current('teacher.students.manage-results') && route().params.section_id == section.id) ||
-                                                                    (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && route().params.section_id == section.id) ||
-                                                                    (item.id === 'class-schedules' && route().current('teacher.schedule') && route().params.section_id == section.id);
+                                                                let isSectionActive = false;
+                                                                try {
+                                                                    const params = route().params || {};
+                                                                    isSectionActive = (item.id === 'declare-result' && route().current('teacher.declare-result.*') && params.section_id == section.id) ||
+                                                                        (item.id === 'student-results' && route().current('teacher.students.manage-results') && params.section_id == section.id) ||
+                                                                        (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && params.section_id == section.id) ||
+                                                                        (item.id === 'class-schedules' && route().current('teacher.schedule') && params.section_id == section.id);
+                                                                } catch (e) {
+                                                                    // ignore
+                                                                }
 
                                                                 return (
                                                                     <Link
@@ -292,7 +336,7 @@ export default function TeacherLayout({ children }) {
 
                         <div className="hidden md:flex items-center space-x-8 ml-4">
                             <Link
-                                href={route('teacher.dashboard')}
+                                href={safeRoute('teacher.dashboard')}
                                 className="text-white text-sm font-black uppercase tracking-wider border-b-2 border-white/40 pb-1"
                             >
                                 Home
@@ -361,7 +405,7 @@ export default function TeacherLayout({ children }) {
                                             <Menu.Item>
                                                 {({ active }) => (
                                                     <Link
-                                                        href={route('teacher.profile.edit')}
+                                                        href={safeRoute('teacher.profile.edit')}
                                                         className={`${active ? 'bg-[#1E40AF] scale-[1.02]' : 'bg-[#1D4ED8]'} flex items-center justify-center space-x-1 p-1.5 rounded-lg text-white transition-all shadow-md h-full`}
                                                     >
                                                         <UserIcon className="h-3 w-3" />
@@ -384,7 +428,7 @@ export default function TeacherLayout({ children }) {
                                         <Menu.Item>
                                             {({ active }) => (
                                                 <Link
-                                                    href={route('logout')}
+                                                    href={safeRoute('logout')}
                                                     method="post"
                                                     as="button"
                                                     className={`${active ? 'bg-red-700 scale-[1.02]' : 'bg-red-600'} flex items-center justify-center space-x-1.5 p-1.5 rounded-lg text-white transition-all shadow-md w-full`}

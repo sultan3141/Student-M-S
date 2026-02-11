@@ -2,12 +2,22 @@ import '../css/app.css';
 import '../css/director-theme.css';
 import './bootstrap';
 
-import { route } from 'ziggy-js';
-window.route = route;
-
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+
+// Import Ziggy route helper
+import { route as ziggyRoute } from 'ziggy-js';
+
+// Make route available globally with error handling
+window.route = function(...args) {
+    try {
+        return ziggyRoute(...args);
+    } catch (error) {
+        console.error('Route error:', error);
+        return '#';
+    }
+};
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 

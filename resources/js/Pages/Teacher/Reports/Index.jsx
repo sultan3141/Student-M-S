@@ -11,7 +11,7 @@ import {
     PresentationChartLineIcon
 } from '@heroicons/react/24/outline';
 
-export default function Index({ statistics, subjectPerformance, classPassRate }) {
+export default function Index({ statistics = {}, subjectPerformance = [], classPassRate = [] }) {
     return (
         <TeacherLayout>
             <Head title="Academic Reports" />

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function ScheduleView({ schedule, grade, section }) {
+export default function ScheduleView({ schedule = {}, grade, section }) {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
     return (
@@ -21,7 +21,7 @@ export default function ScheduleView({ schedule, grade, section }) {
                     <div key={day} className="border rounded-lg p-3 bg-gray-50/50">
                         <h3 className="font-semibold text-md mb-3 text-center text-gray-700 border-b pb-2">{day}</h3>
                         <div className="space-y-3">
-                            {schedule[day] && schedule[day].length > 0 ? (
+                            {schedule && schedule[day] && schedule[day].length > 0 ? (
                                 schedule[day].map((item) => (
                                     <div key={item.id} className="bg-white p-3 rounded shadow-sm border-l-4 border-indigo-500 hover:shadow-md transition-shadow">
                                         <div className="font-bold text-gray-800 text-sm">

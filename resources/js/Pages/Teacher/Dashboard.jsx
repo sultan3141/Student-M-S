@@ -19,6 +19,15 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function Dashboard({ stats = {}, recentActivity = [], deadlines = [], teacher = {}, currentSemester = null, todaySchedule = [], today = '' }) {
+    const safeRoute = (name, params = undefined) => {
+        try {
+            return route(name, params);
+        } catch (e) {
+            console.error(`Route error for ${name}:`, e);
+            return '#';
+        }
+    };
+
     return (
         <TeacherLayout>
             <Head title="Teacher Dashboard" />
@@ -103,7 +112,7 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
             </div>
 
             {/* Minimalist Schedule Feed */}
-            {todaySchedule && todaySchedule.length > 0 && (
+            {todaySchedule && Array.isArray(todaySchedule) && todaySchedule.length > 0 && (
                 <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-10 overflow-hidden shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-[11px] font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
@@ -111,7 +120,7 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
                             Synchronized Schedule &bull; {today}
                         </h2>
                         <Link
-                            href={route('teacher.schedule')}
+                            href={safeRoute('teacher.schedule')}
                             className="text-[9px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest"
                         >
                             Complete Agenda →
@@ -120,8 +129,9 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {todaySchedule.map((slot, index) => {
-                            const isBreak = slot.activity.toLowerCase().includes('break') ||
-                                slot.activity.toLowerCase().includes('lunch');
+                            const activityName = slot.activity || 'Class';
+                            const isBreak = activityName.toLowerCase().includes('break') ||
+                                activityName.toLowerCase().includes('lunch');
                             return (
                                 <div key={index} className="group p-5 rounded-xl border border-gray-50 bg-gray-50/30 hover:bg-white hover:border-blue-100 transition-all">
                                     <div className="flex items-start justify-between mb-4">
@@ -156,7 +166,7 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
             {/* Flat Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Link
-                    href={route('teacher.declare-result.index')}
+                    href={safeRoute('teacher.declare-result.index')}
                     className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-600 hover:bg-blue-50/10 transition-all group shadow-sm"
                 >
                     <div className="flex items-center justify-between">
@@ -173,7 +183,7 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
                 </Link>
 
                 <Link
-                    href={route('teacher.attendance.index')}
+                    href={safeRoute('teacher.attendance.index')}
                     className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-600 hover:bg-blue-50/10 transition-all group shadow-sm"
                 >
                     <div className="flex items-center justify-between">
@@ -190,7 +200,7 @@ export default function Dashboard({ stats = {}, recentActivity = [], deadlines =
                 </Link>
 
                 <Link
-                    href={route('teacher.assessments-simple.index')}
+                    href={safeRoute('teacher.assessments-simple.index')}
                     className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-600 hover:bg-blue-50/10 transition-all group shadow-sm"
                 >
                     <div className="flex items-center justify-between">

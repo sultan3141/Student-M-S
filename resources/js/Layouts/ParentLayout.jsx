@@ -179,16 +179,16 @@ export default function ParentLayout({ children }) {
                             <Bars3Icon className="h-6 w-6" />
                         </button>
 
-                        <div className="hidden md:flex items-center space-x-8 ml-4">
+                        <div className="flex items-center space-x-4 md:space-x-8 ml-2 md:ml-4 overflow-x-auto no-scrollbar">
                             <Link
-                                href={route('parent.dashboard')}
-                                className="text-white text-sm font-black uppercase tracking-wider border-b-2 border-white/40 pb-1"
+                                href="/"
+                                className="text-white text-xs md:text-sm font-black uppercase tracking-wider border-b-2 border-white/40 pb-1 whitespace-nowrap"
                             >
                                 Home
                             </Link>
                             <Link
                                 href={route('parent.school-contact')}
-                                className="text-white/60 hover:text-white text-sm font-black uppercase tracking-wider transition-all"
+                                className="text-white/60 hover:text-white text-xs md:text-sm font-black uppercase tracking-wider transition-all whitespace-nowrap"
                             >
                                 Support
                             </Link>

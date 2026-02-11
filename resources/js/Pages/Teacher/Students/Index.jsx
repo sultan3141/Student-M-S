@@ -2,7 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import TeacherLayout from '@/Layouts/TeacherLayout';
 import { MagnifyingGlassIcon, UserCircleIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
-export default function Index({ students }) {
+export default function Index({ students = [] }) {
     return (
         <TeacherLayout>
             <Head title="My Students" />

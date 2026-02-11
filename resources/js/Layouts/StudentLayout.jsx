@@ -25,46 +25,54 @@ import {
 import Footer from '@/Components/Footer';
 
 export default function StudentLayout({ children }) {
-    const { auth } = usePage().props;
+    const { auth } = usePage().props || {};
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [manageStudentOpen, setManageStudentOpen] = useState(true);
+
+    const safeCurrent = (pattern) => {
+        try {
+            return route().current(pattern);
+        } catch (e) {
+            return false;
+        }
+    };
 
     const navigation = [
         {
             name: 'Dashboard',
             href: route('student.dashboard'),
             icon: Squares2X2Icon,
-            current: route().current('student.dashboard'),
+            current: safeCurrent('student.dashboard'),
         },
         {
             name: 'Attendance',
             href: route('student.attendance'),
             icon: CalendarDaysIcon,
-            current: route().current('student.attendance'),
+            current: safeCurrent('student.attendance'),
         },
         {
             name: 'Semester Records',
             href: route('student.academic.semesters'),
             icon: DocumentChartBarIcon,
-            current: route().current('student.academic.semesters') || route().current('student.academic.semester.show'),
+            current: safeCurrent('student.academic.semesters') || safeCurrent('student.academic.semester.show'),
         },
         {
             name: 'Academic Year',
             href: route('student.academic.year.current'),
             icon: TrophyIcon,
-            current: route().current('student.academic.year.current') || route().current('student.academic.year.show'),
+            current: safeCurrent('student.academic.year.current') || safeCurrent('student.academic.year.show'),
         },
         {
             name: 'Profile',
             href: route('student.profile.edit'),
             icon: UserCircleIcon,
-            current: route().current('student.profile.edit'),
+            current: safeCurrent('student.profile.edit'),
         },
         {
             name: 'My Schedule',
             href: route('student.schedule'),
             icon: CalendarDaysIcon,
-            current: route().current('student.schedule'),
+            current: safeCurrent('student.schedule'),
             description: 'Weekly Timetable'
         },
     ];
@@ -177,7 +185,7 @@ export default function StudentLayout({ children }) {
                         <div className="flex items-center space-x-4 sm:space-x-8 ml-2 sm:ml-4 h-full">
                             <Link
                                 href={route('student.dashboard')}
-                                className={`h-full flex items-center text-sm font-black transition-all tracking-wider uppercase border-b-[3px] px-1 ${route().current('student.dashboard')
+                                className={`h-full flex items-center text-sm font-black transition-all tracking-wider uppercase border-b-[3px] px-1 ${safeCurrent('student.dashboard')
                                     ? 'text-white border-blue-400 opacity-100 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]'
                                     : 'text-white/60 border-transparent hover:text-white hover:border-white/20'
                                     }`}

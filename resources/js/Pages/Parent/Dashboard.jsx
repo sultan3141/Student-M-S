@@ -9,8 +9,16 @@ import {
     UserGroupIcon,
     ArrowRightIcon,
     ClockIcon,
-    ExclamationCircleIcon
+    ExclamationCircleIcon,
+    ChartBarIcon,
+    CheckCircleIcon,
+    XCircleIcon,
+    SparklesIcon,
+    TrophyIcon,
+    BookOpenIcon,
+    PhoneIcon
 } from '@heroicons/react/24/outline';
+import { CheckCircleIcon as CheckCircleSolid, StarIcon } from '@heroicons/react/24/solid';
 
 export default function Dashboard({ parentName, selectedStudent, attendance, schedule }) {
     // Mock payment data - in production this would come from controller
@@ -25,170 +33,214 @@ export default function Dashboard({ parentName, selectedStudent, attendance, sch
 
             <div className="space-y-6">
                 {/* Modern Header Section */}
-                <div className="bg-gradient-to-r from-navy-900 to-indigo-900 rounded-2xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div>
-                            <p className="text-indigo-200 text-sm font-medium mb-1">Welcome back,</p>
-                            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-                                {parentName}
-                            </h1>
+                {/* Modern Header Section */}
+                <div className="bg-gradient-to-br from-[#1e3a8a] via-[#1e40af] to-[#3b82f6] rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden border border-white/10">
+                    {/* Decorative Background Elements */}
+                    <div className="absolute top-0 right-0 -mt-16 -mr-16 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl animate-pulse"></div>
+                    <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-indigo-500 opacity-20 rounded-full blur-3xl"></div>
+
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-blue-100 text-sm font-medium mb-1 flex items-center gap-2">
+                                    <SparklesIcon className="h-4 w-4 text-amber-300" />
+                                    Welcome back,
+                                </p>
+                                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white drop-shadow-sm">
+                                    {parentName}
+                                </h1>
+                            </div>
+
                             {selectedStudent ? (
-                                <div className="mt-3 flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20 w-fit">
-                                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                    <p className="text-xs font-semibold text-indigo-100">
-                                        Managing: {selectedStudent.user?.name}
-                                    </p>
+                                <div className="flex items-center gap-4 bg-white/10 p-2 pr-6 rounded-full backdrop-blur-md border border-white/20 w-fit transition-all hover:bg-white/20">
+                                    <div className="relative">
+                                        <div className="w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 to-pink-500 shadow-lg">
+                                            <img
+                                                src={selectedStudent.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${selectedStudent.user?.name}&background=random&color=fff`}
+                                                alt="Student"
+                                                className="w-full h-full rounded-full object-cover border-2 border-white"
+                                            />
+                                        </div>
+                                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-400 border-2 border-[#1e40af] rounded-full"></div>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase font-bold text-blue-200 tracking-wider mb-0.5">Currently Managing</p>
+                                        <p className="text-lg font-bold text-white leading-none">
+                                            {selectedStudent.user?.name}
+                                        </p>
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="mt-3 flex items-center gap-2 bg-amber-500/20 px-3 py-1.5 rounded-full backdrop-blur-sm border border-amber-500/30 w-fit">
-                                    <ExclamationCircleIcon className="h-4 w-4 text-amber-400" />
-                                    <p className="text-xs font-semibold text-amber-100">
-                                        No child selected.
-                                    </p>
+                                <div className="mt-3 flex items-center gap-3 bg-amber-500/20 px-4 py-3 rounded-xl backdrop-blur-sm border border-amber-500/30 w-fit">
+                                    <ExclamationCircleIcon className="h-6 w-6 text-amber-300 animate-bounce" />
+                                    <div>
+                                        <p className="text-sm font-bold text-amber-100">No Child Selected</p>
+                                        <p className="text-xs text-amber-200/80">Select a child to view their details.</p>
+                                    </div>
                                 </div>
                             )}
                         </div>
-                        <Link
-                            href={route('parent.children')}
-                            className="px-5 py-2.5 bg-white text-navy-900 rounded-xl font-bold text-sm shadow-lg hover:shadow-indigo-500/20 transition-all flex items-center gap-2 w-fit"
-                        >
-                            <UserGroupIcon className="h-4 w-4" />
-                            Switch Child
-                        </Link>
+
                     </div>
                 </div>
 
                 {selectedStudent ? (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        {/* Summary Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                        <AcademicCapIcon className="h-5 w-5" />
-                                    </div>
-                                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</span>
-                                </div>
-                                <div className="text-xl font-bold text-gray-900">{selectedStudent.grade?.name || 'N/A'}</div>
-                                <div className="text-xs text-gray-400 mt-1">Section {selectedStudent.section?.name || 'N/A'}</div>
-                            </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
-                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                                        <ClockIcon className="h-5 w-5" />
-                                    </div>
-                                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance</span>
-                                </div>
-                                <div className="text-xl font-bold text-gray-900">{attendance?.rate || '100'}%</div>
-                                <div className="text-xs text-gerald-500 mt-1">{attendance?.present || 0} Days Present</div>
-                            </div>
+                        {/* LEFT COLUMN: Schedule & Status */}
+                        <div className="lg:col-span-2 space-y-8">
 
-                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                                        <CalendarDaysIcon className="h-5 w-5" />
+                            {/* Today's Schedule Section */}
+                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h2 className="text-xl font-bold text-navy-900 flex items-center gap-2">
+                                            <CalendarDaysIcon className="h-6 w-6 text-indigo-600" />
+                                            Today's Schedule
+                                        </h2>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                                        </p>
                                     </div>
-                                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Registration</span>
-                                </div>
-                                <div className={`text-xl font-bold ${selectedStudent.current_registration?.status === 'Approved' ? 'text-green-600' : 'text-amber-600'}`}>
-                                    {selectedStudent.current_registration?.status || 'Pending'}
-                                </div>
-                                <div className="text-xs text-gray-400 mt-1">Academic Year 2024</div>
-                            </div>
-
-                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                                        <BanknotesIcon className="h-5 w-5" />
-                                    </div>
-                                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Fees</span>
-                                </div>
-                                <div className="text-xl font-bold text-gray-900">{paymentInfo.outstandingBalance.toLocaleString()}</div>
-                                <div className="text-xs text-amber-600 mt-1">{paymentInfo.status} Payment</div>
-                            </div>
-                        </div>
-
-                        {/* Reports Section */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <div className="lg:col-span-2 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-                                <div className="p-5 border-b border-gray-50 flex items-center justify-between">
-                                    <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                                        <DocumentTextIcon className="h-5 w-5 text-indigo-500" />
-                                        Recent Reports
-                                    </h3>
-                                    <Link href={route('parent.academic.semesters', selectedStudent.id)} className="text-xs font-bold text-indigo-600 hover:text-indigo-700">
-                                        View All
+                                    <Link href={route('parent.student.schedule', selectedStudent.id)} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-lg transition">
+                                        View Full Week
                                     </Link>
                                 </div>
-                                <div className="p-5">
-                                    {selectedStudent.reports && selectedStudent.reports.length > 0 ? (
-                                        <div className="space-y-4">
-                                            {selectedStudent.reports.map((report) => (
-                                                <div key={report.id} className="flex gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition border border-transparent hover:border-gray-200">
-                                                    <div className={`p-2 rounded-lg h-fit ${report.report_type === 'disciplinary' ? 'bg-red-100 text-red-600' :
-                                                        report.report_type === 'academic' ? 'bg-blue-100 text-blue-600' :
-                                                            'bg-gray-100 text-gray-600'
-                                                        }`}>
-                                                        <DocumentTextIcon className="h-5 w-5" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center justify-between mb-1">
-                                                            <span className="text-xs font-extrabold uppercase tracking-wide text-gray-400">
-                                                                {report.report_type} Report
-                                                            </span>
-                                                            <span className="text-[10px] font-medium text-gray-400">
-                                                                {new Date(report.reported_at).toLocaleDateString()}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-sm text-gray-700 leading-relaxed font-medium">
-                                                            {report.message}
-                                                        </p>
-                                                    </div>
+
+                                <div className="relative pl-4 border-l-2 border-indigo-100 space-y-8">
+                                    {(() => {
+                                        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+                                        // The schedule prop is an object grouped by day name
+                                        const todaysClasses = schedule && schedule[today] ? schedule[today] : [];
+
+                                        if (todaysClasses.length === 0) {
+                                            return (
+                                                <div className="text-center py-8 pr-4">
+                                                    <p className="text-gray-400 italic">No classes scheduled for today.</p>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-10">
-                                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <DocumentTextIcon className="h-8 w-8 text-gray-200" />
+                                            );
+                                        }
+
+                                        return todaysClasses.map((item, index) => (
+                                            <div key={item.id} className="relative group">
+                                                <span className={`absolute -left-[21px] top-1 h-3 w-3 rounded-full border-2 border-white ring-4 ${item.type === 'break' ? 'bg-amber-400 ring-amber-50' : 'bg-indigo-600 ring-indigo-50'} transition-all group-hover:scale-125`}></span>
+                                                <div className={`p-4 rounded-xl border transition-all ${item.type === 'break' ? 'bg-amber-50/50 border-amber-100' : 'bg-white border-gray-100 hover:border-indigo-200 hover:shadow-md'}`}>
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <h3 className={`font-bold ${item.type === 'break' ? 'text-amber-800' : 'text-gray-900'}`}>
+                                                            {item.activity}
+                                                        </h3>
+                                                        <span className={`text-xs font-bold px-2 py-1 rounded ${item.type === 'break' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                            {item.start_time} - {item.end_time}
+                                                        </span>
+                                                    </div>
+                                                    {item.type !== 'break' && (
+                                                        <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
+                                                            <span className="flex items-center gap-1">
+                                                                <ClockIcon className="h-3 w-3" />
+                                                                45 min
+                                                            </span>
+                                                            {/* Placeholder for subject/room info if available later */}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <p className="text-sm text-gray-500">No recent reports found for {selectedStudent.user?.name}.</p>
+                                        ));
+                                    })()}
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {/* RIGHT COLUMN: Stats & Updates */}
+                        <div className="space-y-8">
+
+                            {/* Visual Attendance Card */}
+                            <div className="bg-white rounded-3xl p-6 shadow-lg border border-indigo-50 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <ClockIcon className="h-24 w-24 text-indigo-600 transform rotate-12" />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-6 relative z-10">Attendance Status</h3>
+                                <div className="flex flex-col items-center relative z-10">
+                                    <div className="relative w-32 h-32 mb-4">
+                                        <svg className="w-full h-full transform -rotate-90">
+                                            <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="12" fill="none" className="text-gray-100" />
+                                            <circle
+                                                cx="64" cy="64" r="56"
+                                                stroke="currentColor" strokeWidth="12" fill="none"
+                                                strokeDasharray={351.86}
+                                                strokeDashoffset={351.86 - (351.86 * (attendance?.rate || 100)) / 100}
+                                                className={`text-indigo-600 transition-all duration-1000 ease-out`}
+                                                strokeLinecap="round"
+                                            />
+                                        </svg>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                            <span className="text-3xl font-black text-navy-900">{attendance?.rate || 100}%</span>
                                         </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 w-full text-center mt-2">
+                                        <div className="bg-green-50 rounded-lg p-2">
+                                            <p className="text-xs text-green-600 font-bold uppercase">Present</p>
+                                            <p className="text-lg font-black text-green-700">{attendance?.present || '0'}</p>
+                                        </div>
+                                        <div className="bg-red-50 rounded-lg p-2">
+                                            <p className="text-xs text-red-600 font-bold uppercase">Absent</p>
+                                            <p className="text-lg font-black text-red-700">{attendance?.absent || '0'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Recent Activity Feed */}
+                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="font-bold text-gray-900">Recent Activity</h3>
+                                    <Link href={route('parent.academic.semesters', selectedStudent.id)} className="text-xs font-bold text-indigo-500 hover:text-indigo-700">View All</Link>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {selectedStudent.reports && selectedStudent.reports.length > 0 ? (
+                                        selectedStudent.reports.slice(0, 3).map((report) => (
+                                            <div key={report.id} className="flex gap-3 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
+                                                <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${report.report_type === 'disciplinary' ? 'bg-red-500' : 'bg-blue-500'
+                                                    }`}></div>
+                                                <div>
+                                                    <p className="text-xs text-gray-400 font-medium mb-0.5">
+                                                        {new Date(report.reported_at).toLocaleDateString()}
+                                                    </p>
+                                                    <p className="text-sm font-bold text-gray-800 line-clamp-2">
+                                                        {report.message}
+                                                    </p>
+                                                    <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded mt-1 inline-block ${report.report_type === 'disciplinary' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+                                                        }`}>
+                                                        {report.report_type}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-center text-gray-400 py-4">No recent updates.</p>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Quick Actions / Info */}
-                            <div className="space-y-6">
-                                <div className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-200">
-                                    <h3 className="font-bold text-lg mb-2">Need Support?</h3>
-                                    <p className="text-indigo-100 text-xs leading-relaxed mb-6 opacity-80">
-                                        Have questions about your child's progress or school events? Our administration is here to help.
-                                    </p>
-                                    <Link
-                                        href={route('parent.school-contact')}
-                                        className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2"
-                                    >
-                                        Contact School
-                                    </Link>
-                                </div>
-
-                                <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-5">
-                                    <h4 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wider">Quick Access</h4>
-                                    <div className="space-y-3">
-                                        <Link href={route('parent.student.attendance', selectedStudent.id)} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-blue-700 transition group">
-                                            <span className="text-xs font-bold">Attendance History</span>
-                                            <ArrowRightIcon className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-                                        </Link>
-                                        <Link href={route('parent.student.payments', selectedStudent.id)} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-amber-50 hover:text-amber-700 transition group">
-                                            <span className="text-xs font-bold">Billing & Payments</span>
-                                            <ArrowRightIcon className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-                                        </Link>
-                                    </div>
-                                </div>
+                            {/* Quick Action Button */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <Link
+                                    href={route('parent.student.payments', selectedStudent.id)}
+                                    className="p-4 bg-amber-50 rounded-2xl hover:bg-amber-100 transition flex flex-col items-center justify-center text-center group"
+                                >
+                                    <BanknotesIcon className="h-6 w-6 text-amber-600 mb-2 group-hover:scale-110 transition-transform" />
+                                    <span className="text-xs font-bold text-amber-800">Payments</span>
+                                </Link>
+                                <Link
+                                    href={route('parent.school-contact')}
+                                    className="p-4 bg-indigo-50 rounded-2xl hover:bg-indigo-100 transition flex flex-col items-center justify-center text-center group"
+                                >
+                                    <PhoneIcon className="h-6 w-6 text-indigo-600 mb-2 group-hover:scale-110 transition-transform" />
+                                    <span className="text-xs font-bold text-indigo-800">Contact</span>
+                                </Link>
                             </div>
+
                         </div>
                     </div>
                 ) : (
