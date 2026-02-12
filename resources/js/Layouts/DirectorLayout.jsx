@@ -90,50 +90,67 @@ export default function DirectorLayout({ children }) {
                     </div>
                 </div>
 
-                {/* Sidebar Managed Section (Styled Header - Collapsible) */}
-                <div className="p-4 pb-2">
-                    <div
-                        onClick={() => setManageSchoolOpen(!manageSchoolOpen)}
-                        className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all"
-                    >
-                        <div className="flex items-center space-x-3">
-                            <div className="p-1 px-2 border-r border-white/20">
-                                <AcademicCapIcon className="h-6 w-6 text-white" />
+                {/* Scrollable Navigation Area */}
+                <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+                    {/* Sidebar Managed Section (Styled Header - Collapsible) */}
+                    <div className="p-3 pb-2">
+                        <div
+                            onClick={() => setManageSchoolOpen(!manageSchoolOpen)}
+                            className="bg-[#1D4ED8] rounded-lg p-2 shadow-md border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all"
+                        >
+                            <div className="flex items-center space-x-2">
+                                <div className="p-1 px-1.5 border-r border-white/20">
+                                    <AcademicCapIcon className="h-4 w-4 text-white" />
+                                </div>
+                                <span className="text-white font-bold text-[10px] whitespace-nowrap uppercase tracking-wider">Manage School</span>
                             </div>
-                            <span className="text-white font-black text-sm whitespace-nowrap uppercase tracking-tighter">Manage School</span>
+                            <div className="flex items-center">
+                                <div className={`w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent ${manageSchoolOpen ? 'border-b-[6px] border-b-white/90' : 'border-t-[6px] border-t-white/90'
+                                    } ml-2 transition-all duration-300`}></div>
+                            </div>
                         </div>
-                        <div className="flex items-center">
-                            <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent ${manageSchoolOpen ? 'border-b-[10px] border-b-white/90' : 'border-t-[10px] border-t-white/90'
-                                } ml-2 transition-all duration-300`}></div>
-                        </div>
+                    </div>
+
+                    {/* Navigation Links (Accordion Style) */}
+                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${manageSchoolOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+                        }`}>
+                        <nav className="px-3 py-2 space-y-1">
+                            {navigation.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = currentPath.startsWith(item.href);
+
+                                return (
+                                    <Link
+                                        key={item.name}
+                                        href={item.href}
+                                        onClick={() => setSidebarOpen(false)}
+                                        className="flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-bold transition-all text-[#1E3A8A] hover:bg-black/5 hover:text-[#111827]"
+                                    >
+                                        <Icon className="h-4 w-4 flex-shrink-0" />
+                                        <span className="truncate">{item.name}</span>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
                     </div>
                 </div>
 
-                {/* Navigation Links (Accordion Style) */}
-                <div className={`flex-1 transition-all duration-300 ease-in-out overflow-hidden ${manageSchoolOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
-                    }`}>
-                    <nav className="px-3 py-2 space-y-1 overflow-y-auto">
-                        {navigation.map((item) => {
-                            const Icon = item.icon;
-                            const isActive = currentPath.startsWith(item.href);
-
-                            return (
-                                <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    onClick={() => setSidebarOpen(false)}
-                                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-bold transition-all ${isActive
-                                        ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm'
-                                        : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'
-                                        }`}
-                                >
-                                    <Icon className="h-4 w-4 flex-shrink-0" />
-                                    <span className="truncate">{item.name}</span>
-                                </Link>
-                            );
-                        })}
-                    </nav>
-                </div>
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                    .custom-scrollbar::-webkit-scrollbar {
+                        width: 4px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                        background: transparent;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 10px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                        background: rgba(255, 255, 255, 0.2);
+                    }
+                `}} />
 
             </aside>
 
