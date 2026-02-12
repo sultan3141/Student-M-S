@@ -42,27 +42,27 @@ class DirectorReportController extends Controller
         }
 
         $students = $query->get();
-        $title = "Student List - " . Grade::find($request->grade_id)->name . 
-                 ($request->section_id ? " " . Section::find($request->section_id)->name : "");
+        $title = "Student List - " . Grade::find($request->grade_id)->name .
+            ($request->section_id ? " " . Section::find($request->section_id)->name : "");
 
-        if ($request->format === 'pdf') {
+        if ($request->input('format') === 'pdf') {
             $html = view('exports.students-list', compact('students', 'title'))->render();
-            
+
             $options = new \Dompdf\Options();
             $options->set('defaultFont', 'sans-serif');
             $options->setIsRemoteEnabled(true);
-            
+
             $dompdf = new \Dompdf\Dompdf($options);
             $dompdf->loadHtml($html);
             $dompdf->setPaper('A4', 'portrait');
             $dompdf->render();
-            
+
             return response($dompdf->output(), 200, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="student-list.pdf"',
             ]);
         } else {
-            return $this->exportCsv($students, ['Student ID', 'Name', 'Grade', 'Section'], function($student) {
+            return $this->exportCsv($students, ['Student ID', 'Name', 'Grade', 'Section'], function ($student) {
                 return [
                     $student->student_id,
                     $student->user?->name ?? 'N/A',
@@ -85,7 +85,7 @@ class DirectorReportController extends Controller
             'academic_year_id' => 'required|exists:academic_years,id',
             'format' => 'required|in:pdf,csv',
         ]);
-        
+
         // Get students based on filters
         $query = Student::where('grade_id', $request->grade_id);
         if ($request->section_id) {
@@ -97,21 +97,21 @@ class DirectorReportController extends Controller
         // We reuse logic similar to SemesterRecordController but optimized for batch
         // For accurate ranking, we should fetch all marks for this grade/semester
         // To avoid N+1, we fetch all marks once
-        
+
         $marks = \App\Models\Mark::whereIn('student_id', $students->pluck('id'))
             ->where('semester', $request->semester)
             ->where('academic_year_id', $request->academic_year_id)
             ->get()
             ->groupBy('student_id');
 
-        $rankedStudents = $students->map(function($student) use ($marks) {
+        $rankedStudents = $students->map(function ($student) use ($marks) {
             $studentMarks = $marks->get($student->id);
-            
+
             if (!$studentMarks || $studentMarks->isEmpty()) {
                 $avg = 0;
             } else {
                 // Calculate subject averages (simplified for report)
-                $subjectAvgs = $studentMarks->groupBy('subject_id')->map(function($m) {
+                $subjectAvgs = $studentMarks->groupBy('subject_id')->map(function ($m) {
                     $score = $m->sum('score');
                     $max = $m->sum('max_score') ?: (count($m) * 100);
                     return $max > 0 ? ($score / $max) * 100 : 0;
@@ -126,7 +126,7 @@ class DirectorReportController extends Controller
         })->sortByDesc('average')->values();
 
         // Assign Rank
-        $rankedStudents = $rankedStudents->map(function($item, $index) {
+        $rankedStudents = $rankedStudents->map(function ($item, $index) {
             $item['rank'] = $item['average'] > 0 ? $index + 1 : '-';
             return $item;
         });
@@ -135,13 +135,13 @@ class DirectorReportController extends Controller
         $sectionName = $request->section_id ? Section::find($request->section_id)->name : 'All Sections';
         $title = "Rank List - $gradeName - $sectionName (Sem {$request->semester})";
 
-        if ($request->format === 'pdf') {
+        if ($request->input('format') === 'pdf') {
             $html = view('exports.ranks-list', compact('rankedStudents', 'title'))->render();
-            
+
             $options = new \Dompdf\Options();
             $options->set('defaultFont', 'sans-serif');
             $options->setIsRemoteEnabled(true);
-            
+
             $dompdf = new \Dompdf\Dompdf($options);
             $dompdf->loadHtml($html);
             $dompdf->setPaper('A4', 'portrait');
@@ -152,7 +152,7 @@ class DirectorReportController extends Controller
                 'Content-Disposition' => 'attachment; filename="rank-list.pdf"',
             ]);
         } else {
-            return $this->exportCsv($rankedStudents, ['Rank', 'Student ID', 'Name', 'Average'], function($item) {
+            return $this->exportCsv($rankedStudents, ['Rank', 'Student ID', 'Name', 'Average'], function ($item) {
                 return [
                     $item['rank'],
                     $item['student']->student_id,
@@ -162,7 +162,7 @@ class DirectorReportController extends Controller
             }, 'rank-list.csv');
         }
     }
-    
+
     /**
      * Export Payment Status
      */
@@ -181,13 +181,13 @@ class DirectorReportController extends Controller
         // OR standard "Payment" model. 
         // Let's check if Payment model exists.
         // For now, I will use a placeholder query assuming a Payment model
-        
+
         $query = \App\Models\Payment::with(['student.user', 'student.grade', 'student.section']);
-        
+
         if ($request->grade_id !== 'all') {
             $query->whereHas('student', fn($q) => $q->where('grade_id', $request->grade_id));
         }
-        
+
         if ($request->status) {
             $query->where('status', $request->status);
         }
@@ -195,7 +195,7 @@ class DirectorReportController extends Controller
         $payments = $query->get();
         $title = "Payment Report";
 
-        if ($request->format === 'pdf') {
+        if ($request->input('format') === 'pdf') {
             $html = view('exports.payments-list', compact('payments', 'title'))->render();
 
             $options = new \Dompdf\Options();
@@ -212,7 +212,7 @@ class DirectorReportController extends Controller
                 'Content-Disposition' => 'attachment; filename="payment-report.pdf"',
             ]);
         } else {
-             return $this->exportCsv($payments, ['Student Name', 'Amount', 'Status', 'Date'], function($payment) {
+            return $this->exportCsv($payments, ['Student Name', 'Amount', 'Status', 'Date'], function ($payment) {
                 return [
                     $payment->student->user->name,
                     $payment->amount,
@@ -228,7 +228,7 @@ class DirectorReportController extends Controller
      */
     private function exportCsv($collection, $headers, $rowMapper, $filename)
     {
-        $callback = function() use ($collection, $headers, $rowMapper) {
+        $callback = function () use ($collection, $headers, $rowMapper) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $headers);
 
@@ -270,7 +270,7 @@ class DirectorReportController extends Controller
         $academicRecords = $student->marks->groupBy('academic_year_id')->map(function ($yearMarks) use ($student) {
             $yearId = $yearMarks->first()->academic_year_id;
             $yearName = $yearMarks->first()->academicYear->name;
-            
+
             return [
                 'year_name' => $yearName,
                 'semesters' => $yearMarks->groupBy('semester')->map(function ($semMarks, $semester) use ($student, $yearId) {
@@ -278,11 +278,11 @@ class DirectorReportController extends Controller
                         ->where('academic_year_id', $yearId)
                         ->where('semester', $semester)
                         ->first();
-                        
+
                     return [
                         'semester' => $semester,
                         'marks' => $semMarks,
-                        'average' => $result ? $result->average_percentage : null,
+                        'average' => $result ? $result->average : null,
                         'rank' => $result ? $result->rank : null,
                     ];
                 })
