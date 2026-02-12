@@ -260,10 +260,12 @@ class DirectorReportController extends Controller
         ])->findOrFail($request->student_id);
 
         $schoolInfo = [
-            'name' => config('app.name', 'Student Management System'),
-            'address' => '123 Education St, School City',
-            'phone' => '+123 456 7890',
-            'email' => 'info@school.com'
+            'name_or' => 'MANA BARNOOTA DAARUL ULUM KAN UMMATAA',
+            'name_en' => 'DARUL ULUM PUBLIC SCHOOL',
+            'name_ar' => 'مدرسة دار العلوم الإسلامية',
+            'address' => 'Harar, Ethiopia',
+            'phone' => '+252 11 50 50',
+            'email' => 'Duschool571@gmail.com'
         ];
 
         // Group data by Academic Year for a cleaner transcript
@@ -297,5 +299,195 @@ class DirectorReportController extends Controller
         ]);
 
         return $pdf->download("Transcript_{$student->student_id}.pdf");
+    }
+
+    public function exportStudentCard(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'academic_year_id' => 'nullable|exists:academic_years,id',
+        ]);
+
+        $academicYearId = $request->academic_year_id ?? AcademicYear::whereRaw('is_current = true')->first()?->id;
+        $activeYear = $academicYearId ? AcademicYear::find($academicYearId) : null;
+
+        if (!$activeYear) {
+            return redirect()->back()->with('error', 'No active academic year found or selected.');
+        }
+
+        $student = Student::with([
+            'user',
+            'grade',
+            'section',
+            'marks' => function ($q) use ($academicYearId) {
+                $q->where('academic_year_id', $academicYearId)->with('subject');
+            },
+            'semesterResults' => function ($q) use ($academicYearId) {
+                $q->where('academic_year_id', $academicYearId);
+            },
+            'attendances' => function ($q) use ($academicYearId) {
+                $q->where('academic_year_id', $academicYearId);
+            },
+        ])->findOrFail($request->student_id);
+
+        $schoolInfo = [
+            'name_or' => 'MANA BARNOOTA DAARUL ULUM KAN UMMATAA',
+            'name_en' => 'DARUL ULUM PUBLIC SCHOOL',
+            'name_ar' => 'مدرسة دار العلوم الإسلامية',
+            'address' => 'Harar, Ethiopia',
+            'phone' => '+252 11 50 50',
+            'email' => 'Duschool571@gmail.com'
+        ];
+
+        $age = $student->dob ? \Carbon\Carbon::parse($student->dob)->age : 'N/A';
+        $sex = ucfirst($student->gender ?? 'N/A');
+
+        $subjectMarks = [];
+        $semesterResults = [];
+
+        // Group marks by subject then semester (pre-filtered by eager loading)
+        foreach ($student->marks as $mark) {
+            $subjectName = $mark->subject->name ?? 'Unknown';
+            $semester = $mark->semester;
+            $subjectMarks[$subjectName][$semester] = $mark->score;
+        }
+
+        // Calculate final average for each subject
+        foreach ($subjectMarks as $name => $sems) {
+            $sem1 = $sems[1] ?? 0;
+            $sem2 = $sems[2] ?? 0;
+            $subjectMarks[$name]['final'] = ($sem1 > 0 && $sem2 > 0) ? ($sem1 + $sem2) / 2 : ($sem1 ?: $sem2 ?: 0);
+        }
+
+        // Results per semester (pre-filtered by eager loading)
+        foreach ($student->semesterResults as $res) {
+            $absences = $student->attendances
+                ->where('status', 'Absent')
+                ->count();
+
+            $semesterResults[$res->semester] = [
+                'average' => $res->average,
+                'rank' => $res->rank,
+                'remarks' => $res->teacher_remarks,
+                'absences' => $absences,
+                'conduct' => 'A'
+            ];
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.student-card', [
+            'student' => $student,
+            'age' => $age,
+            'sex' => $sex,
+            'subjectMarks' => $subjectMarks,
+            'semesterResults' => $semesterResults,
+            'yearName' => $activeYear->name,
+            'schoolInfo' => $schoolInfo,
+            'generatedAt' => now()->format('M d, Y')
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download("ReportCard_{$activeYear->name}_{$student->user->name}.pdf");
+    }
+
+    public function exportSectionCards(Request $request)
+    {
+        $request->validate([
+            'section_id' => 'required|exists:sections,id',
+            'academic_year_id' => 'nullable|exists:academic_years,id',
+        ]);
+
+        $academicYearId = $request->academic_year_id ?? AcademicYear::whereRaw('is_current = true')->first()?->id;
+        $activeYear = $academicYearId ? AcademicYear::find($academicYearId) : null;
+
+        if (!$activeYear) {
+            return redirect()->back()->with('error', 'No active academic year found or selected.');
+        }
+
+        $students = Student::where('section_id', $request->section_id)
+            ->with([
+                'user',
+                'grade',
+                'section',
+                'marks' => function ($q) use ($academicYearId) {
+                    $q->where('academic_year_id', $academicYearId)->with('subject');
+                },
+                'semesterResults' => function ($q) use ($academicYearId) {
+                    $q->where('academic_year_id', $academicYearId);
+                },
+                'attendances' => function ($q) use ($academicYearId) {
+                    $q->where('academic_year_id', $academicYearId);
+                },
+            ])->get();
+
+        $schoolInfo = [
+            'name_or' => 'MANA BARNOOTA DAARUL ULUM KAN UMMATAA',
+            'name_en' => 'DARUL ULUM PUBLIC SCHOOL',
+            'name_ar' => 'مدرسة دار العلوم الإسلامية',
+            'address' => 'Harar, Ethiopia',
+            'phone' => '+252 11 50 50',
+            'email' => 'Duschool571@gmail.com'
+        ];
+
+        $studentsData = [];
+
+        foreach ($students as $student) {
+            $age = $student->dob ? \Carbon\Carbon::parse($student->dob)->age : 'N/A';
+            $sex = ucfirst($student->gender ?? 'N/A');
+
+            $subjectMarks = [];
+            $semesterResults = [];
+
+            // Group marks by subject then semester (pre-filtered by eager loading)
+            foreach ($student->marks as $mark) {
+                $subjectName = $mark->subject->name ?? 'Unknown';
+                $semester = $mark->semester;
+                $subjectMarks[$subjectName][$semester] = $mark->score;
+            }
+
+            // Calculate final average for each subject
+            foreach ($subjectMarks as $name => $sems) {
+                $sem1 = $sems[1] ?? 0;
+                $sem2 = $sems[2] ?? 0;
+                $subjectMarks[$name]['final'] = ($sem1 > 0 && $sem2 > 0) ? ($sem1 + $sem2) / 2 : ($sem1 ?: $sem2 ?: 0);
+            }
+
+            // Results per semester (pre-filtered by eager loading)
+            foreach ($student->semesterResults as $res) {
+                $absences = $student->attendances
+                    ->where('status', 'Absent')
+                    ->count();
+
+                $semesterResults[$res->semester] = [
+                    'average' => $res->average,
+                    'rank' => $res->rank,
+                    'remarks' => $res->teacher_remarks,
+                    'absences' => $absences,
+                    'conduct' => 'A'
+                ];
+            }
+
+            $studentsData[] = [
+                'student' => $student,
+                'age' => $age,
+                'sex' => $sex,
+                'subjectMarks' => $subjectMarks,
+                'semesterResults' => $semesterResults,
+                'yearName' => $activeYear->name,
+                'schoolInfo' => $schoolInfo,
+                'generatedAt' => now()->format('M d, Y')
+            ];
+        }
+
+        if (empty($studentsData)) {
+            return back()->with('error', 'No students found in this section.');
+        }
+
+        $section = $students->first()->section;
+        $grade = $students->first()->grade;
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.section-cards', [
+            'studentsData' => $studentsData,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download("SectionCards_{$grade->name}_{$section->name}.pdf");
     }
 }

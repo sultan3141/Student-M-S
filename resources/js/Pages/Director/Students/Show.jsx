@@ -35,9 +35,19 @@ export default function Show({ auth, student, registrations, payment_history, ma
                                 >
                                     Back to Directory
                                 </Link>
-                                <button className="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-all font-bold text-sm shadow-md shadow-blue-200">
+                                <a
+                                    href={`${route('director.reports.export.student-card')}?student_id=${student.id}`}
+                                    className="bg-slate-800 text-white px-5 py-2.5 rounded-lg hover:bg-slate-900 transition-all font-bold text-sm shadow-md"
+                                    style={{ backgroundColor: '#1E293B' }}
+                                >
+                                    Download Card
+                                </a>
+                                <a
+                                    href={`${route('director.reports.export.transcript')}?student_id=${student.id}`}
+                                    className="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-all font-bold text-sm shadow-md"
+                                >
                                     Generate Transcript
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>

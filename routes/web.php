@@ -479,6 +479,8 @@ Route::middleware(['auth', 'role:school_director|admin', 'audit'])->prefix('dire
         Route::get('/export/ranks', [\App\Http\Controllers\DirectorReportController::class, 'exportRanks'])->name('export.ranks');
         Route::get('/export/payments', [\App\Http\Controllers\DirectorReportController::class, 'exportPayments'])->name('export.payments');
         Route::get('/export/transcript', [\App\Http\Controllers\DirectorReportController::class, 'exportTranscript'])->name('export.transcript');
+        Route::get('/export/student-card', [\App\Http\Controllers\DirectorReportController::class, 'exportStudentCard'])->name('export.student-card');
+        Route::get('/export/section-cards', [\App\Http\Controllers\DirectorReportController::class, 'exportSectionCards'])->name('export.section-cards');
     });
 
     // Communication Center

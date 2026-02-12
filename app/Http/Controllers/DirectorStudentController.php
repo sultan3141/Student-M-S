@@ -29,21 +29,26 @@ class DirectorStudentController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('student_id', 'like', "%{$search}%")
-                  ->orWhereHas('user', function($u) use ($search) {
-                      $u->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('user', function ($u) use ($search) {
+                        $u->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
             });
         }
-        
+
         $students = $query->paginate(15)->withQueryString();
+
+        $academicYearId = $request->input('academic_year_id', AcademicYear::whereRaw('is_current = true')->first()?->id);
 
         return Inertia::render('Director/Students/Index', [
             'students' => $students,
             'grades' => Grade::with('sections')->get(), // For filter dropdowns
-            'filters' => $request->only(['grade_id', 'section_id', 'search']),
+            'academic_years' => AcademicYear::orderBy('start_date', 'desc')->get(),
+            'filters' => array_merge($request->only(['grade_id', 'section_id', 'search']), [
+                'academic_year_id' => $academicYearId
+            ]),
         ]);
     }
 
@@ -53,7 +58,7 @@ class DirectorStudentController extends Controller
     public function show(Student $student)
     {
         $student->load(['user', 'grade', 'section', 'parents.user', 'registrations', 'payments', 'marks', 'semesterResults']);
-        
+
         return Inertia::render('Director/Students/Show', [
             'student' => $student,
             'registrations' => $student->registrations,

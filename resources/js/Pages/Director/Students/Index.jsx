@@ -2,11 +2,12 @@ import React from 'react';
 import DirectorLayout from '@/Layouts/DirectorLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Index({ auth, students, grades, filters }) {
+export default function Index({ auth, students, grades, academic_years, filters }) {
     const { data, setData, get, processing } = useForm({
         search: filters.search || '',
         grade_id: filters.grade_id || '',
         section_id: filters.section_id || '',
+        academic_year_id: filters.academic_year_id || '',
     });
 
     const handleSearch = (e) => {
@@ -56,6 +57,16 @@ export default function Index({ auth, students, grades, filters }) {
                                 ))}
                             </select>
 
+                            <select
+                                className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                value={data.academic_year_id}
+                                onChange={e => setData('academic_year_id', e.target.value)}
+                            >
+                                {academic_years.map(year => (
+                                    <option key={year.id} value={year.id}>{year.name} {year.is_current ? '(Current)' : ''}</option>
+                                ))}
+                            </select>
+
                             <button
                                 type="submit"
                                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
@@ -63,6 +74,20 @@ export default function Index({ auth, students, grades, filters }) {
                             >
                                 Filter Results
                             </button>
+
+                            {data.section_id && (
+                                <a
+                                    href={route('director.reports.export.section-cards', {
+                                        section_id: data.section_id,
+                                        academic_year_id: data.academic_year_id,
+                                        format: 'pdf'
+                                    })}
+                                    className="bg-navy-800 text-white px-4 py-2 rounded-lg hover:bg-navy-900 transition-colors font-medium text-sm shadow-sm flex items-center justify-center"
+                                    style={{ backgroundColor: '#1E293B' }}
+                                >
+                                    Download Section Cards
+                                </a>
+                            )}
                         </form>
                     </div>
 

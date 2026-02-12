@@ -19,19 +19,29 @@ class DocumentTemplateController extends Controller
 
         // Add Student Query for Transcripts tab
         $studentQuery = \App\Models\Student::with(['user', 'grade', 'section']);
-        
+
         if ($request->filled('search')) {
             $search = $request->search;
-            $studentQuery->where(function($q) use ($search) {
+            $studentQuery->where(function ($q) use ($search) {
                 $q->where('student_id', 'like', "%{$search}%")
-                  ->orWhereHas('user', function($u) use ($search) {
-                      $u->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('user', function ($u) use ($search) {
+                        $u->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
         if ($request->filled('grade_id')) {
             $studentQuery->where('grade_id', $request->grade_id);
+        }
+
+        if ($request->filled('section_id')) {
+            $studentQuery->where('section_id', $request->section_id);
+        }
+
+        if ($request->filled('academic_year_id')) {
+            $academicYearId = $request->academic_year_id;
+        } else {
+            $academicYearId = \App\Models\AcademicYear::whereRaw('is_current = true')->first()?->id;
         }
 
         $students = $studentQuery->paginate(10)->withQueryString();
@@ -41,7 +51,9 @@ class DocumentTemplateController extends Controller
             'grades' => $grades,
             'academic_years' => $academic_years,
             'students' => $students,
-            'filters' => $request->only(['search', 'grade_id']),
+            'filters' => array_merge($request->only(['search', 'grade_id', 'section_id']), [
+                'academic_year_id' => $academicYearId
+            ]),
         ]);
     }
 
@@ -103,7 +115,7 @@ class DocumentTemplateController extends Controller
     public function update(Request $request, $id)
     {
         $documentTemplate = DocumentTemplate::findOrFail($id);
-        
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string|max:50',

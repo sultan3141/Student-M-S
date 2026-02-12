@@ -28,6 +28,14 @@ export default function ReportsDashboard({ grades, academic_years }) {
             url = route('director.reports.export.payments');
             params.append('grade_id', selectedGrade || 'all');
             if (paymentStatus) params.append('status', paymentStatus);
+        } else if (type === 'section_cards') {
+            url = route('director.reports.export.section-cards');
+            if (!selectedSection) {
+                alert('Please select a section first.');
+                return;
+            }
+            params.append('section_id', selectedSection);
+            params.append('academic_year_id', selectedAcademicYear);
         }
 
         params.append('format', format);
@@ -37,18 +45,18 @@ export default function ReportsDashboard({ grades, academic_years }) {
     return (
         <div className="animate-fade-in-up">
 
-            {/* Filters */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-                <div className="flex items-center mb-6">
-                    <FunnelIcon className="w-5 h-5 mr-3 text-gray-400" />
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Report Configuration</h3>
+            {/* Global Filters Control Panel */}
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 mb-10">
+                <div className="flex items-center mb-6 text-gray-800">
+                    <FunnelIcon className="w-5 h-5 mr-2 text-indigo-600" />
+                    <h3 className="text-lg font-bold">Data Configuration</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-2">Academic Year</label>
+                    <div className="relative">
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Academic Year</label>
                         <select
-                            className="block w-full py-2 px-3 border border-gray-200 bg-gray-50 rounded-lg text-sm focus:ring-gray-900 focus:border-gray-900 focus:outline-none transition-colors"
+                            className="block w-full pl-3 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg bg-gray-50 transition-all cursor-pointer"
                             value={selectedAcademicYear}
                             onChange={(e) => setSelectedAcademicYear(e.target.value)}
                         >
@@ -58,10 +66,10 @@ export default function ReportsDashboard({ grades, academic_years }) {
                         </select>
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-2">Grade Level</label>
+                    <div className="relative">
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Grade Level</label>
                         <select
-                            className="block w-full py-2 px-3 border border-gray-200 bg-gray-50 rounded-lg text-sm focus:ring-gray-900 focus:border-gray-900 focus:outline-none transition-colors"
+                            className="block w-full pl-3 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg bg-gray-50 transition-all cursor-pointer"
                             value={selectedGrade}
                             onChange={(e) => { setSelectedGrade(e.target.value); setSelectedSection(''); }}
                         >
@@ -71,10 +79,10 @@ export default function ReportsDashboard({ grades, academic_years }) {
                         </select>
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-2">Section</label>
+                    <div className="relative">
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Section</label>
                         <select
-                            className="block w-full py-2 px-3 border border-gray-200 bg-gray-50 rounded-lg text-sm focus:ring-gray-900 focus:border-gray-900 focus:outline-none transition-colors"
+                            className="block w-full pl-3 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg bg-gray-50 transition-all cursor-pointer"
                             value={selectedSection}
                             onChange={(e) => setSelectedSection(e.target.value)}
                         >
@@ -85,10 +93,10 @@ export default function ReportsDashboard({ grades, academic_years }) {
                         </select>
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-2">Semester</label>
+                    <div className="relative">
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Semester</label>
                         <select
-                            className="block w-full py-2 px-3 border border-gray-200 bg-gray-50 rounded-lg text-sm focus:ring-gray-900 focus:border-gray-900 focus:outline-none transition-colors"
+                            className="block w-full pl-3 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg bg-gray-50 transition-all cursor-pointer"
                             value={selectedSemester}
                             onChange={(e) => setSelectedSemester(e.target.value)}
                         >
@@ -100,82 +108,138 @@ export default function ReportsDashboard({ grades, academic_years }) {
             </div>
 
             {/* Reports Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                {/* Student List */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col h-full">
-                    <div className="flex items-center space-x-3 mb-4">
-                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                            <DocumentTextIcon className="w-6 h-6" />
+                {/* Student Directory Card */}
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden group flex flex-col h-full">
+                    <div className="p-1 h-1.5 bg-blue-500"></div>
+                    <div className="p-6 flex flex-col flex-grow">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                                <DocumentTextIcon className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gray-100 rounded text-gray-400">ADMIN</span>
                         </div>
-                        <h3 className="font-bold text-gray-900">Student List</h3>
-                    </div>
-                    <p className="text-sm text-gray-500 mb-6 flex-grow">
-                        Export detailed student rosters with contact info.
-                    </p>
-                    <div className="grid grid-cols-2 gap-3 mt-auto">
-                        <button onClick={() => handleExport('students', 'pdf')} className="flex items-center justify-center px-4 py-2 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-gray-800 transition-colors">
-                            <ArrowDownTrayIcon className="w-3 h-3 mr-2" /> PDF
-                        </button>
-                        <button onClick={() => handleExport('students', 'csv')} className="flex items-center justify-center px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-50 transition-colors">
-                            <ArrowDownTrayIcon className="w-3 h-3 mr-2" /> CSV
-                        </button>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">Student Directory</h3>
+                        <p className="text-gray-500 text-xs mb-6 leading-relaxed flex-grow">
+                            Export student lists, guardian info, and enrollment rosters for the selected grade/section.
+                        </p>
+                        <div className="space-y-2 mt-auto">
+                            <button
+                                onClick={() => handleExport('students', 'pdf')}
+                                className="w-full flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                            >
+                                <ArrowDownTrayIcon className="w-4 h-4 mr-2" /> Download PDF
+                            </button>
+                            <button
+                                onClick={() => handleExport('students', 'csv')}
+                                className="w-full flex items-center justify-center px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors"
+                            >
+                                Export CSV
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                {/* Rank List */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col h-full">
-                    <div className="flex items-center space-x-3 mb-4">
-                        <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                            <ArrowTrendingUpIcon className="w-6 h-6" />
+                {/* Official Report Cards Card */}
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden group flex flex-col h-full">
+                    <div className="p-1 h-1.5 bg-slate-800" style={{ backgroundColor: '#1E293B' }}></div>
+                    <div className="p-6 flex flex-col flex-grow">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-slate-100 transition-colors">
+                                <DocumentTextIcon className="w-6 h-6 text-slate-700" />
+                            </div>
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-900/5 rounded text-slate-600 uppercase">Official</span>
                         </div>
-                        <h3 className="font-bold text-gray-900">Rank List</h3>
-                    </div>
-                    <p className="text-sm text-gray-500 mb-6 flex-grow">
-                        Academic rankings based on semester marks.
-                    </p>
-                    <div className="grid grid-cols-2 gap-3 mt-auto">
-                        <button onClick={() => handleExport('ranks', 'pdf')} className="flex items-center justify-center px-4 py-2 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-gray-800 transition-colors">
-                            <ArrowDownTrayIcon className="w-3 h-3 mr-2" /> PDF
-                        </button>
-                        <button onClick={() => handleExport('ranks', 'csv')} className="flex items-center justify-center px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-50 transition-colors">
-                            <ArrowDownTrayIcon className="w-3 h-3 mr-2" /> CSV
-                        </button>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">Student Report Cards</h3>
+                        <p className="text-gray-500 text-xs mb-6 leading-relaxed flex-grow">
+                            Download all student report cards for a specific section as one printable multi-page PDF.
+                        </p>
+                        <div className="space-y-2 mt-auto">
+                            <button
+                                onClick={() => handleExport('section_cards', 'pdf')}
+                                className="w-full flex items-center justify-center px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                                style={{ backgroundColor: '#1E293B' }}
+                            >
+                                <ArrowDownTrayIcon className="w-4 h-4 mr-2" /> Download Section Cards
+                            </button>
+                            <p className="text-[10px] text-center text-gray-400 mt-2 italic">
+                                Requires selection of a specific section above
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                {/* Payment List */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col h-full">
-                    <div className="flex items-center space-x-3 mb-4">
-                        <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                            <CurrencyDollarIcon className="w-6 h-6" />
+                {/* Academic Ranking Card */}
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden group flex flex-col h-full">
+                    <div className="p-1 h-1.5 bg-purple-500"></div>
+                    <div className="p-6 flex flex-col flex-grow">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="p-2 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
+                                <ArrowTrendingUpIcon className="w-6 h-6 text-purple-600" />
+                            </div>
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gray-100 rounded text-gray-400">ACADEMIC</span>
                         </div>
-                        <h3 className="font-bold text-gray-900">Payments</h3>
-                    </div>
-                    <div className="mb-4 flex-grow">
-                        <label className="block text-xs font-semibold text-gray-400 mb-1">Status Filter</label>
-                        <select
-                            className="block w-full py-1.5 px-3 border border-gray-200 bg-white rounded-lg text-sm focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
-                            value={paymentStatus}
-                            onChange={(e) => setPaymentStatus(e.target.value)}
-                        >
-                            <option value="">All Statuses</option>
-                            <option value="paid">Paid</option>
-                            <option value="partial">Partial</option>
-                            <option value="unpaid">Unpaid</option>
-                            <option value="overdue">Overdue</option>
-                        </select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 mt-auto">
-                        <button onClick={() => handleExport('payments', 'pdf')} className="flex items-center justify-center px-4 py-2 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-gray-800 transition-colors">
-                            <ArrowDownTrayIcon className="w-3 h-3 mr-2" /> PDF
-                        </button>
-                        <button onClick={() => handleExport('payments', 'csv')} className="flex items-center justify-center px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-50 transition-colors">
-                            <ArrowDownTrayIcon className="w-3 h-3 mr-2" /> CSV
-                        </button>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">Academic Ranking</h3>
+                        <p className="text-gray-500 text-xs mb-6 leading-relaxed flex-grow">
+                            Generate merit lists and student rankings based on semester and yearly averages.
+                        </p>
+                        <div className="space-y-2 mt-auto">
+                            <button
+                                onClick={() => handleExport('ranks', 'pdf')}
+                                className="w-full flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                            >
+                                <ArrowDownTrayIcon className="w-4 h-4 mr-2" /> Merit List PDF
+                            </button>
+                            <button
+                                onClick={() => handleExport('ranks', 'csv')}
+                                className="w-full flex items-center justify-center px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors"
+                            >
+                                Export CSV
+                            </button>
+                        </div>
                     </div>
                 </div>
 
+                {/* Financial Status Card */}
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden group flex flex-col h-full">
+                    <div className="p-1 h-1.5 bg-emerald-500"></div>
+                    <div className="p-6 flex flex-col flex-grow">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors">
+                                <CurrencyDollarIcon className="w-6 h-6 text-emerald-600" />
+                            </div>
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gray-100 rounded text-gray-400">FINANCE</span>
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">Financial Status</h3>
+                        <div className="mb-4">
+                            <select
+                                className="block w-full py-1.5 text-xs border-gray-200 focus:ring-emerald-500 rounded-md bg-white pr-8 transition-all cursor-pointer"
+                                value={paymentStatus}
+                                onChange={(e) => setPaymentStatus(e.target.value)}
+                            >
+                                <option value="">All Transactions</option>
+                                <option value="paid">Paid</option>
+                                <option value="partial">Partial</option>
+                                <option value="unpaid">Unpaid</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2 mt-auto">
+                            <button
+                                onClick={() => handleExport('payments', 'pdf')}
+                                className="w-full flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                            >
+                                <ArrowDownTrayIcon className="w-4 h-4 mr-2" /> Payments PDF
+                            </button>
+                            <button
+                                onClick={() => handleExport('payments', 'csv')}
+                                className="w-full flex items-center justify-center px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors"
+                            >
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
