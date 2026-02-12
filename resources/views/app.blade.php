@@ -14,7 +14,7 @@
 
     <!-- Scripts -->
     @routes
-    @vite(['resources/js/app.jsx'])
+    @vite(['resources/js/app.jsx', 'resources/css/app.css'])
     @inertiaHead
 </head>
 

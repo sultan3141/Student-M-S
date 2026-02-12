@@ -58,6 +58,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
+Route::get('/test-php', function () {
+    return 'PHP is working!';
+});
+
+
+require __DIR__ . '/teacher_test.php';
+require __DIR__ . '/debug_raw.php';
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
