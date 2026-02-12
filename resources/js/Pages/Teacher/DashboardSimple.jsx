@@ -1,24 +1,13 @@
 import { Head } from '@inertiajs/react';
-import TeacherLayout from '@/Layouts/TeacherLayout';
 
 export default function DashboardSimple() {
     return (
-        <TeacherLayout>
-            <Head title="Teacher Dashboard" />
-            
-            <div className="bg-white rounded-lg shadow p-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                    Teacher Dashboard - Simple Test
-                </h1>
-                <p className="text-gray-600">
-                    If you can see this message, the basic React rendering is working.
-                </p>
-                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded">
-                    <p className="text-green-800 font-semibold">✓ TeacherLayout loaded successfully</p>
-                    <p className="text-green-800 font-semibold">✓ Inertia is working</p>
-                    <p className="text-green-800 font-semibold">✓ React is rendering</p>
-                </div>
-            </div>
-        </TeacherLayout>
+        <div style={{ padding: '50px', backgroundColor: '#f0f0f0', minHeight: '100vh', textAlign: 'center' }}>
+            <Head title="Simple Dashboard" />
+            <h1 style={{ color: 'green', fontSize: '30px' }}>Dashboard Simple Loaded Successfully!</h1>
+            <p>If you see this, Inertia and React are working correctly.</p>
+            <p>The problem is likely in the TeacherLayout or the main Dashboard component.</p>
+            <a href="/teacher/dashboard" style={{ marginTop: '20px', display: 'inline-block', padding: '10px 20px', backgroundColor: 'blue', color: 'white' }}>Try Main Dashboard Again</a>
+        </div>
     );
 }
