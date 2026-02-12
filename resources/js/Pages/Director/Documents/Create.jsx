@@ -1,43 +1,30 @@
 import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import DirectorLayout from '@/Layouts/DirectorLayout';
 import { ArrowLeftIcon, DocumentTextIcon, CheckIcon } from '@heroicons/react/24/outline';
 
 export default function CreateDocumentTemplate({ auth }) {
-    const { data, setData, post, processing, errors } = useForm({
-        name: '',
-        type: 'General',
-        description: '',
-        template_content: '',
-        is_active: true,
-    });
-
-    const submit = (e) => {
-        e.preventDefault();
-        post(route('director.documents.store'));
-    };
-
+    // ...
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={null}
-        >
+        <DirectorLayout>
             <Head title="Create Template" />
 
             <div className="min-h-screen bg-white">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-                    {/* Modern Header */}
-                    <div className="mb-10">
+                    {/* Compact Page Header */}
+                    <div className="mb-6">
                         <Link
                             href={route('director.documents.index', { tab: 'templates' })}
-                            className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-black mb-4 transition-colors"
+                            className="inline-flex items-center text-xs font-medium text-gray-500 hover:text-black mb-2 transition-colors"
                         >
-                            <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                            <ArrowLeftIcon className="w-3 h-3 mr-1" />
                             Back to Workspace
                         </Link>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">New Document Template</h1>
-                        <p className="text-gray-500 mt-2 text-lg">Create a reusable HTML template for official school documents.</p>
+                        <h1 className="text-2xl font-bold text-slate-900" style={{ color: '#0F172A' }}>
+                            📄 New Document Template
+                        </h1>
+                        <p className="text-gray-500 mt-1 text-xs">Create a reusable HTML template for official school documents.</p>
                     </div>
 
                     {/* Form Container */}
@@ -167,6 +154,6 @@ export default function CreateDocumentTemplate({ auth }) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </DirectorLayout>
     );
 }

@@ -1,47 +1,34 @@
 import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import DirectorLayout from '@/Layouts/DirectorLayout';
 import { ArrowLeftIcon, DocumentTextIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export default function EditDocumentTemplate({ auth, template }) {
-    const { data, setData, patch, processing, errors } = useForm({
-        name: template.name || '',
-        type: template.type || 'General',
-        description: template.description || '',
-        template_content: template.template_content || '',
-        is_active: Boolean(template.is_active),
-    });
-
-    const submit = (e) => {
-        e.preventDefault();
-        patch(route('director.documents.update', template.id));
-    };
-
+    // ...
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={null}
-        >
+        <DirectorLayout>
             <Head title={`Edit ${template.name}`} />
 
             <div className="min-h-screen bg-white">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-                    {/* Modern Header */}
-                    <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    {/* Compact Page Header */}
+                    <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
                         <div>
                             <Link
                                 href={route('director.documents.index', { tab: 'templates' })}
-                                className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-black mb-4 transition-colors"
+                                className="inline-flex items-center text-xs font-medium text-gray-500 hover:text-black mb-2 transition-colors"
                             >
-                                <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                                <ArrowLeftIcon className="w-3 h-3 mr-1" />
                                 Back to Workspace
                             </Link>
-                            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Edit Template</h1>
-                            <p className="text-gray-500 mt-2 text-lg">Update content and settings for <span className="text-black font-semibold">{template.name}</span>.</p>
+                            <h1 className="text-2xl font-bold text-slate-900" style={{ color: '#0F172A' }}>
+                                📝 Edit Template
+                            </h1>
+                            <p className="text-gray-500 mt-1 text-xs">Update content and settings for <span className="text-black font-semibold">{template.name}</span>.</p>
                         </div>
                         <div className="hidden md:block">
-                            <span className={`px-3 py-1 text-xs uppercase font-bold tracking-wider rounded-full ${template.is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                            <span className={`px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-full ${template.is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                                 {template.is_active ? 'Active' : 'Draft Status'}
                             </span>
                         </div>
@@ -185,6 +172,6 @@ export default function EditDocumentTemplate({ auth, template }) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </DirectorLayout>
     );
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import DirectorLayout from '@/Layouts/DirectorLayout';
 import { ArrowDownTrayIcon, DocumentTextIcon, ArrowTrendingUpIcon, CurrencyDollarIcon, FunnelIcon } from '@heroicons/react/24/outline';
 
 export default function ReportsIndex({ auth, grades, academic_years }) {
@@ -37,20 +37,20 @@ export default function ReportsIndex({ auth, grades, academic_years }) {
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Reports Center</h2>}
-        >
+        <DirectorLayout>
             <Head title="Reports Dashboard" />
 
             <div className="py-8 bg-gray-50 min-h-screen">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                     {/* Hero Section */}
-                    <div className="bg-gradient-to-r from-blue-900 to-indigo-800 rounded-2xl shadow-xl p-8 mb-8 text-white">
-                        <h1 className="text-3xl font-bold mb-2">Director's Analytics & Reporting</h1>
-                        <p className="text-blue-100 max-w-2xl">
-                            Generate comprehensive insights, track academic performance, and monitor financial health with professional-grade exports.
+                    {/* Compact Page Header */}
+                    <div className="mb-4">
+                        <h1 className="text-2xl font-bold text-navy-900" style={{ color: '#0F172A' }}>
+                            📊 Director's Analytics & Reporting
+                        </h1>
+                        <p className="mt-1 text-xs text-gray-600">
+                            Generate comprehensive insights, track academic performance, and monitor financial health
                         </p>
                     </div>
 
@@ -228,6 +228,6 @@ export default function ReportsIndex({ auth, grades, academic_years }) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </DirectorLayout>
     );
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Head, Link, usePage, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import DirectorLayout from '@/Layouts/DirectorLayout';
 import { PencilSquareIcon, TrashIcon, PlusIcon, DocumentDuplicateIcon, ChartBarIcon, DocumentTextIcon, CheckBadgeIcon, MagnifyingGlassIcon, UserIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import ReportsDashboard from '@/Components/Director/ReportsDashboard';
 
@@ -60,21 +60,20 @@ export default function Index({ auth, templates, grades, academic_years, student
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={null}
-        >
+        <DirectorLayout>
             <Head title="Director Workspace" />
 
             <div className="min-h-screen bg-gray-50/50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-                    {/* Modern Custom Header */}
-                    <div className="mb-10">
+                    {/* Compact Page Header */}
+                    <div className="mb-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Director Workspace</h1>
-                                <p className="text-gray-500 mt-2 text-lg">Manage student transcripts and generate administrative reports.</p>
+                                <h1 className="text-2xl font-bold text-slate-900" style={{ color: '#0F172A' }}>
+                                    📂 Director Workspace
+                                </h1>
+                                <p className="text-gray-500 mt-1 text-xs">Manage student transcripts and generate administrative reports.</p>
                             </div>
 
                             {activeTab === 'transcripts' && (
@@ -238,6 +237,7 @@ export default function Index({ auth, templates, grades, academic_years, student
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </DirectorLayout>
     );
 }
+

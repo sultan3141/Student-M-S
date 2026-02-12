@@ -1,32 +1,24 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import DirectorLayout from '@/Layouts/DirectorLayout';
 import { Head, Link } from '@inertiajs/react';
 
 export default function Transcript({ auth, student, academicYear, schoolInfo }) {
-
-    const calculateAverage = (marks) => {
-        if (!marks || marks.length === 0) return 0;
-        const total = marks.reduce((sum, mark) => sum + (mark.score_obtained || 0), 0);
-        return (total / marks.length).toFixed(1);
-    };
-
-    const gpa = calculateGPA(student.marks);
-
+    // ...
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <div className="flex justify-between items-center print:hidden">
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">Student Transcript</h2>
-                    <button
-                        onClick={() => window.print()}
-                        className="px-4 py-2 bg-gray-800 text-white rounded-md text-sm hover:bg-gray-700"
-                    >
-                        Print Transcript
-                    </button>
-                </div>
-            }
-        >
+        <DirectorLayout>
             <Head title={`Transcript - ${student.user.name}`} />
+
+            {/* Print Friendly Header (Floating in Layout) */}
+            <div className="mb-6 flex justify-between items-center print:hidden border-b pb-4">
+                <h2 className="font-bold text-2xl text-slate-900" style={{ color: '#0F172A' }}>
+                    🎓 Student Transcript
+                </h2>
+                <button
+                    onClick={() => window.print()}
+                    className="px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg"
+                >
+                    🖨️ Print Transcript
+                </button>
+            </div>
 
             <div className="py-12 print:py-0 print:m-0">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8 print:max-w-full print:px-0">
@@ -126,6 +118,6 @@ export default function Transcript({ auth, student, academicYear, schoolInfo }) 
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </DirectorLayout>
     );
 }
