@@ -196,31 +196,25 @@ class TeacherStudentController extends Controller
             return redirect()->back()->with('error', 'Teacher profile or academic year not found.');
         }
 
-        // Get grades teacher teaches
-        $grades = Grade::whereIn('level', [9, 10, 11, 12])
+        // Get all grades 1-12 with their sections
+        $grades = Grade::with('sections.stream')
+            ->whereIn('level', range(1, 12))
             ->orderBy('level')
             ->get()
-            ->map(function ($grade) use ($teacher, $academicYear) {
-                $sections = TeacherAssignment::with(['section.stream'])
-                    ->where('teacher_id', $teacher->id)
-                    ->where('grade_id', $grade->id)
-                    ->where('academic_year_id', $academicYear->id)
-                    ->get()
-                    ->pluck('section')
-                    ->unique('id')
-                    ->values();
-
+            ->map(function ($grade) {
                 return [
                     'id' => $grade->id,
                     'name' => $grade->name,
                     'level' => $grade->level,
-                    'sections' => $sections,
+                    'sections' => $grade->sections->map(function ($section) {
+                        return [
+                            'id' => $section->id,
+                            'name' => $section->name,
+                            'stream_name' => $section->stream->name ?? null,
+                        ];
+                    }),
                 ];
-            })
-            ->filter(function ($grade) {
-                return $grade['sections']->isNotEmpty();
-            })
-            ->values();
+            });
 
         // If grade and section are selected, get students with result status
         $studentsData = null;
