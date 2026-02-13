@@ -20,7 +20,8 @@ import {
     HomeIcon,
     ArrowUturnLeftIcon,
     ChevronRightIcon,
-    AcademicCapIcon
+    AcademicCapIcon,
+    ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 import ErrorBoundary from '@/Components/ErrorBoundary';
@@ -75,6 +76,24 @@ export default function StudentLayout({ children }) {
             icon: CalendarDaysIcon,
             current: safeCurrent('student.schedule'),
             description: 'Weekly Timetable'
+        },
+        {
+            name: 'My Results',
+            href: route('student.results'),
+            icon: AcademicCapIcon,
+            current: safeCurrent('student.results'),
+        },
+        {
+            name: 'Communication',
+            href: route('student.announcements.index'),
+            icon: ChatBubbleLeftRightIcon,
+            current: safeCurrent('student.announcements.index'),
+        },
+        {
+            name: 'Documents',
+            href: route('student.documents'),
+            icon: DocumentTextIcon,
+            current: safeCurrent('student.documents'),
         },
     ];
 

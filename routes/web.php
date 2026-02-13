@@ -14,6 +14,8 @@ use App\Http\Controllers\RegistrarAssessmentTypeController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentRegistrationController;
 use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\TeacherAnnouncementController;
+use App\Http\Controllers\StudentAnnouncementController;
 use App\Http\Controllers\SemesterRecordController;
 use App\Http\Controllers\AcademicYearRecordController;
 use App\Http\Controllers\ParentDashboardController;

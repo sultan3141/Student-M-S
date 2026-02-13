@@ -251,10 +251,10 @@ export default function RegistrarLayout({ children }) {
                                                     href={route('logout')}
                                                     method="post"
                                                     as="button"
-                                                    className="inline-flex items-center rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-black leading-4 text-white transition duration-150 ease-in-out hover:bg-white/20 focus:outline-none uppercase tracking-wider shadow-sm"
+                                                    className={`${active ? 'bg-red-700 scale-[1.02]' : 'bg-red-600'} flex items-center justify-center space-x-1.5 p-1.5 rounded-lg text-white transition-all shadow-md w-full`}
                                                 >
                                                     <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                                                    <span className="text-[9px] font-black uppercase tracking-wider">Exit</span>
+                                                    <span className="text-[9px] font-black uppercase tracking-wider">Exit System</span>
                                                 </Link>
                                             )}
                                         </Menu.Item>

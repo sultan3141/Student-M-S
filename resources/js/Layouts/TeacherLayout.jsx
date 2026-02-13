@@ -17,7 +17,8 @@ import {
     UserCircleIcon,
     UserIcon,
     KeyIcon,
-    ArrowUturnLeftIcon
+    ArrowUturnLeftIcon,
+    ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 import ErrorBoundary from '@/Components/ErrorBoundary';
@@ -75,6 +76,13 @@ export default function TeacherLayout({ children }) {
             id: 'class-schedules',
             current: safeCurrent('teacher.schedule'),
             href: safeRoute('teacher.schedule')
+        },
+        {
+            name: 'Communication',
+            icon: ChatBubbleLeftRightIcon,
+            id: 'communication',
+            current: safeCurrent('teacher.announcements.*'),
+            href: safeRoute('teacher.announcements.index')
         },
         { name: 'Attendance', href: safeRoute('teacher.attendance.index'), icon: CalendarDaysIcon },
     ];
