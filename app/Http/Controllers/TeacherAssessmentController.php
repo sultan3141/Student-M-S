@@ -342,7 +342,7 @@ class TeacherAssessmentController extends Controller
         $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
 
         // Get grades 1-12 with their sections (all sections, not just assigned)
-        $grades = \App\Models\Grade::with('sections')
+        $grades = \App\Models\Grade::with('sections.stream')
             ->whereIn('level', range(1, 12))
             ->orderBy('level')
             ->get()
@@ -350,10 +350,12 @@ class TeacherAssessmentController extends Controller
                 return [
                     'id' => $grade->id,
                     'name' => $grade->name,
+                    'level' => $grade->level,
                     'sections' => $grade->sections->map(function ($section) {
                         return [
                             'id' => $section->id,
                             'name' => $section->name,
+                            'stream_name' => $section->stream->name ?? null,
                         ];
                     }),
                 ];
