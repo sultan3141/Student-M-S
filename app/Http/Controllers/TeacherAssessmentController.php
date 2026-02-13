@@ -66,7 +66,7 @@ class TeacherAssessmentController extends Controller
     }
 
     /**
-     * Show create form with fixed grades (9, 10, 11, 12)
+     * Show create form with fixed grades (1-12)
      */
     public function create()
     {
@@ -84,32 +84,23 @@ class TeacherAssessmentController extends Controller
                 ->with('error', 'No active academic year found. Please contact the administrator.');
         }
 
-        // Get fixed grades 9, 10, 11, 12 regardless of assignments
-        $grades = \App\Models\Grade::whereIn('level', [9, 10, 11, 12])
+        // Get all grades 1-12 with their sections (all sections, not just assigned)
+        $grades = \App\Models\Grade::with('sections.stream')
+            ->whereIn('level', range(1, 12))
             ->orderBy('level')
             ->get()
-            ->map(function ($grade) use ($teacher, $academicYear) {
-                // Get sections for this grade assigned to the teacher
-                $sections = \App\Models\TeacherAssignment::with(['section.stream'])
-                    ->where('teacher_id', $teacher->id)
-                    ->where('grade_id', $grade->id)
-                    ->where('academic_year_id', $academicYear->id)
-                    ->get()
-                    ->map(function ($assignment) {
-                    return [
-                        'id' => $assignment->section_id,
-                        'name' => $assignment->section->name,
-                        'stream_name' => $assignment->section->stream->name ?? null,
-                    ];
-                })
-                    ->unique('id')
-                    ->values();
-
+            ->map(function ($grade) {
                 return [
                     'id' => $grade->id,
                     'name' => $grade->name,
                     'level' => $grade->level,
-                    'sections' => $sections,
+                    'sections' => $grade->sections->map(function ($section) {
+                        return [
+                            'id' => $section->id,
+                            'name' => $section->name,
+                            'stream_name' => $section->stream->name ?? null,
+                        ];
+                    }),
                 ];
             });
 
@@ -339,5 +330,100 @@ class TeacherAssessmentController extends Controller
         $assessment->delete();
 
         return redirect()->back()->with('success', 'Assessment deleted successfully.');
+    }
+
+    /**
+     * Unified Assessment Manager (Single Page Interface)
+     */
+    public function unified(Request $request)
+    {
+        $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
+
+        // Get grades 1-12 with their sections (all sections, not just assigned)
+        $grades = \App\Models\Grade::with('sections')
+            ->whereIn('level', range(1, 12))
+            ->orderBy('level')
+            ->get()
+            ->map(function ($grade) {
+                return [
+                    'id' => $grade->id,
+                    'name' => $grade->name,
+                    'sections' => $grade->sections->map(function ($section) {
+                        return [
+                            'id' => $section->id,
+                            'name' => $section->name,
+                        ];
+                    }),
+                ];
+            });
+
+        return Inertia::render('Teacher/Assessments/Unified', [
+            'grades' => $grades,
+            'academicYear' => $academicYear,
+        ]);
+    }
+
+    /**
+     * Fetch all data for the Unified Grid (Students + Assessments + Marks)
+     */
+    public function unifiedData(Request $request)
+    {
+        $request->validate([
+            'grade_id' => 'required',
+            'section_id' => 'required',
+            'subject_id' => 'required',
+        ]);
+
+        $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
+        $gradeId = $request->grade_id;
+        $sectionId = $request->section_id;
+        $subjectId = $request->subject_id;
+        $academicYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
+
+        // 1. Get Students
+        $students = Student::where('grade_id', $gradeId)
+            ->where('section_id', $sectionId)
+            ->where('academic_year_id', $academicYear->id)
+            ->with('user')
+            ->orderBy('student_id')
+            ->get()
+            ->map(function ($s) {
+                return [
+                    'id' => $s->id,
+                    'name' => $s->user->name,
+                    'student_id' => $s->student_id,
+                    'avatar' => $s->user->profile_photo_url ?? null, // simpler avatar handling
+                ];
+            });
+
+        // 2. Get Assessments for this specific class/subject
+        $assessments = Assessment::where('grade_id', $gradeId)
+            // Assessments can be specific to a section OR global for the grade (null section_id)
+            // But usually teachers create them for specific sections or we clone them.
+            // For now, let's fetch assessments linked to this section AND subject.
+            ->where('section_id', $sectionId)
+            ->where('subject_id', $subjectId)
+            ->where('teacher_id', $teacher->id)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // 3. Get Marks
+        $assessmentIds = $assessments->pluck('id');
+        $marks = \App\Models\Mark::whereIn('assessment_id', $assessmentIds)
+            ->whereIn('student_id', $students->pluck('id'))
+            ->get()
+            ->groupBy('student_id')
+            ->map(function ($studentMarks) {
+                return $studentMarks->mapWithKeys(function ($mark) {
+                    return [$mark->assessment_id => $mark->score];
+                });
+            });
+
+        return response()->json([
+            'students' => $students,
+            'assessments' => $assessments,
+            'marks' => $marks
+        ]);
     }
 }
