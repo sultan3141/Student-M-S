@@ -86,11 +86,33 @@ class ParentDashboardController extends Controller
             }
         }
 
+        // Fetch latest 3 announcements for the dashboard
+        $studentGradeIds = $user->parentProfile->students()->pluck('grade_id')->toArray();
+        $announcements = \App\Models\Announcement::with('sender')
+            ->where(function ($query) use ($user, $studentGradeIds) {
+                $query->where('recipient_type', 'all_parents')
+                    ->orWhere('recipient_type', 'all_students');
+
+                foreach ($studentGradeIds as $gradeId) {
+                    $query->orWhere('recipient_type', 'grade_' . $gradeId);
+                }
+
+                $query->orWhere(function ($q) use ($user) {
+                    $q->where('recipient_type', 'specific')
+                        ->whereJsonContains('recipient_ids', (string) $user->id);
+                });
+            })
+            ->whereNotNull('sent_at')
+            ->latest('sent_at')
+            ->limit(3)
+            ->get();
+
         return Inertia::render('Parent/Dashboard', [
             'parentName' => $user->name,
             'selectedStudent' => $student,
             'attendance' => $attendanceData,
             'schedule' => $schedule,
+            'latestAnnouncements' => $announcements,
         ])->withViewData([
                     'title' => 'Parent Dashboard'
                 ]);
@@ -580,6 +602,41 @@ class ParentDashboardController extends Controller
             'student' => $student,
             'averages' => $averages,
             'overall' => round($overall, 2),
+        ]);
+    }
+
+    public function announcements()
+    {
+        $user = Auth::user();
+        if (!$user->isParent() || !$user->parentProfile) {
+            abort(403, 'Unauthorized');
+        }
+
+        $studentGradeIds = $user->parentProfile->students()->pluck('grade_id')->toArray();
+
+        $announcements = \App\Models\Announcement::with('sender')
+            ->where(function ($query) use ($user, $studentGradeIds) {
+                // Announcements for all parents
+                $query->where('recipient_type', 'all_parents')
+                    ->orWhere('recipient_type', 'all_students'); // Also show school-wide student news to parents
+    
+                // Grade specific for any of their children
+                foreach ($studentGradeIds as $gradeId) {
+                    $query->orWhere('recipient_type', 'grade_' . $gradeId);
+                }
+
+                // Specific to this user
+                $query->orWhere(function ($q) use ($user) {
+                    $q->where('recipient_type', 'specific')
+                        ->whereJsonContains('recipient_ids', (string) $user->id);
+                });
+            })
+            ->whereNotNull('sent_at')
+            ->latest('sent_at')
+            ->paginate(10);
+
+        return Inertia::render('Parent/Announcements/Index', [
+            'announcements' => $announcements,
         ]);
     }
 
