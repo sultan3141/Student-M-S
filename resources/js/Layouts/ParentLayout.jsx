@@ -19,7 +19,8 @@ import {
     Squares2X2Icon,
     UserIcon,
     KeyIcon,
-    ArrowUturnLeftIcon
+    ArrowUturnLeftIcon,
+    MegaphoneIcon
 } from '@heroicons/react/24/outline';
 import ChangePasswordModal from '@/Components/ChangePasswordModal';
 import Footer from '@/Components/Footer';
@@ -39,6 +40,11 @@ export default function ParentLayout({ children }) {
             name: 'Dashboard',
             href: route('parent.dashboard'),
             icon: HomeIcon,
+        },
+        {
+            name: 'Communication',
+            href: route('parent.announcements'),
+            icon: MegaphoneIcon,
         },
         {
             name: 'My Children',
