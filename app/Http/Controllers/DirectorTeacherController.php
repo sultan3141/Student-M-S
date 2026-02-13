@@ -71,7 +71,7 @@ class DirectorTeacherController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'employee_id' => 'required|string|unique:teachers',
+            'employee_id' => 'nullable|string|unique:teachers',
             'qualification' => 'nullable|string',
             'specialization' => 'nullable|string',
             'phone' => 'nullable|string',
@@ -100,10 +100,13 @@ class DirectorTeacherController extends Controller
             ]);
             $user->assignRole('teacher');
 
+            // Auto-generate employee_id if not provided
+            $employeeId = $validated['employee_id'] ?? 'TCH' . str_pad($user->id, 4, '0', STR_PAD_LEFT);
+
             // Create teacher profile
             $teacher = Teacher::create([
                 'user_id' => $user->id,
-                'employee_id' => $validated['employee_id'],
+                'employee_id' => $employeeId,
                 'qualification' => $validated['qualification'] ?? null,
                 'specialization' => $validated['specialization'] ?? null,
                 'phone' => $validated['phone'] ?? null,
@@ -128,7 +131,7 @@ class DirectorTeacherController extends Controller
             \App\Services\AuditLogger::log(
                 'TEACHER_CREATED',
                 'TEACHER',
-                "Created teacher account: {$validated['name']} ({$validated['employee_id']})",
+                "Created teacher account: {$validated['name']} ({$employeeId})",
                 ['teacher_id' => $teacher->id, 'user_id' => $user->id]
             );
 
@@ -263,7 +266,8 @@ class DirectorTeacherController extends Controller
             $gradeId = $grades[$index] ?? null;
             $sectionId = $sections[$index] ?? null;
 
-            if (!$gradeId || !$sectionId) continue;
+            if (!$gradeId || !$sectionId)
+                continue;
 
             // Check if another teacher is already assigned to this Subject + Section + Year
             $exists = TeacherAssignment::where('subject_id', $subjectId)
