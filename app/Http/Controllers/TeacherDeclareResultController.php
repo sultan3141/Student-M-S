@@ -15,9 +15,13 @@ use Inertia\Inertia;
 
 class TeacherDeclareResultController extends Controller
 {
+    /**
+     * Display the Result Declaration wizard
+     * Allows teachers to verify students, bind subjects, and enter marks in 3 phases
+     */
     public function index(Request $request)
     {
-        $grades = Grade::with('sections')->orderBy('level')->get()->map(function ($grade) {
+        $grades = Grade::with('sections.stream')->orderBy('level')->get()->map(function ($grade) {
             return [
                 'id' => $grade->id,
                 'name' => $grade->name,
@@ -26,6 +30,7 @@ class TeacherDeclareResultController extends Controller
                     return [
                         'id' => $section->id,
                         'name' => $section->name,
+                        'stream_name' => $section->stream->name ?? null,
                     ];
                 })->values()
             ];
@@ -59,6 +64,9 @@ class TeacherDeclareResultController extends Controller
         return response()->json($students);
     }
 
+    /**
+     * Get subjects for the selected grade
+     */
     public function getSubjects(Request $request)
     {
         $request->validate([
