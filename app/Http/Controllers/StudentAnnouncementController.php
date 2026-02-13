@@ -20,9 +20,9 @@ class StudentAnnouncementController extends Controller
 
         $announcements = Announcement::with('sender')
             ->where(function ($query) use ($user, $gradeId) {
-                // Announcements for everyone/students (if implemented)
-                // $query->where('recipient_type', 'all_students'); 
-    
+                // Announcements for everyone/students
+                $query->where('recipient_type', 'all_students');
+
                 // Grade specific
                 if ($gradeId) {
                     $query->orWhere('recipient_type', 'grade_' . $gradeId);
