@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Head, useForm, router } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
 import DirectorLayout from '@/Layouts/DirectorLayout';
 import {
     CalendarIcon,
@@ -12,10 +12,23 @@ import {
     ChevronDownIcon,
     ArchiveBoxIcon,
     ArrowPathIcon,
-    EllipsisHorizontalIcon
+    EllipsisHorizontalIcon,
+    CheckCircleIcon,
+    XMarkIcon
 } from '@heroicons/react/24/outline';
 
 export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
+    const { flash } = usePage().props;
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+
+    useEffect(() => {
+        if (flash?.success) {
+            setToastMessage(flash.success);
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 5000);
+        }
+    }, [flash]);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [expandedYearId, setExpandedYearId] = useState(null);
 
@@ -53,7 +66,7 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
 
     const StatusBadge = ({ status }) => {
         const styles = {
-            open: 'bg-emerald-100 text-emerald-800 ring-emerald-600/20',
+            open: 'bg-emerald-500 text-white ring-emerald-600 shadow-lg shadow-emerald-200',
             closed: 'bg-red-50 text-red-700 ring-red-600/10',
             upcoming: 'bg-blue-50 text-blue-700 ring-blue-700/10',
             completed: 'bg-gray-100 text-gray-700 ring-gray-600/20'
@@ -61,7 +74,7 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
         const config = styles[status] || styles.closed;
 
         return (
-            <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${config}`}>
+            <span className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-bold ring-2 ring-inset ${config} transition-all`}>
                 {status.toUpperCase()}
             </span>
         );
@@ -75,17 +88,22 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
         const isArchive = !isCurrent;
 
         return (
-            <div className={`flex flex-col bg-white border ${isOpen ? 'border-emerald-200 ring-1 ring-emerald-50' : 'border-gray-200'} rounded-lg shadow-sm transition-all`}>
-                <div className="p-5 border-b border-gray-100 flex justify-between items-start">
+            <div className={`flex flex-col border rounded-lg shadow-sm transition-all duration-300 ${isOpen
+                ? 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-400 ring-4 ring-emerald-100 shadow-emerald-200'
+                : 'bg-white border-gray-200'
+                }`}>
+                <div className={`p-5 border-b flex justify-between items-start ${isOpen ? 'border-emerald-200 bg-white/50' : 'border-gray-100'
+                    }`}>
                     <div>
-                        <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Semester {number}</h4>
+                        <h4 className={`text-sm font-semibold uppercase tracking-wide ${isOpen ? 'text-emerald-700' : 'text-gray-500'
+                            }`}>Semester {number}</h4>
                         <div className="mt-2 flex items-center gap-2">
                             <StatusBadge status={statusData.status} />
                             {isOpen && (
-                                <span className="flex items-center gap-1 text-xs font-medium text-emerald-600">
-                                    <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-700">
+                                    <span className="relative flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-600"></span>
                                     </span>
                                     Accepting Marks
                                 </span>
@@ -93,9 +111,9 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
                         </div>
                     </div>
                     {isOpen ? (
-                        <LockOpenIcon className="w-5 h-5 text-emerald-600" />
+                        <LockOpenIcon className="w-6 h-6 text-emerald-600" />
                     ) : (
-                        <LockClosedIcon className="w-5 h-5 text-gray-400" />
+                        <LockClosedIcon className="w-6 h-6 text-gray-400" />
                     )}
                 </div>
 
@@ -435,6 +453,21 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                )}
+                {/* Success Toast Notification */}
+                {showToast && (
+                    <div className="fixed bottom-4 right-4 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
+                        <div className="flex items-center gap-3 bg-emerald-600 text-white px-6 py-4 rounded-lg shadow-2xl shadow-emerald-900/50 ring-2 ring-emerald-400 min-w-[320px]">
+                            <CheckCircleIcon className="h-6 w-6 flex-shrink-0" />
+                            <p className="text-sm font-semibold flex-1">{toastMessage}</p>
+                            <button
+                                onClick={() => setShowToast(false)}
+                                className="text-white/80 hover:text-white transition-colors"
+                            >
+                                <XMarkIcon className="h-5 w-5" />
+                            </button>
                         </div>
                     </div>
                 )}
