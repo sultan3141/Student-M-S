@@ -115,13 +115,15 @@ class DirectorCommunicationController extends Controller
                 return User::role('parent')->count();
             case 'all_teachers':
                 return User::role('teacher')->count();
+            case 'all_students':
+                return User::role('student')->count();
             case 'specific':
                 return count($ids);
             default:
                 // Handle Grade specific: 'grade_9', etc.
                 if (str_starts_with($type, 'grade_')) {
                     $gradeId = str_replace('grade_', '', $type);
-                    return User::whereHas('student', function($q) use ($gradeId) {
+                    return User::whereHas('student', function ($q) use ($gradeId) {
                         $q->where('grade_id', $gradeId);
                     })->count();
                 }
