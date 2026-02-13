@@ -53,7 +53,7 @@ export default function TeacherLayout({ children }) {
             name: 'Declare Result',
             icon: ClipboardDocumentCheckIcon,
             id: 'declare-result',
-            current: safeCurrent('teacher.declare-result.*'),
+            current: safeCurrent('teacher.declare-result.index'),
             href: safeRoute('teacher.declare-result.index')
         },
         {
@@ -67,8 +67,8 @@ export default function TeacherLayout({ children }) {
             name: 'Assessments',
             icon: ClipboardDocumentCheckIcon,
             id: 'teacher-assessments',
-            current: safeCurrent('teacher.assessments-simple.*') || safeCurrent('teacher.custom-assessments.*'),
-            href: safeRoute('teacher.assessments-simple.index')
+            current: safeCurrent('teacher.assessments.unified'),
+            href: safeRoute('teacher.assessments.unified')
         },
         {
             name: 'Class Schedules',
