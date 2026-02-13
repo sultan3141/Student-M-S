@@ -15,6 +15,7 @@ export default function Compose({ auth }) {
     const recipientTypes = [
         { id: 'all_parents', name: 'All Parents' },
         { id: 'all_teachers', name: 'All Teachers' },
+        { id: 'all_students', name: 'All Students' },
         { id: 'grade_9', name: 'Grade 9 Families' },
         { id: 'grade_10', name: 'Grade 10 Families' },
         { id: 'grade_11', name: 'Grade 11 Families' },
