@@ -186,6 +186,7 @@ class TeacherStudentController extends Controller
 
     /**
      * Manage student results - view and edit marks by grade and section
+     * Unified interface for result tracking across all student cohorts
      */
     public function manageResults(Request $request)
     {
