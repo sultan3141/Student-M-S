@@ -21,7 +21,8 @@ import {
     ArrowUturnLeftIcon,
     ChevronRightIcon,
     AcademicCapIcon,
-    ChatBubbleLeftRightIcon
+    ChatBubbleLeftRightIcon,
+    MegaphoneIcon
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 import ErrorBoundary from '@/Components/ErrorBoundary';
@@ -86,7 +87,7 @@ export default function StudentLayout({ children }) {
         {
             name: 'Communication',
             href: route('student.announcements.index'),
-            icon: ChatBubbleLeftRightIcon,
+            icon: MegaphoneIcon,
             current: safeCurrent('student.announcements.index'),
         },
         {
