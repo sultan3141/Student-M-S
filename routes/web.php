@@ -230,6 +230,7 @@ Route::middleware(['auth', 'role:student|admin|school_director'])->prefix('stude
     // Schedule
     Route::get('/schedule', [\App\Http\Controllers\StudentController::class, 'schedule'])->name('schedule');
     Route::get('/announcements', [\App\Http\Controllers\StudentAnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('/results', [\App\Http\Controllers\StudentController::class, 'academicRecords'])->name('results');
 });
 
 Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () {
@@ -315,6 +316,10 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
         Route::post('/store', [\App\Http\Controllers\TeacherAttendanceController::class, 'store'])->name('store');
         Route::get('/history', [\App\Http\Controllers\TeacherAttendanceController::class, 'history'])->name('history');
     });
+
+    // Assessment Management - Specific routes BEFORE resource route
+    Route::get('/assessments/unified', [\App\Http\Controllers\TeacherAssessmentController::class, 'unified'])->name('assessments.unified');
+    Route::get('/assessments/unified/data', [\App\Http\Controllers\TeacherAssessmentController::class, 'unifiedData'])->name('assessments.unified-data');
 
     // Assessment Management (CRUD & Bulk Operations)
     Route::resource('assessments', \App\Http\Controllers\AssessmentController::class);
