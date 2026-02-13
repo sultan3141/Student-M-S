@@ -23,6 +23,7 @@ import {
     AcademicCapIcon
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
+import ErrorBoundary from '@/Components/ErrorBoundary';
 
 export default function StudentLayout({ children }) {
     const { auth } = usePage().props || {};
@@ -80,256 +81,279 @@ export default function StudentLayout({ children }) {
     const currentPath = window.location.pathname;
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Mobile sidebar backdrop */}
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-                    onClick={() => setSidebarOpen(false)}
-                ></div>
-            )}
-
-            {/* Larger Sidebar - Same Navy Gradient as Director */}
-            <aside
-                className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                    } director-sidebar`}
-            >
-                {/* Sidebar Top Branding (Restored) */}
-                <div className="p-3 bg-[#1D4ED8] border-b border-white/10 shadow-lg">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-white p-1 shadow-2xl group flex-shrink-0">
-                            <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100">
-                                <img
-                                    src="/images/logo.png"
-                                    alt="Logo"
-                                    className="w-full h-full object-contain"
-                                    onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = "https://ui-avatars.com/api/?name=Darul+Ulum&background=1D4ED8&color=fff";
-                                    }}
-                                />
-                            </div>
-                        </div>
-                        <div className="min-w-0">
-                            <h1 className="text-sm font-black text-white tracking-wider uppercase leading-tight truncate">
-                                Darul-Ulum
-                            </h1>
-                            <p className="text-[8px] font-bold text-blue-100 tracking-[0.2em] uppercase mt-0.5 opacity-80 truncate">
-                                Islamic School (Student)
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Sidebar Managed Section (Styled Header - Collapsible) */}
-                <div className="p-4 pb-2">
+        <ErrorBoundary>
+            <div className="min-h-screen bg-gray-50">
+                {/* Mobile sidebar backdrop */}
+                {sidebarOpen && (
                     <div
-                        onClick={() => setManageStudentOpen(!manageStudentOpen)}
-                        className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all"
-                    >
+                        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+                        onClick={() => setSidebarOpen(false)}
+                    ></div>
+                )}
+
+                {/* Larger Sidebar - Same Navy Gradient as Director */}
+                <aside
+                    className={`fixed top-0 left-0 z-50 h-screen w-64 flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                        } director-sidebar`}
+                >
+                    {/* Sidebar Top Branding (Restored) */}
+                    <div className="p-3 bg-[#1D4ED8] border-b border-white/10 shadow-lg">
                         <div className="flex items-center space-x-3">
-                            <div className="p-1 px-2 border-r border-white/20">
-                                <AcademicCapIcon className="h-6 w-6 text-white" />
+                            <div className="w-10 h-10 rounded-full bg-white p-1 shadow-2xl group flex-shrink-0">
+                                <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100">
+                                    <img
+                                        src="/images/logo.png"
+                                        alt="Logo"
+                                        className="w-full h-full object-contain"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = "https://ui-avatars.com/api/?name=Darul+Ulum&background=1D4ED8&color=fff";
+                                        }}
+                                    />
+                                </div>
                             </div>
-                            <span className="text-white font-black text-sm whitespace-nowrap">Manage Student</span>
-                        </div>
-                        <div className="flex items-center">
-                            <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent ${manageStudentOpen ? 'border-b-[10px] border-b-white/90' : 'border-t-[10px] border-t-white/90'
-                                } ml-2 transition-all duration-300`}></div>
+                            <div className="min-w-0">
+                                <h1 className="text-sm font-black text-white tracking-wider uppercase leading-tight truncate">
+                                    Darul-Ulum
+                                </h1>
+                                <p className="text-[8px] font-bold text-blue-100 tracking-[0.2em] uppercase mt-0.5 opacity-80 truncate">
+                                    Islamic School (Student)
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Navigation Links (Collapsible/Accordion) */}
-                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${manageStudentOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
-                    }`}>
-                    <nav className="px-3 py-2 space-y-1">
-                        {navigation.map((item) => {
-                            const Icon = item.icon;
-                            const isActive = currentPath.startsWith(item.href);
+                    {/* Scrollable Navigation Area */}
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+                        {/* Sidebar Managed Section (Styled Header - Collapsible) */}
+                        <div className="p-4 pb-2">
+                            <div
+                                onClick={() => setManageStudentOpen(!manageStudentOpen)}
+                                className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all"
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <div className="p-1 px-2 border-r border-white/20">
+                                        <AcademicCapIcon className="h-6 w-6 text-white" />
+                                    </div>
+                                    <span className="text-white font-black text-sm whitespace-nowrap">Manage Student</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent ${manageStudentOpen ? 'border-b-[10px] border-b-white/90' : 'border-t-[10px] border-t-white/90'
+                                        } ml-2 transition-all duration-300`}></div>
+                                </div>
+                            </div>
+                        </div>
 
-                            return (
+                        {/* Navigation Links (Collapsible/Accordion) */}
+                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${manageStudentOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+                            }`}>
+                            <nav className="px-3 py-2 space-y-1">
+                                {navigation.map((item) => {
+                                    const Icon = item.icon;
+                                    const isActive = currentPath.startsWith(item.href);
+
+                                    return (
+                                        <Link
+                                            key={item.name}
+                                            href={item.href}
+                                            onClick={() => setSidebarOpen(false)}
+                                            className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${isActive
+                                                ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm'
+                                                : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'
+                                                }`}
+                                        >
+                                            <Icon className="h-5 w-5 flex-shrink-0" />
+                                            <span className="truncate capitalize">{item.name}</span>
+                                        </Link>
+                                    );
+                                })}
+                            </nav>
+                        </div>
+                    </div>
+
+                    <style dangerouslySetInnerHTML={{
+                        __html: `
+                    .custom-scrollbar::-webkit-scrollbar {
+                        width: 4px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                        background: transparent;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 10px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                        background: rgba(255, 255, 255, 0.2);
+                    }
+                `}} />
+
+                </aside>
+
+                {/* Main Content Area */}
+                <div className="lg:pl-64 flex flex-col min-h-screen">
+                    {/* Premium Top Bar (Navy Colors Restored) */}
+                    <header className="sticky top-0 z-30 bg-[#1D4ED8] px-4 h-16 flex items-center shadow-xl border-b border-white/10">
+                        <div className="absolute inset-0 bg-blue-600/5 pointer-events-none"></div>
+                        <div className="flex-1 flex items-center space-x-4 relative z-10">
+                            {/* Mobile Hamburger */}
+                            <button
+                                onClick={() => setSidebarOpen(true)}
+                                className="p-2 -ml-2 text-white/80 hover:text-white transition-colors lg:hidden"
+                            >
+                                <Bars3Icon className="h-6 w-6" />
+                            </button>
+
+                            {/* Navigation Links (Enhanced Visibility) */}
+                            <div className="flex items-center space-x-4 sm:space-x-8 ml-2 sm:ml-4 h-full">
                                 <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    onClick={() => setSidebarOpen(false)}
-                                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${isActive
-                                        ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm'
-                                        : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'
+                                    href={route('student.dashboard')}
+                                    className={`h-full flex items-center text-sm font-black transition-all tracking-wider uppercase border-b-[3px] px-1 ${safeCurrent('student.dashboard')
+                                        ? 'text-white border-blue-400 opacity-100 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]'
+                                        : 'text-white/60 border-transparent hover:text-white hover:border-white/20'
                                         }`}
                                 >
-                                    <Icon className="h-5 w-5 flex-shrink-0" />
-                                    <span className="truncate">{item.name}</span>
+                                    Home
                                 </Link>
-                            );
-                        })}
-                    </nav>
-                </div>
-            </aside>
+                                <Link
+                                    href="#"
+                                    className="h-full flex items-center text-white/60 text-sm font-black hover:text-white transition-all tracking-wider uppercase border-b-[3px] border-transparent hover:border-white/20 px-1"
+                                >
+                                    Contact
+                                </Link>
+                            </div>
+                        </div>
 
-            {/* Main Content Area */}
-            <div className="lg:pl-64 flex flex-col min-h-screen">
-                {/* Premium Top Bar (Navy Colors Restored) */}
-                <header className="sticky top-0 z-30 bg-[#1D4ED8] px-4 h-16 flex items-center shadow-xl border-b border-white/10">
-                    <div className="absolute inset-0 bg-blue-600/5 pointer-events-none"></div>
-                    <div className="flex-1 flex items-center space-x-4 relative z-10">
-                        {/* Mobile Hamburger */}
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className="p-2 -ml-2 text-white/80 hover:text-white transition-colors lg:hidden"
-                        >
-                            <Bars3Icon className="h-6 w-6" />
-                        </button>
+                        {/* Right Side Utilities (Enhanced Interactive Feel) */}
+                        <div className="flex items-center space-x-1 sm:space-x-4 relative z-10">
+                            {/* Notifications */}
+                            <button className="p-2 text-white/80 hover:text-white transition-all relative group rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95">
+                                <BellIcon className="h-5 w-5" />
+                                <span className="absolute top-2 right-2 w-2 h-2 bg-pink-500 rounded-full border-2 border-[#1E293B] shadow-[0_0_10px_rgba(236,72,153,0.8)] animate-pulse"></span>
+                            </button>
 
-                        {/* Navigation Links (Enhanced Visibility) */}
-                        <div className="flex items-center space-x-4 sm:space-x-8 ml-2 sm:ml-4 h-full">
+                            {/* Apps Grid */}
+                            <button className="p-2 text-white/80 hover:text-white transition-all rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95">
+                                <Squares2X2Icon className="h-5 w-5" />
+                            </button>
+
+                            {/* User Profile Dropdown (Refined Navy Style) */}
+                            <Menu as="div" className="relative ml-2 sm:ml-4 border-l border-white/10 pl-4 flex items-center">
+                                <Menu.Button className="flex items-center focus:outline-none group py-1">
+                                    <div className="w-10 h-10 rounded-full bg-white p-0.5 shadow-2xl flex-shrink-0 flex items-center justify-center transform group-hover:scale-110 transition-all duration-300 ring-4 ring-white/10">
+                                        <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20">
+                                            <img
+                                                className="w-full h-full object-cover"
+                                                src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=0F172A&color=fff`}
+                                                alt={auth?.user?.name || 'Student'}
+                                            />
+                                        </div>
+                                    </div>
+                                </Menu.Button>
+
+                                <Transition
+                                    as={Fragment}
+                                    enter="transition ease-out duration-200"
+                                    enterFrom="transform opacity-0 scale-95"
+                                    enterTo="transform opacity-100 scale-100"
+                                    leave="transition ease-in duration-75"
+                                    leaveFrom="transform opacity-100 scale-100"
+                                    leaveTo="transform opacity-0 scale-95"
+                                >
+                                    <Menu.Items className="absolute right-0 top-full mt-0 w-52 origin-top-right divide-y divide-gray-100 rounded-b-[1.5rem] bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 transform">
+                                        {/* Dropdown Header (Solid Vibrant Blue Matched to Top Bar) */}
+                                        <div className="bg-[#1D4ED8] p-3 flex flex-col items-center">
+                                            <div className="w-12 h-12 rounded-full bg-white p-0.5 shadow-xl mb-2 ring-4 ring-white/10">
+                                                <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20 shadow-inner">
+                                                    <img
+                                                        className="w-full h-full object-cover"
+                                                        src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=0F172A&color=fff`}
+                                                        alt={auth?.user?.name || 'Student'}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <h3 className="text-white font-black text-xs tracking-tighter uppercase leading-none mb-1">Welcome!</h3>
+                                            <p className="text-blue-200 text-[8px] font-bold truncate w-full text-center opacity-80 px-2 line-height-none">
+                                                {auth?.user?.name || 'Student Name'}
+                                            </p>
+                                        </div>
+
+                                        {/* Action Buttons (Refined Horizontal Styles) */}
+                                        <div className="p-2 bg-white space-y-1.5">
+                                            <div className="grid grid-cols-2 gap-1.5">
+                                                <Menu.Item>
+                                                    {({ active }) => (
+                                                        <Link
+                                                            href={route('student.profile.edit')}
+                                                            className={`${active ? 'bg-[#1E40AF] scale-[1.02]' : 'bg-[#1D4ED8]'} flex items-center justify-center space-x-1 p-1.5 rounded-lg text-white transition-all shadow-md group h-full`}
+                                                        >
+                                                            <UserIcon className="h-3 w-3" />
+                                                            <span className="text-[7.5px] font-black uppercase tracking-wider">Profile</span>
+                                                        </Link>
+                                                    )}
+                                                </Menu.Item>
+
+                                                <Menu.Item>
+                                                    {({ active }) => (
+                                                        <Link
+                                                            href={route('student.password.edit')}
+                                                            className={`${active ? 'bg-amber-600 scale-[1.02]' : 'bg-amber-500'} flex items-center justify-center space-x-1 p-1.5 rounded-lg text-white transition-all shadow-md group h-full`}
+                                                        >
+                                                            <KeyIcon className="h-3 w-3" />
+                                                            <span className="text-[7.5px] font-black uppercase tracking-wider">Secure</span>
+                                                        </Link>
+                                                    )}
+                                                </Menu.Item>
+                                            </div>
+
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <Link
+                                                        href={route('logout')}
+                                                        method="post"
+                                                        as="button"
+                                                        className={`${active ? 'bg-red-700 scale-[1.02]' : 'bg-red-600'} flex items-center justify-center space-x-1.5 p-1.5 rounded-lg text-white transition-all shadow-md w-full group`}
+                                                    >
+                                                        <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                                                        <span className="text-[9px] font-black uppercase tracking-wider">Exit</span>
+                                                    </Link>
+                                                )}
+                                            </Menu.Item>
+                                        </div>
+                                    </Menu.Items>
+                                </Transition>
+                            </Menu>
+                        </div>
+                    </header>
+
+                    {/* Page Content Header / Breadcrumbs - Restored per request */}
+                    <div className="bg-gray-50/50 px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-end">
+                        <nav className="flex items-center space-x-2 text-sm font-medium">
                             <Link
                                 href={route('student.dashboard')}
-                                className={`h-full flex items-center text-sm font-black transition-all tracking-wider uppercase border-b-[3px] px-1 ${safeCurrent('student.dashboard')
-                                    ? 'text-white border-blue-400 opacity-100 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]'
-                                    : 'text-white/60 border-transparent hover:text-white hover:border-white/20'
-                                    }`}
+                                className="text-blue-500 hover:text-blue-700 transition-colors"
                             >
                                 Home
                             </Link>
-                            <Link
-                                href="#"
-                                className="h-full flex items-center text-white/60 text-sm font-black hover:text-white transition-all tracking-wider uppercase border-b-[3px] border-transparent hover:border-white/20 px-1"
+                            <span className="text-gray-400">/</span>
+                            <button
+                                onClick={() => window.history.back()}
+                                className="ml-2 p-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
+                                title="Go Back"
                             >
-                                Contact
-                            </Link>
-                        </div>
+                                <ArrowUturnLeftIcon className="h-5 w-5" />
+                            </button>
+                        </nav>
                     </div>
 
-                    {/* Right Side Utilities (Enhanced Interactive Feel) */}
-                    <div className="flex items-center space-x-1 sm:space-x-4 relative z-10">
-                        {/* Notifications */}
-                        <button className="p-2 text-white/80 hover:text-white transition-all relative group rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95">
-                            <BellIcon className="h-5 w-5" />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-pink-500 rounded-full border-2 border-[#1E293B] shadow-[0_0_10px_rgba(236,72,153,0.8)] animate-pulse"></span>
-                        </button>
+                    {/* Page Content */}
+                    <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
+                        {children}
+                    </main>
 
-                        {/* Apps Grid */}
-                        <button className="p-2 text-white/80 hover:text-white transition-all rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95">
-                            <Squares2X2Icon className="h-5 w-5" />
-                        </button>
-
-                        {/* User Profile Dropdown (Refined Navy Style) */}
-                        <Menu as="div" className="relative ml-2 sm:ml-4 border-l border-white/10 pl-4 flex items-center">
-                            <Menu.Button className="flex items-center focus:outline-none group py-1">
-                                <div className="w-10 h-10 rounded-full bg-white p-0.5 shadow-2xl flex-shrink-0 flex items-center justify-center transform group-hover:scale-110 transition-all duration-300 ring-4 ring-white/10">
-                                    <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20">
-                                        <img
-                                            className="w-full h-full object-cover"
-                                            src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=0F172A&color=fff`}
-                                            alt={auth?.user?.name || 'Student'}
-                                        />
-                                    </div>
-                                </div>
-                            </Menu.Button>
-
-                            <Transition
-                                as={Fragment}
-                                enter="transition ease-out duration-200"
-                                enterFrom="transform opacity-0 scale-95"
-                                enterTo="transform opacity-100 scale-100"
-                                leave="transition ease-in duration-75"
-                                leaveFrom="transform opacity-100 scale-100"
-                                leaveTo="transform opacity-0 scale-95"
-                            >
-                                <Menu.Items className="absolute right-0 top-full mt-0 w-52 origin-top-right divide-y divide-gray-100 rounded-b-[1.5rem] bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 transform">
-                                    {/* Dropdown Header (Solid Vibrant Blue Matched to Top Bar) */}
-                                    <div className="bg-[#1D4ED8] p-3 flex flex-col items-center">
-                                        <div className="w-12 h-12 rounded-full bg-white p-0.5 shadow-xl mb-2 ring-4 ring-white/10">
-                                            <div className="w-full h-full rounded-full bg-[#0F172A] flex items-center justify-center overflow-hidden border border-white/20 shadow-inner">
-                                                <img
-                                                    className="w-full h-full object-cover"
-                                                    src={auth?.user?.profile_photo_url || `https://ui-avatars.com/api/?name=${auth?.user?.name || 'Student'}&background=0F172A&color=fff`}
-                                                    alt={auth?.user?.name || 'Student'}
-                                                />
-                                            </div>
-                                        </div>
-                                        <h3 className="text-white font-black text-xs tracking-tighter uppercase leading-none mb-1">Welcome!</h3>
-                                        <p className="text-blue-200 text-[8px] font-bold truncate w-full text-center opacity-80 px-2 line-height-none">
-                                            {auth?.user?.name || 'Student Name'}
-                                        </p>
-                                    </div>
-
-                                    {/* Action Buttons (Refined Horizontal Styles) */}
-                                    <div className="p-2 bg-white space-y-1.5">
-                                        <div className="grid grid-cols-2 gap-1.5">
-                                            <Menu.Item>
-                                                {({ active }) => (
-                                                    <Link
-                                                        href={route('student.profile.edit')}
-                                                        className={`${active ? 'bg-[#1E40AF] scale-[1.02]' : 'bg-[#1D4ED8]'} flex items-center justify-center space-x-1 p-1.5 rounded-lg text-white transition-all shadow-md group h-full`}
-                                                    >
-                                                        <UserIcon className="h-3 w-3" />
-                                                        <span className="text-[7.5px] font-black uppercase tracking-wider">Profile</span>
-                                                    </Link>
-                                                )}
-                                            </Menu.Item>
-
-                                            <Menu.Item>
-                                                {({ active }) => (
-                                                    <Link
-                                                        href={route('student.password.edit')}
-                                                        className={`${active ? 'bg-amber-600 scale-[1.02]' : 'bg-amber-500'} flex items-center justify-center space-x-1 p-1.5 rounded-lg text-white transition-all shadow-md group h-full`}
-                                                    >
-                                                        <KeyIcon className="h-3 w-3" />
-                                                        <span className="text-[7.5px] font-black uppercase tracking-wider">Secure</span>
-                                                    </Link>
-                                                )}
-                                            </Menu.Item>
-                                        </div>
-
-                                        <Menu.Item>
-                                            {({ active }) => (
-                                                <Link
-                                                    href={route('logout')}
-                                                    method="post"
-                                                    as="button"
-                                                    className={`${active ? 'bg-red-700 scale-[1.02]' : 'bg-red-600'} flex items-center justify-center space-x-1.5 p-1.5 rounded-lg text-white transition-all shadow-md w-full group`}
-                                                >
-                                                    <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                                                    <span className="text-[9px] font-black uppercase tracking-wider">Exit</span>
-                                                </Link>
-                                            )}
-                                        </Menu.Item>
-                                    </div>
-                                </Menu.Items>
-                            </Transition>
-                        </Menu>
-                    </div>
-                </header>
-
-                {/* Page Content Header / Breadcrumbs - Restored per request */}
-                <div className="bg-gray-50/50 px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-end">
-                    <nav className="flex items-center space-x-2 text-sm font-medium">
-                        <Link
-                            href={route('student.dashboard')}
-                            className="text-blue-500 hover:text-blue-700 transition-colors"
-                        >
-                            Home
-                        </Link>
-                        <span className="text-gray-400">/</span>
-                        <button
-                            onClick={() => window.history.back()}
-                            className="ml-2 p-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
-                            title="Go Back"
-                        >
-                            <ArrowUturnLeftIcon className="h-5 w-5" />
-                        </button>
-                    </nav>
-                </div>
-
-                {/* Page Content */}
-                <main className="p-3 lg:p-5 flex-1 bg-gray-50/50">
-                    {children}
-                </main>
-
-                <Footer />
+                    <Footer />
+                </div >
             </div >
-        </div >
+        </ErrorBoundary>
     );
 }

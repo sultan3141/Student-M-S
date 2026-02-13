@@ -11,15 +11,13 @@ import {
     Cog6ToothIcon,
     ArrowRightOnRectangleIcon,
     Bars3Icon,
-    ChevronDownIcon,
     XMarkIcon,
     BellIcon,
     Squares2X2Icon,
     UserCircleIcon,
     UserIcon,
     KeyIcon,
-    ArrowUturnLeftIcon,
-    ChevronRightIcon
+    ArrowUturnLeftIcon
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 import ErrorBoundary from '@/Components/ErrorBoundary';
@@ -28,52 +26,8 @@ export default function TeacherLayout({ children }) {
     const { auth } = usePage().props || {};
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [manageSchoolOpen, setManageSchoolOpen] = useState(true);
-    const [expandedMenus, setExpandedMenus] = useState(() => {
-        try {
-            return {
-                'declare-result': route().current('teacher.declare-result.*'),
-                'student-results': route().current('teacher.students.manage-results.*'),
-                'teacher-assessments': route().current('teacher.assessments-simple.*'),
-                'class-schedules': route().current('teacher.schedule.*')
-            };
-        } catch (e) {
-            console.error("Route check error:", e);
-            return {};
-        }
-    });
-    const [expandedGrades, setExpandedGrades] = useState(() => {
-        try {
-            const params = route().params || {};
-            const gradeId = params.grade_id;
-            if (gradeId) {
-                return {
-                    [`declare-result-${gradeId}`]: route().current('teacher.declare-result.*'),
-                    [`student-results-${gradeId}`]: route().current('teacher.students.manage-results.*'),
-                    [`teacher-assessments-${gradeId}`]: route().current('teacher.assessments-simple.*'),
-                    [`class-schedules-${gradeId}`]: route().current('teacher.schedule.*')
-                };
-            }
-        } catch (e) {
-            console.error("Route param error:", e);
-        }
-        return {};
-    });
-
     const currentPath = window.location.pathname;
 
-    const toggleMenu = (id) => {
-        setExpandedMenus(prev => ({
-            ...prev,
-            [id]: !prev[id]
-        }));
-    };
-
-    const toggleGrade = (gradeId) => {
-        setExpandedGrades(prev => ({
-            ...prev,
-            [gradeId]: !prev[gradeId]
-        }));
-    };
 
     const safeCurrent = (pattern) => {
         try {
@@ -99,7 +53,6 @@ export default function TeacherLayout({ children }) {
             icon: ClipboardDocumentCheckIcon,
             id: 'declare-result',
             current: safeCurrent('teacher.declare-result.*'),
-            children: auth?.teacher_grades?.length > 0 ? auth.teacher_grades : null,
             href: safeRoute('teacher.declare-result.index')
         },
         {
@@ -107,7 +60,6 @@ export default function TeacherLayout({ children }) {
             icon: ChartBarIcon,
             id: 'student-results',
             current: safeCurrent('teacher.students.manage-results'),
-            children: auth?.teacher_grades?.length > 0 ? auth.teacher_grades : null,
             href: safeRoute('teacher.students.manage-results')
         },
         {
@@ -115,7 +67,6 @@ export default function TeacherLayout({ children }) {
             icon: ClipboardDocumentCheckIcon,
             id: 'teacher-assessments',
             current: safeCurrent('teacher.assessments-simple.*') || safeCurrent('teacher.custom-assessments.*'),
-            children: auth?.teacher_grades?.length > 0 ? auth.teacher_grades : null,
             href: safeRoute('teacher.assessments-simple.index')
         },
         {
@@ -123,7 +74,6 @@ export default function TeacherLayout({ children }) {
             icon: CalendarDaysIcon,
             id: 'class-schedules',
             current: safeCurrent('teacher.schedule'),
-            children: auth?.teacher_grades?.length > 0 ? auth.teacher_grades : null,
             href: safeRoute('teacher.schedule')
         },
         { name: 'Attendance', href: safeRoute('teacher.attendance.index'), icon: CalendarDaysIcon },
@@ -173,153 +123,70 @@ export default function TeacherLayout({ children }) {
                         </div>
                     </div>
 
-                    {/* Sidebar Managed Section */}
-                    <div className="p-4 pb-2">
-                        <div
-                            onClick={() => setManageSchoolOpen(!manageSchoolOpen)}
-                            className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all"
-                        >
-                            <div className="flex items-center space-x-3">
-                                <div className="p-1 px-2 border-r border-white/20">
-                                    <AcademicCapIcon className="h-6 w-6 text-white" />
+                    {/* Scrollable Navigation Area */}
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+                        {/* Sidebar Managed Section (Styled Header - Collapsible) */}
+                        <div className="p-4 pb-2">
+                            <div
+                                onClick={() => setManageSchoolOpen(!manageSchoolOpen)}
+                                className="bg-[#1D4ED8] rounded-xl p-3 shadow-lg border border-white/20 flex items-center justify-between group cursor-pointer hover:bg-[#1E40AF] transition-all"
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <div className="p-1 px-2 border-r border-white/20">
+                                        <AcademicCapIcon className="h-6 w-6 text-white" />
+                                    </div>
+                                    <span className="text-white font-black text-sm whitespace-nowrap">Manage School</span>
                                 </div>
-                                <span className="text-white font-black text-sm whitespace-nowrap uppercase tracking-tighter">Manage School</span>
-                            </div>
-                            <div className="flex items-center">
-                                <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent ${manageSchoolOpen ? 'border-b-[10px] border-b-white/90' : 'border-t-[10px] border-t-white/90'
-                                    } ml-2 transition-all duration-300`}></div>
+                                <div className="flex items-center">
+                                    <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent ${manageSchoolOpen ? 'border-b-[10px] border-b-white/90' : 'border-t-[10px] border-t-white/90'} ml-2 transition-all duration-300`}></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Navigation Links (Accordion Style) */}
-                    <div className={`flex-1 transition-all duration-300 ease-in-out overflow-hidden ${manageSchoolOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                        {/* Navigation Links (Collapsible/Accordion) */}
+                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${manageSchoolOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}
                         }`}>
-                        <nav className="px-3 py-2 space-y-1 overflow-y-auto">
-                            {navigation.map((item) => (
-                                <div key={item.name} className="space-y-1">
-                                    {item.children ? (
-                                        <>
-                                            {/* Collapsible Menu Item */}
-                                            <div className="flex items-center group">
-                                                <Link
-                                                    href={item.href || '#'}
-                                                    onClick={() => setSidebarOpen(false)}
-                                                    className={`flex-1 flex items-center space-x-3 px-3 py-2.5 rounded-l-lg text-xs font-bold transition-all ${item.current ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm' : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'}`}
-                                                >
-                                                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                                                    <span className="truncate">{item.name}</span>
-                                                </Link>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        setExpandedMenus((prev) => ({
-                                                            ...prev,
-                                                            [item.id]: !prev[item.id]
-                                                        }));
-                                                    }}
-                                                    className={`px-3 py-2.5 rounded-r-lg border-l border-black/5 transition-all ${item.current ? 'bg-[#1D4ED8]/10 text-[#1D4ED8]' : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5'}`}
-                                                >
-                                                    <ChevronRightIcon className={`h-3 w-3 transform transition-transform duration-200 ${expandedMenus[item.id] ? 'rotate-90' : ''}`} />
-                                                </button>
-                                            </div>
+                            <nav className="px-3 py-2 space-y-1">
+                                {navigation.map((item) => {
+                                    const Icon = item.icon;
+                                    const isActive = currentPath.startsWith(item.href);
 
-                                            {/* Dropdown Children */}
-                                            <div className={`overflow-hidden transition-all duration-300 space-y-1 mt-1 ${expandedMenus[item.id] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                                {item.children.map((grade) => (
-                                                    <div key={grade.id} className="space-y-1">
-                                                        <div className="flex items-center justify-between group py-1">
-                                                            <Link
-                                                                href={item.id === 'declare-result'
-                                                                    ? safeRoute('teacher.declare-result.index', { grade_id: grade.id })
-                                                                    : item.id === 'student-results'
-                                                                        ? safeRoute('teacher.students.manage-results', { grade_id: grade.id })
-                                                                        : item.id === 'teacher-assessments'
-                                                                            ? safeRoute('teacher.assessments-simple.index', { grade_id: grade.id })
-                                                                            : safeRoute('teacher.schedule', { grade_id: grade.id })}
-                                                                onClick={() => setSidebarOpen(false)}
-                                                                className={`flex-1 text-[10px] font-bold transition-colors ${(() => {
-                                                                    try {
-                                                                        const params = route().params || {};
-                                                                        return ((item.id === 'declare-result' && route().current('teacher.declare-result.*') && params.grade_id == grade.id) ||
-                                                                            (item.id === 'student-results' && route().current('teacher.student-results.*') && params.grade_id == grade.id) ||
-                                                                            (item.id === 'student-results' && route().current('teacher.students.manage-results') && params.grade_id == grade.id) ||
-                                                                            (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && params.grade_id == grade.id) ||
-                                                                            (item.id === 'class-schedules' && route().current('teacher.schedule') && params.grade_id == grade.id))
-                                                                            ? 'text-[#1D4ED8]'
-                                                                            : 'text-gray-500 hover:text-[#1D4ED8]';
-                                                                    } catch (e) {
-                                                                        return 'text-gray-500 hover:text-[#1D4ED8]';
-                                                                    }
-                                                                })()}`}
-                                                            >
-                                                                {grade.name}
-                                                            </Link>
-                                                            {grade.sections?.length > 0 && (
-                                                                <button
-                                                                    onClick={() => toggleGrade(`${item.id}-${grade.id}`)}
-                                                                    className="text-gray-400 hover:text-[#1D4ED8] p-1"
-                                                                >
-                                                                    <ChevronDownIcon className={`h-3 w-3 transition-transform ${expandedGrades[`${item.id}-${grade.id}`] ? 'rotate-180' : ''}`} />
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                        {expandedGrades[`${item.id}-${grade.id}`] && (
-                                                            <div className="ml-4 mt-1 space-y-1 border-l border-[#1D4ED8]/10 pl-3">
-                                                                {grade.sections?.map((section) => {
-                                                                    const href = item.id === 'declare-result'
-                                                                        ? safeRoute('teacher.declare-result.index', { grade_id: grade.id, section_id: section.id })
-                                                                        : item.id === 'student-results'
-                                                                            ? safeRoute('teacher.students.manage-results', { grade_id: grade.id, section_id: section.id })
-                                                                            : item.id === 'teacher-assessments'
-                                                                                ? safeRoute('teacher.assessments-simple.index', { grade_id: grade.id, section_id: section.id })
-                                                                                : safeRoute('teacher.schedule', { grade_id: grade.id, section_id: section.id });
-
-                                                                    let isSectionActive = false;
-                                                                    try {
-                                                                        const params = route().params || {};
-                                                                        isSectionActive = (item.id === 'declare-result' && route().current('teacher.declare-result.*') && params.section_id == section.id) ||
-                                                                            (item.id === 'student-results' && route().current('teacher.students.manage-results') && params.section_id == section.id) ||
-                                                                            (item.id === 'teacher-assessments' && route().current('teacher.assessments-simple.index') && params.section_id == section.id) ||
-                                                                            (item.id === 'class-schedules' && route().current('teacher.schedule') && params.section_id == section.id);
-                                                                    } catch (e) {
-                                                                        // ignore
-                                                                    }
-
-                                                                    return (
-                                                                        <Link
-                                                                            key={section.id}
-                                                                            href={href}
-                                                                            onClick={() => setSidebarOpen(false)}
-                                                                            className={`block py-1 text-[9px] font-bold transition-colors ${isSectionActive ? 'text-[#1D4ED8]' : 'text-gray-400 hover:text-[#1D4ED8]'}`}
-                                                                        >
-                                                                            Section {section.name}
-                                                                        </Link>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </>
-                                    ) : (
+                                    return (
                                         <Link
+                                            key={item.name}
                                             href={item.href}
                                             onClick={() => setSidebarOpen(false)}
-                                            className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath.startsWith(item.href)
+                                            className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${isActive
                                                 ? 'bg-[#1D4ED8]/10 text-[#1D4ED8] shadow-sm'
                                                 : 'text-[#1E3A8A] hover:bg-[#1D4ED8]/5 hover:text-[#111827]'
                                                 }`}
                                         >
-                                            <item.icon className="h-4 w-4 flex-shrink-0" />
-                                            <span className="truncate">{item.name}</span>
+                                            <Icon className="h-5 w-5 flex-shrink-0" />
+                                            <span className="truncate capitalize">{item.name}</span>
                                         </Link>
-                                    )}
-                                </div>
-                            ))}
-                        </nav>
+                                    );
+                                })}
+                            </nav>
+                        </div>
                     </div>
+
+                    <style dangerouslySetInnerHTML={{
+                        __html: `
+                    .custom-scrollbar::-webkit-scrollbar {
+                        width: 4px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                        background: transparent;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 10px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                        background: rgba(255, 255, 255, 0.2);
+                    }
+                `}} />
+
                 </aside>
 
                 {/* Main Content Area */}

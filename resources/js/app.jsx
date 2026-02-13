@@ -10,13 +10,19 @@ import React from 'react';
 // Import Ziggy route helper
 import { route as ziggyRoute } from 'ziggy-js';
 
-// Make route available globally with error handling
+// Make route available globally with defensive error handling
 window.route = function (...args) {
     try {
-        return ziggyRoute(...args);
+        const result = ziggyRoute(...args);
+        // If ziggyRoute returns successfully, return it
+        return result;
     } catch (error) {
-        console.error('Route error:', error);
-        return '#';
+        console.error('Route error:', error, 'Args:', args);
+        // Return a mock Ziggy object to prevent crashes when .current() is called
+        const mockRoute = function () { return '#'; };
+        mockRoute.current = function () { return false; };
+        mockRoute.params = {};
+        return args.length === 0 ? mockRoute : '#';
     }
 };
 
