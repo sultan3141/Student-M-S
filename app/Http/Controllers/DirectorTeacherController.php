@@ -71,7 +71,7 @@ class DirectorTeacherController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'employee_id' => 'nullable|string|unique:teachers',
+            'employee_id' => 'sometimes|nullable|string|unique:teachers',
             'qualification' => 'nullable|string',
             'specialization' => 'nullable|string',
             'phone' => 'nullable|string',
