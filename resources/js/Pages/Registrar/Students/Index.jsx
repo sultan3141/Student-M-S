@@ -189,6 +189,11 @@ export default function Index({ students, grades, filters }) {
                                                         {student.section.name}
                                                     </span>
                                                 )}
+                                                {student.stream && (
+                                                    <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded border border-amber-200">
+                                                        {student.stream.name}
+                                                    </span>
+                                                )}
                                             </div>
 
                                             <div className="text-sm text-gray-500 space-y-1">

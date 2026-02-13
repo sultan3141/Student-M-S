@@ -20,11 +20,12 @@ class RegistrarStudentController extends Controller
     public function index(Request $request)
     {
         $query = Student::query()
-            ->select(['id', 'user_id', 'grade_id', 'section_id', 'student_id', 'gender'])
+            ->select(['id', 'user_id', 'grade_id', 'section_id', 'stream_id', 'student_id', 'gender'])
             ->with([
                 'user:id,name,username,email',
                 'grade:id,name',
                 'section:id,name',
+                'stream:id,name',
                 'parents.user:id,name'
             ]);
 
@@ -124,7 +125,7 @@ class RegistrarStudentController extends Controller
             'parent_phone' => 'required_if:parent_mode,new|nullable|string|max:20',
 
             // If Existing Parent
-            'parent_id' => 'required_if:parent_mode,existing|nullable|exists:parent_profiles,id',
+            'parent_id' => 'required_if:parent_mode,existing|nullable|exists:parents,id',
         ]);
 
         try {
@@ -272,8 +273,18 @@ class RegistrarStudentController extends Controller
             return $mixedSections->random(); // Random selection
         }
 
-        // If we reach here, no suitable sections are available
-        throw new \Exception("No available sections found. All compatible sections (" . ($gender ?? 'Any') . " or Mixed) for this grade/stream are at full capacity.");
+        // Fallback: If all are full, pick the compatible section with the fewest students
+        // Mix of compatible gender-specific and mixed sections
+        $compatibleSections = $sections->filter(function ($section) use ($gender) {
+            return $section->gender === $gender || $section->gender === 'Mixed';
+        });
+
+        if ($compatibleSections->isNotEmpty()) {
+            return $compatibleSections->sortBy('students_count')->first();
+        }
+
+        // Only throw if ABSOLUTELY no compatible sections exist (e.g. no Male sections for a Male student)
+        throw new \Exception("No compatible sections found for this grade/stream (Gender: " . ($gender ?? 'Any') . " or Mixed). Please create a section first.");
     }
 
     private function generateStudentId()

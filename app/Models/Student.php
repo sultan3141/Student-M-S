@@ -49,6 +49,11 @@ class Student extends Model
         return $this->belongsTo(Section::class);
     }
 
+    public function stream()
+    {
+        return $this->belongsTo(Stream::class);
+    }
+
     public function marks()
     {
         return $this->hasMany(Mark::class);
