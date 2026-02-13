@@ -16,11 +16,13 @@ import {
     SparklesIcon,
     TrophyIcon,
     BookOpenIcon,
-    PhoneIcon
+    PhoneIcon,
+    MegaphoneIcon,
+    PaperClipIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid, StarIcon } from '@heroicons/react/24/solid';
 
-export default function Dashboard({ parentName, selectedStudent, attendance, schedule }) {
+export default function Dashboard({ parentName, selectedStudent, attendance, schedule, latestAnnouncements }) {
     // Mock payment data - in production this would come from controller
     const paymentInfo = useMemo(() => ({
         status: 'Partial',
@@ -83,6 +85,50 @@ export default function Dashboard({ parentName, selectedStudent, attendance, sch
 
                     </div>
                 </div>
+
+                {/* Latest Announcements Section (New) */}
+                {latestAnnouncements && latestAnnouncements.length > 0 && (
+                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 overflow-hidden relative">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xl font-bold text-[#1E3A8A] flex items-center gap-3">
+                                <div className="p-2 bg-blue-50 rounded-lg">
+                                    <MegaphoneIcon className="h-6 w-6 text-blue-600" />
+                                </div>
+                                Latest Announcements
+                            </h2>
+                            <Link
+                                href={route('parent.announcements')}
+                                className="text-sm font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-4 py-2 rounded-xl transition-all hover:scale-105"
+                            >
+                                View All
+                            </Link>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {latestAnnouncements.map((announcement) => (
+                                <div
+                                    key={announcement.id}
+                                    className="p-5 rounded-2xl bg-gray-50 border border-gray-100 hover:border-blue-200 transition-all hover:shadow-md group"
+                                >
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 bg-white px-2 py-1 rounded-md border border-gray-100">
+                                            {new Date(announcement.sent_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                        </span>
+                                        {announcement.attachments && announcement.attachments.length > 0 && (
+                                            <PaperClipIcon className="h-3.5 w-3.5 text-gray-400" />
+                                        )}
+                                    </div>
+                                    <h3 className="font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                                        {announcement.subject}
+                                    </h3>
+                                    <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                                        {announcement.message}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {selectedStudent ? (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
