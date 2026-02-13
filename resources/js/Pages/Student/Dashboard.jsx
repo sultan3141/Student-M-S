@@ -11,6 +11,7 @@ import StudentBarChart from '@/Components/Charts/StudentBarChart';
 import UserDistributionBarChart from '@/Components/Charts/UserDistributionBarChart';
 import {
     CalendarDaysIcon,
+    MegaphoneIcon
 } from '@heroicons/react/24/outline';
 
 /**
@@ -26,7 +27,8 @@ export default function Dashboard({
     schedule,
     sectionStats,
     schoolStats,
-    assessmentDistribution
+    assessmentDistribution,
+    notifications
 }) {
     // Calculate real stats from data
     const currentAverage = marks?.average || 0;
@@ -50,10 +52,36 @@ export default function Dashboard({
         <StudentLayout>
             <Head title="Dashboard" />
 
-
-
-
-            {/* Analysis Section with Charts */}
+            {/* Announcements Section (New) */}
+            {notifications && notifications.length > 0 && (
+                <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="p-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <MegaphoneIcon className="h-5 w-5 text-blue-600" />
+                            <h2 className="font-bold text-gray-900">Important Announcements</h2>
+                        </div>
+                        <Link
+                            href={route('student.announcements.index')}
+                            className="text-xs font-bold text-blue-600 hover:text-blue-800"
+                        >
+                            View All
+                        </Link>
+                    </div>
+                    <div className="divide-y divide-gray-100">
+                        {notifications.map((note) => (
+                            <div key={note.id} className="p-4 hover:bg-gray-50 transition-colors">
+                                <div className="flex justify-between items-start mb-1">
+                                    <h3 className="text-sm font-bold text-gray-900">{note.title}</h3>
+                                    <span className="text-[10px] font-medium text-gray-400">{note.date}</span>
+                                </div>
+                                <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                                    {note.message}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 mb-4">
                 {/* Top Charts Grid */}
                 <div className="xl:col-span-12 grid grid-cols-1 lg:grid-cols-2 gap-4">
