@@ -17,12 +17,12 @@ class TeacherDeclareResultController extends Controller
 {
     public function index(Request $request)
     {
-        $grades = Grade::with('sections')->orderBy('level')->get()->map(function($grade) {
+        $grades = Grade::with('sections')->orderBy('level')->get()->map(function ($grade) {
             return [
                 'id' => $grade->id,
                 'name' => $grade->name,
                 'level' => $grade->level,
-                'sections' => $grade->sections->map(function($section) {
+                'sections' => $grade->sections->map(function ($section) {
                     return [
                         'id' => $section->id,
                         'name' => $section->name,
@@ -30,7 +30,7 @@ class TeacherDeclareResultController extends Controller
                 })->values()
             ];
         })->values();
-        
+
         $assessmentTypes = AssessmentType::all();
         $currentAcademicYear = AcademicYear::whereRaw('is_current = true')->first();
         $currentSemester = $currentAcademicYear ? $currentAcademicYear->getCurrentSemester() : 1;
@@ -61,28 +61,21 @@ class TeacherDeclareResultController extends Controller
 
     public function getSubjects(Request $request)
     {
-        $teacher = auth()->user()->teacher;
-        
-        if (!$teacher) {
-            return response()->json([]);
-        }
+        $request->validate([
+            'grade_id' => 'required|exists:grades,id',
+        ]);
 
-        // Get subjects assigned to this teacher for this grade/section
-        $subjects = \App\Models\TeacherAssignment::with('subject')
-            ->where('teacher_id', $teacher->id)
-            ->where('grade_id', $request->grade_id)
-            ->where('section_id', $request->section_id)
+        // Get all subjects for this grade
+        $subjects = \App\Models\Subject::where('grade_id', $request->grade_id)
+            ->orderBy('name')
             ->get()
-            ->pluck('subject')
-            ->unique('id')
-            ->map(function($subject) {
+            ->map(function ($subject) {
                 return [
                     'id' => $subject->id,
                     'name' => $subject->name,
                     'code' => $subject->code,
                 ];
-            })
-            ->values();
+            });
 
         return response()->json($subjects);
     }
@@ -145,7 +138,7 @@ class TeacherDeclareResultController extends Controller
         ]);
 
         $studentIds = explode(',', $request->student_ids);
-        
+
         // Get existing marks for these students
         $marks = Mark::whereIn('student_id', $studentIds)
             ->where('grade_id', $request->grade_id)
@@ -192,13 +185,13 @@ class TeacherDeclareResultController extends Controller
         DB::beginTransaction();
         try {
             $currentAcademicYear = AcademicYear::whereRaw('is_current = true')->first();
-            
+
             if (!$currentAcademicYear) {
                 throw new \Exception('No active academic year found.');
             }
 
             $teacher = auth()->user()->teacher;
-            
+
             if (!$teacher) {
                 throw new \Exception('Teacher profile not found.');
             }
@@ -210,12 +203,14 @@ class TeacherDeclareResultController extends Controller
             foreach ($validated['marks'] as $studentId => $studentMarks) {
                 // Iterate over assessments for this student
                 foreach ($studentMarks as $assessmentId => $markValue) {
-                    if ($markValue === null || $markValue === '') continue;
+                    if ($markValue === null || $markValue === '')
+                        continue;
 
                     // Get assessment to verify and get max_score
                     $assessment = \App\Models\Assessment::find($assessmentId);
-                    
-                    if (!$assessment) continue;
+
+                    if (!$assessment)
+                        continue;
 
                     // Check if semester is open
                     if (!\App\Models\SemesterStatus::isOpen($validated['grade_id'], $assessment->semester)) {
@@ -248,8 +243,8 @@ class TeacherDeclareResultController extends Controller
                                 'mark_id' => $existingMark->id,
                                 'teacher_id' => $teacher->id,
                                 'action' => 'updated',
-                                'old_value' => (string)$oldValue,
-                                'new_value' => (string)$markValue,
+                                'old_value' => (string) $oldValue,
+                                'new_value' => (string) $markValue,
                                 'ip_address' => $request->ip(),
                                 'user_agent' => $request->userAgent()
                             ]);
@@ -278,29 +273,30 @@ class TeacherDeclareResultController extends Controller
                             'teacher_id' => $teacher->id,
                             'action' => 'created',
                             'old_value' => null,
-                            'new_value' => (string)$markValue,
+                            'new_value' => (string) $markValue,
                             'ip_address' => $request->ip(),
                             'user_agent' => $request->userAgent()
                         ]);
                     }
                 }
             }
-            
+
             DB::commit();
-            
+
             // Invalidate semester rankings cache for affected semesters
             // Get unique semester values from the assessments processed
             $processedSemesters = collect();
             foreach ($validated['marks'] as $studentId => $studentMarks) {
                 foreach ($studentMarks as $assessmentId => $markValue) {
-                    if ($markValue === null || $markValue === '') continue;
+                    if ($markValue === null || $markValue === '')
+                        continue;
                     $assessment = \App\Models\Assessment::find($assessmentId);
                     if ($assessment) {
                         $processedSemesters->push($assessment->semester);
                     }
                 }
             }
-            
+
             // Invalidate cache for each unique semester
             foreach ($processedSemesters->unique() as $semester) {
                 \App\Http\Controllers\SemesterRecordController::invalidateSemesterRankings(
@@ -309,14 +305,16 @@ class TeacherDeclareResultController extends Controller
                     $currentAcademicYear->id
                 );
             }
-            
+
             $message = "Results saved successfully! ";
-            if ($savedCount > 0) $message .= "{$savedCount} new marks saved. ";
-            if ($updatedCount > 0) $message .= "{$updatedCount} marks updated.";
-            
+            if ($savedCount > 0)
+                $message .= "{$savedCount} new marks saved. ";
+            if ($updatedCount > 0)
+                $message .= "{$updatedCount} marks updated.";
+
             return redirect()->route('teacher.declare-result.index')
                 ->with('success', $message);
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Failed to save results: ' . $e->getMessage()]);
