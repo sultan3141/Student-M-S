@@ -24,7 +24,6 @@ export default function Create({ subjects, grades, sections }) {
         name: '',
         username: '',
         password: '',
-        employee_id: '',
         qualification: '',
         specialization: '',
         phone: '',
@@ -156,24 +155,6 @@ export default function Create({ subjects, grades, sections }) {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <InputLabel htmlFor="employee_id" value="Employee ID (Optional)" />
-                                <div className="relative mt-1">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <IdentificationIcon className="h-5 w-5 text-gray-400" />
-                                    </div>
-                                    <TextInput
-                                        id="employee_id"
-                                        name="employee_id"
-                                        value={data.employee_id}
-                                        className="pl-10 block w-full bg-gray-50 border-gray-300 focus:border-gold-500 focus:ring-gold-500"
-                                        placeholder="Leave empty to auto-generate (TCH0001, TCH0002, etc.)"
-                                        onChange={(e) => setData('employee_id', e.target.value)}
-                                    />
-                                </div>
-                                <InputError message={errors.employee_id} className="mt-2" />
-                            </div>
-
                             {/* Department */}
                             <div>
                                 <InputLabel htmlFor="department" value="Department" />
