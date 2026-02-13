@@ -333,7 +333,8 @@ class TeacherAssessmentController extends Controller
     }
 
     /**
-     * Unified Assessment Manager (Single Page Interface)
+     * Display the Unified Assessment Manager
+     * Shows a grid of all students, assessments, and marks for a selected class/subject
      */
     public function unified(Request $request)
     {
