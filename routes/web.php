@@ -229,6 +229,7 @@ Route::middleware(['auth', 'role:student|admin|school_director'])->prefix('stude
 
     // Schedule
     Route::get('/schedule', [\App\Http\Controllers\StudentController::class, 'schedule'])->name('schedule');
+    Route::get('/announcements', [\App\Http\Controllers\StudentAnnouncementController::class, 'index'])->name('announcements.index');
 });
 
 Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () {
@@ -245,7 +246,7 @@ Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () 
     Route::get('/student/{studentId}/progress', [\App\Http\Controllers\ParentDashboardController::class, 'progress'])->name('parent.student.progress');
     Route::get('/student/{studentId}/attendance', [\App\Http\Controllers\ParentDashboardController::class, 'attendance'])->name('parent.student.attendance');
     Route::get('/student/{studentId}/payments', [\App\Http\Controllers\ParentDashboardController::class, 'paymentHistory'])->name('parent.student.payments');
-    Route::get('/notifications', [\App\Http\Controllers\ParentDashboardController::class, 'notifications'])->name('parent.notifications');
+    Route::get('/announcements', [\App\Http\Controllers\ParentDashboardController::class, 'announcements'])->name('parent.announcements');
     Route::get('/school-contact', [\App\Http\Controllers\ParentDashboardController::class, 'schoolContact'])->name('parent.school-contact');
 
     // Academic Records (New - Aligned with Student)
@@ -469,6 +470,7 @@ Route::middleware(['auth', 'role:school_director|admin', 'audit'])->prefix('dire
 
     // Communication Center
     Route::resource('announcements', \App\Http\Controllers\DirectorCommunicationController::class);
+    Route::post('/announcements/send', [\App\Http\Controllers\DirectorCommunicationController::class, 'send'])->name('announcements.send');
     Route::get('/announcements/{id}/analytics', [\App\Http\Controllers\DirectorCommunicationController::class, 'getAnalytics'])->name('announcements.analytics');
 
     // Documents Management
