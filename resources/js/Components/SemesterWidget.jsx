@@ -1,4 +1,5 @@
 import { CalendarIcon, LockClosedIcon, LockOpenIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { Link } from '@inertiajs/react';
 
 export default function SemesterWidget({ semester, userType = 'teacher' }) {
     if (!semester) {
@@ -121,12 +122,12 @@ export default function SemesterWidget({ semester, userType = 'teacher' }) {
                 {/* Action Buttons for Teachers */}
                 {userType === 'teacher' && canInteract && (
                     <div className="pt-2 border-t border-gray-200">
-                        <a
-                            href="/teacher/declare-result"
+                        <Link
+                            href={route('teacher.declare-result.index')}
                             className="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
                         >
                             Enter Marks
-                        </a>
+                        </Link>
                     </div>
                 )}
 
