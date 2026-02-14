@@ -42,4 +42,35 @@ class StudentAnnouncementController extends Controller
             'announcements' => $announcements,
         ]);
     }
+
+    /**
+     * Get unread announcement count for the student.
+     */
+    public function getUnreadCount()
+    {
+        $user = Auth::user();
+        $student = $user->student;
+        $gradeId = $student ? $student->grade_id : null;
+
+        $count = Announcement::where(function ($query) use ($user, $gradeId) {
+                // Announcements for everyone/students
+                $query->where('recipient_type', 'all_students');
+
+                // Grade specific
+                if ($gradeId) {
+                    $query->orWhere('recipient_type', 'grade_' . $gradeId);
+                }
+
+                // Specific user
+                $query->orWhere(function ($q) use ($user) {
+                    $q->where('recipient_type', 'specific')
+                        ->whereJsonContains('recipient_ids', (string) $user->id);
+                });
+            })
+            ->whereNotNull('sent_at')
+            ->where('sent_at', '>=', now()->subDays(7)) // Last 7 days
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
 }
