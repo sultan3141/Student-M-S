@@ -55,14 +55,16 @@ class StudentController extends Controller
             'totalStudents' => cache()->remember("section_count_{$student->section_id}", 3600, fn() => \App\Models\Student::where('section_id', $student->section_id)->count()),
             'totalSubjects' => cache()->remember("grade_subjects_count_{$student->grade_id}", 3600, fn() => \App\Models\Subject::where('grade_id', $student->grade_id)->count()),
             'recent' => $recentMarks->map(function ($mark) {
+                $maxScore = $mark->max_score ?? 100; // Default to 100 if null
+                $percentage = $maxScore > 0 ? round(($mark->score / $maxScore) * 100, 1) : 0;
                 return [
                     'id' => $mark->id,
                     'subject' => $mark->subject->name ?? 'Unknown',
                     'assessment' => $mark->assessment->name ?? $mark->assessmentType->name ?? 'Grade Entry',
                     'score' => $mark->score,
-                    'maxScore' => $mark->max_score ?? 100,
-                    'percentage' => $mark->max_score > 0 ? round(($mark->score / $mark->max_score) * 100, 1) . '%' : 'N/A',
-                    'percentage_value' => $mark->max_score > 0 ? round(($mark->score / $mark->max_score) * 100, 1) : 0,
+                    'maxScore' => $maxScore,
+                    'percentage' => $percentage . '%',
+                    'percentage_value' => $percentage,
                     'date' => $mark->created_at->format('M d'),
                     'is_graded' => true,
                 ];
