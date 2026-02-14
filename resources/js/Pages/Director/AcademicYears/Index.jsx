@@ -66,16 +66,18 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
 
     const StatusBadge = ({ status }) => {
         const styles = {
-            open: 'bg-emerald-500 text-white ring-emerald-600 shadow-lg shadow-emerald-200',
-            closed: 'bg-red-50 text-red-700 ring-red-600/10',
-            upcoming: 'bg-blue-50 text-blue-700 ring-blue-700/10',
-            completed: 'bg-gray-100 text-gray-700 ring-gray-600/20'
+            open: 'bg-gradient-to-r from-emerald-500 to-green-500 text-white ring-emerald-600 shadow-lg shadow-emerald-200 animate-pulse',
+            closed: 'bg-gradient-to-r from-red-500 to-rose-500 text-white ring-red-600 shadow-md shadow-red-200',
+            active: 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white ring-blue-600 shadow-lg shadow-blue-200',
+            inactive: 'bg-gradient-to-r from-gray-400 to-gray-500 text-white ring-gray-600 shadow-md',
+            planned: 'bg-gradient-to-r from-amber-400 to-orange-400 text-white ring-amber-600 shadow-md shadow-amber-200',
+            completed: 'bg-gradient-to-r from-purple-500 to-violet-500 text-white ring-purple-600 shadow-md shadow-purple-200'
         };
-        const config = styles[status] || styles.closed;
+        const config = styles[status] || styles.inactive;
 
         return (
-            <span className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-bold ring-2 ring-inset ${config} transition-all`}>
-                {status.toUpperCase()}
+            <span className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-bold ring-2 ring-inset ${config} transition-all uppercase tracking-wide`}>
+                {status}
             </span>
         );
     };
@@ -90,12 +92,12 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
         return (
             <div className={`flex flex-col border rounded-lg shadow-sm transition-all duration-300 ${isOpen
                 ? 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-400 ring-4 ring-emerald-100 shadow-emerald-200'
-                : 'bg-white border-gray-200'
+                : 'bg-gradient-to-br from-red-50 to-rose-50 border-red-300 ring-2 ring-red-100 shadow-red-100'
                 }`}>
-                <div className={`p-5 border-b flex justify-between items-start ${isOpen ? 'border-emerald-200 bg-white/50' : 'border-gray-100'
+                <div className={`p-5 border-b flex justify-between items-start ${isOpen ? 'border-emerald-200 bg-white/50' : 'border-red-200 bg-white/50'
                     }`}>
                     <div>
-                        <h4 className={`text-sm font-semibold uppercase tracking-wide ${isOpen ? 'text-emerald-700' : 'text-gray-500'
+                        <h4 className={`text-sm font-semibold uppercase tracking-wide ${isOpen ? 'text-emerald-700' : 'text-red-700'
                             }`}>Semester {number}</h4>
                         <div className="mt-2 flex items-center gap-2">
                             <StatusBadge status={statusData.status} />
@@ -108,12 +110,18 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
                                     Accepting Marks
                                 </span>
                             )}
+                            {!isOpen && (
+                                <span className="flex items-center gap-1.5 text-sm font-bold text-red-700">
+                                    <LockClosedIcon className="h-4 w-4" />
+                                    Locked
+                                </span>
+                            )}
                         </div>
                     </div>
                     {isOpen ? (
-                        <LockOpenIcon className="w-6 h-6 text-emerald-600" />
+                        <LockOpenIcon className="w-8 h-8 text-emerald-600" />
                     ) : (
-                        <LockClosedIcon className="w-6 h-6 text-gray-400" />
+                        <LockClosedIcon className="w-8 h-8 text-red-600" />
                     )}
                 </div>
 
@@ -129,7 +137,7 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
                             </p>
                             <button
                                 onClick={() => toggleSemester(number, 'close', yearId)}
-                                className="w-full inline-flex justify-center items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-200 hover:bg-red-50 hover:ring-red-300 transition-all"
+                                className="w-full inline-flex justify-center items-center gap-x-1.5 rounded-md bg-gradient-to-r from-red-500 to-rose-500 px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-red-200 hover:from-red-600 hover:to-rose-600 transition-all"
                             >
                                 <LockClosedIcon className="-ml-0.5 h-4 w-4" aria-hidden="true" />
                                 Close Period
@@ -147,17 +155,17 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
                             <button
                                 onClick={() => toggleSemester(number, 'open', yearId)}
                                 disabled={!canOpen}
-                                className={`w-full inline-flex justify-center items-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset transition-all ${canOpen
+                                className={`w-full inline-flex justify-center items-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-semibold shadow-lg transition-all ${canOpen
                                     ? isArchive
-                                        ? 'bg-amber-50 text-amber-700 ring-amber-200 hover:bg-amber-100'
-                                        : 'bg-slate-800 text-white hover:bg-slate-700 ring-slate-800'
-                                    : 'bg-gray-100 text-gray-400 ring-gray-200 cursor-not-allowed'
+                                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-200 hover:from-amber-600 hover:to-orange-600'
+                                        : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-emerald-200 hover:from-emerald-600 hover:to-green-600'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
                                     }`}
                             >
                                 {isArchive ? (
                                     <><ArrowPathIcon className="-ml-0.5 h-4 w-4" /> Reopen for Edits</>
                                 ) : (
-                                    canOpen ? 'Open Access' : 'Locked'
+                                    canOpen ? <><LockOpenIcon className="-ml-0.5 h-4 w-4" /> Open Access</> : <><LockClosedIcon className="-ml-0.5 h-4 w-4" /> Locked</>
                                 )}
                             </button>
                         </>
@@ -211,9 +219,22 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
                                     </div>
                                 </div>
                                 {currentYear && (
-                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                                        Active Cycle
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        <span className="inline-flex items-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-blue-200 animate-pulse">
+                                            ✓ Active Cycle
+                                        </span>
+                                        <button
+                                            onClick={() => {
+                                                if (confirm(`Deactivate "${currentYear.name}"? This will make it inactive.`)) {
+                                                    router.post(route('director.academic-years.set-current', currentYear.id));
+                                                }
+                                            }}
+                                            className="inline-flex items-center gap-x-1.5 rounded-md bg-gradient-to-r from-red-500 to-rose-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-200 hover:from-red-600 hover:to-rose-600 transition-all"
+                                        >
+                                            <XMarkIcon className="h-4 w-4" />
+                                            Deactivate
+                                        </button>
+                                    </div>
                                 )}
                             </div>
 
@@ -316,30 +337,52 @@ export default function AcademicYearsIndex({ currentYear, pastYears, auth }) {
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    if (confirm('Set this as the CURRENT active academic year? This will deactivate the current one.')) {
+                                                                    if (confirm(`Activate "${year.name}"? This will make it the current active year.`)) {
                                                                         router.post(route('director.academic-years.set-current', year.id));
                                                                     }
                                                                 }}
-                                                                className="text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1"
+                                                                className="inline-flex items-center gap-x-1.5 rounded-md bg-gradient-to-r from-emerald-500 to-green-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-green-600 transition-all"
                                                             >
-                                                                <ArrowPathIcon className="w-3.5 h-3.5" />
-                                                                Reactivate Year
+                                                                <CheckCircleIcon className="w-4 h-4" />
+                                                                Activate Year
                                                             </button>
                                                         </div>
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             {[1, 2].map(semNum => {
                                                                 const status = year.semesterStatuses?.find(s => s.semester === semNum);
+                                                                const isOpen = status?.status === 'open';
                                                                 return (
-                                                                    <div key={semNum} className="rounded-md border border-gray-200 p-3 bg-gray-50 flex items-center justify-between">
-                                                                        <span className="text-sm font-medium text-gray-700">Semester {semNum}</span>
+                                                                    <div key={semNum} className={`rounded-lg border p-4 flex items-center justify-between transition-all ${
+                                                                        isOpen 
+                                                                            ? 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-300 shadow-md shadow-emerald-100' 
+                                                                            : 'bg-gradient-to-br from-red-50 to-rose-50 border-red-300 shadow-sm shadow-red-100'
+                                                                    }`}>
+                                                                        <div className="flex items-center gap-2">
+                                                                            {isOpen ? (
+                                                                                <LockOpenIcon className="w-5 h-5 text-emerald-600" />
+                                                                            ) : (
+                                                                                <LockClosedIcon className="w-5 h-5 text-red-600" />
+                                                                            )}
+                                                                            <span className={`text-sm font-semibold ${isOpen ? 'text-emerald-700' : 'text-red-700'}`}>
+                                                                                Semester {semNum}
+                                                                            </span>
+                                                                        </div>
                                                                         <div className="flex items-center gap-3">
                                                                             <StatusBadge status={status?.status || 'closed'} />
-                                                                            {/* Only show edit actions if needed, keeping archive read-mostly */}
                                                                             <button
                                                                                 onClick={() => toggleSemester(semNum, status?.status === 'open' ? 'close' : 'open', year.id)}
-                                                                                className="text-gray-400 hover:text-slate-600"
+                                                                                className={`p-1.5 rounded-md transition-all ${
+                                                                                    isOpen 
+                                                                                        ? 'text-red-600 hover:bg-red-100' 
+                                                                                        : 'text-emerald-600 hover:bg-emerald-100'
+                                                                                }`}
+                                                                                title={isOpen ? 'Close semester' : 'Open semester'}
                                                                             >
-                                                                                <EllipsisHorizontalIcon className="w-5 h-5" />
+                                                                                {isOpen ? (
+                                                                                    <LockClosedIcon className="w-5 h-5" />
+                                                                                ) : (
+                                                                                    <LockOpenIcon className="w-5 h-5" />
+                                                                                )}
                                                                             </button>
                                                                         </div>
                                                                     </div>
