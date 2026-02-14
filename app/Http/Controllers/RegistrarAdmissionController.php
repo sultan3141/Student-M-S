@@ -381,7 +381,7 @@ class RegistrarAdmissionController extends Controller
     {
         $grades = Grade::all();
         $streams = Stream::all();
-        $academicYear = AcademicYear::whereRaw('is_current = true')->first();
+        $academicYear = AcademicYear::whereRaw("is_current = true")->first();
         
         return Inertia::render('Registrar/Admission/CreateSubject', [
             'grades' => $grades,
@@ -446,13 +446,15 @@ class RegistrarAdmissionController extends Controller
                     ->exists();
 
                 if (!$exists) {
-                    DB::table('grade_subject')->insert([
-                        'grade_id' => $validated['grade_id'],
-                        'section_id' => $section->id,
-                        'subject_id' => $subject->id,
-                        'is_active' => true,
-                        'created_at' => now(),
-                        'updated_at' => now(),
+                    DB::statement("
+                        INSERT INTO grade_subject (grade_id, section_id, subject_id, is_active, created_at, updated_at)
+                        VALUES (?, ?, ?, true, ?, ?)
+                    ", [
+                        $validated['grade_id'],
+                        $section->id,
+                        $subject->id,
+                        now(),
+                        now()
                     ]);
                 }
             }
