@@ -16,7 +16,7 @@ import {
     UsersIcon
 } from '@heroicons/react/24/outline';
 
-export default function Dashboard({ auth, stats, recentStudents, grades }) {
+export default function Dashboard({ auth, stats = {}, recentStudents = [], grades = [] }) {
     return (
         <RegistrarLayout user={auth.user}>
             <Head title="Registrar Dashboard" />
@@ -40,7 +40,7 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                         </div>
                         <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
                             <div className="text-center flex-1 sm:flex-initial">
-                                <div className="text-2xl sm:text-3xl font-bold text-white">{stats.totalGuardians}</div>
+                                <div className="text-2xl sm:text-3xl font-bold text-white">{stats?.totalGuardians || 0}</div>
                                 <div className="text-xs sm:text-sm text-indigo-100 mt-1">Total Guardians</div>
                             </div>
                             <Link
@@ -61,7 +61,7 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                                 <UserPlusIcon className="h-4 w-4 text-white" />
                             </div>
                             <div className="text-right">
-                                <div className="text-2xl font-bold text-blue-700">{stats.newToday}</div>
+                                <div className="text-2xl font-bold text-blue-700">{stats?.newToday || 0}</div>
                             </div>
                         </div>
                         <div className="text-xs text-blue-600 font-medium">New Today</div>
@@ -74,7 +74,7 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                                 <BanknotesIcon className="h-4 w-4 text-white" />
                             </div>
                             <div className="text-right">
-                                <div className="text-2xl font-bold text-amber-700">{stats.pendingPayments}</div>
+                                <div className="text-2xl font-bold text-amber-700">{stats?.pendingPayments || 0}</div>
                             </div>
                         </div>
                         <div className="text-xs text-amber-600 font-medium">Pending Fees</div>
@@ -87,7 +87,7 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                                 <UsersIcon className="h-4 w-4 text-white" />
                             </div>
                             <div className="text-right">
-                                <div className="text-2xl font-bold text-emerald-700">{stats.totalActive}</div>
+                                <div className="text-2xl font-bold text-emerald-700">{stats?.totalActive || 0}</div>
                             </div>
                         </div>
                         <div className="text-xs text-emerald-600 font-medium">Total Active</div>
@@ -100,7 +100,7 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                                 <UserGroupIcon className="h-4 w-4 text-white" />
                             </div>
                             <div className="text-right">
-                                <div className="text-2xl font-bold text-purple-700">{stats.totalGuardians}</div>
+                                <div className="text-2xl font-bold text-purple-700">{stats?.totalGuardians || 0}</div>
                             </div>
                         </div>
                         <div className="text-xs text-purple-600 font-medium">Guardians</div>
@@ -194,7 +194,7 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {recentStudents.length === 0 ? (
+                                    {!recentStudents || recentStudents.length === 0 ? (
                                         <tr>
                                             <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
                                                 <InboxIcon className="w-10 h-10 mb-2 mx-auto text-gray-300" />
@@ -233,7 +233,7 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
 
                         {/* Mobile Card View */}
                         <div className="md:hidden flex-1 overflow-y-auto">
-                            {recentStudents.length === 0 ? (
+                            {!recentStudents || recentStudents.length === 0 ? (
                                 <div className="px-4 py-8 text-center text-gray-500">
                                     <InboxIcon className="w-10 h-10 mb-2 mx-auto text-gray-300" />
                                     <p className="text-sm">No registrations recorded today.</p>
