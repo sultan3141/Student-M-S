@@ -299,7 +299,9 @@ class DirectorReportController extends Controller
             'generatedAt' => now()->format('M d, Y')
         ]);
 
-        return $pdf->download("Transcript_{$student->student_id}.pdf");
+        // Sanitize filename by replacing / and \ with -
+        $sanitizedStudentId = str_replace(['/', '\\'], '-', $student->student_id);
+        return $pdf->download("Transcript_{$sanitizedStudentId}.pdf");
     }
 
     public function exportStudentCard(Request $request)
@@ -384,7 +386,10 @@ class DirectorReportController extends Controller
             'generatedAt' => now()->format('M d, Y')
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download("ReportCard_{$activeYear->name}_{$student->user->name}.pdf");
+        // Sanitize filename by replacing / and \ with -
+        $sanitizedYearName = str_replace(['/', '\\'], '-', $activeYear->name);
+        $sanitizedStudentName = str_replace(['/', '\\'], '-', $student->user->name);
+        return $pdf->download("ReportCard_{$sanitizedYearName}_{$sanitizedStudentName}.pdf");
     }
 
     public function exportSectionCards(Request $request)
@@ -488,6 +493,9 @@ class DirectorReportController extends Controller
             'studentsData' => $studentsData,
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download("SectionCards_{$grade->name}_{$section->name}.pdf");
+        // Sanitize filename by replacing / and \ with -
+        $sanitizedGradeName = str_replace(['/', '\\'], '-', $grade->name);
+        $sanitizedSectionName = str_replace(['/', '\\'], '-', $section->name);
+        return $pdf->download("SectionCards_{$sanitizedGradeName}_{$sanitizedSectionName}.pdf");
     }
 }
