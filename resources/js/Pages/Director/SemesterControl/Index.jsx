@@ -46,19 +46,34 @@ export default function Index({ academicYear, matrix, error }) {
                     <p className="mt-2 text-sm text-gray-600">
                         Academic Year: <span className="font-semibold text-blue-600">{academicYear.name}</span>
                     </p>
-                    <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                </svg>
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* OPEN Status Info */}
+                        <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl shadow-md">
+                            <div className="flex items-start">
+                                <div className="flex-shrink-0">
+                                    <LockOpenIcon className="h-6 w-6 text-green-600" />
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-bold text-green-900">OPEN ACCESS</h3>
+                                    <p className="mt-1 text-xs text-green-700">
+                                        Teachers can create and edit assessments. Students cannot view results yet.
+                                    </p>
+                                </div>
                             </div>
-                            <div className="ml-3 flex-1">
-                                <p className="text-sm text-blue-700">
-                                    <span className="font-semibold">OPEN:</span> Teachers can enter and edit marks. Students cannot view results.
-                                    <br />
-                                    <span className="font-semibold">CLOSED:</span> Marks are locked. Teachers can only view. Students can view their results.
-                                </p>
+                        </div>
+
+                        {/* CLOSED Status Info */}
+                        <div className="p-4 bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-400 rounded-xl shadow-md">
+                            <div className="flex items-start">
+                                <div className="flex-shrink-0">
+                                    <LockClosedIcon className="h-6 w-6 text-red-600" />
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-bold text-red-900">CLOSED</h3>
+                                    <p className="mt-1 text-xs text-red-700">
+                                        All assessments locked. Teachers can only view. Students can view their results.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -128,38 +143,60 @@ function SemesterCell({ status, stats, isUpdating, onToggle }) {
 
     return (
         <div className="flex flex-col items-center space-y-3">
-            {/* Status Toggle */}
-            <div className="flex items-center space-x-3">
-                <button
-                    onClick={onToggle}
-                    disabled={isUpdating}
-                    className={`
-                        group relative inline-flex items-center px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm
-                        ${isOpen
-                            ? 'bg-green-500 hover:bg-green-600 text-white'
-                            : 'bg-red-500 hover:bg-red-600 text-white'
-                        }
-                        ${isUpdating ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:shadow-md'}
-                    `}
-                >
-                    {isOpen ? (
-                        <>
-                            <LockOpenIcon className="w-4 h-4 mr-2" />
-                            OPEN
-                        </>
-                    ) : (
-                        <>
-                            <LockClosedIcon className="w-4 h-4 mr-2" />
-                            CLOSED
-                        </>
-                    )}
-                </button>
-            </div>
+            {/* Status Badge with Enhanced Visual Differentiation */}
+            <div className={`
+                w-full max-w-xs rounded-xl p-4 transition-all duration-300 shadow-lg
+                ${isOpen 
+                    ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400 ring-2 ring-green-200' 
+                    : 'bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-400 ring-2 ring-red-200'
+                }
+            `}>
+                {/* Status Toggle Button */}
+                <div className="flex items-center justify-center mb-3">
+                    <button
+                        onClick={onToggle}
+                        disabled={isUpdating}
+                        className={`
+                            group relative inline-flex items-center px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-md
+                            ${isOpen
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
+                                : 'bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white'
+                            }
+                            ${isUpdating ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:shadow-xl hover:scale-105 transform'}
+                        `}
+                    >
+                        {isOpen ? (
+                            <>
+                                <LockOpenIcon className="w-5 h-5 mr-2 animate-pulse" />
+                                <span className="tracking-wide">OPEN ACCESS</span>
+                            </>
+                        ) : (
+                            <>
+                                <LockClosedIcon className="w-5 h-5 mr-2" />
+                                <span className="tracking-wide">CLOSED</span>
+                            </>
+                        )}
+                    </button>
+                </div>
 
-            {/* Statistics */}
-            {stats && (
-                <div className="w-full max-w-xs">
-                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                {/* Status Description */}
+                <div className={`
+                    text-center text-xs font-semibold mb-3 px-2 py-1 rounded-lg
+                    ${isOpen 
+                        ? 'text-green-800 bg-green-100' 
+                        : 'text-red-800 bg-red-100'
+                    }
+                `}>
+                    {isOpen ? (
+                        <span>✓ Teachers can create & edit assessments</span>
+                    ) : (
+                        <span>🔒 All assessments locked - View only</span>
+                    )}
+                </div>
+
+                {/* Statistics */}
+                {stats && (
+                    <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
                         <div className="grid grid-cols-2 gap-2 text-xs">
                             <div className="flex items-center space-x-1">
                                 <span className="text-gray-500">Students:</span>
@@ -183,19 +220,20 @@ function SemesterCell({ status, stats, isUpdating, onToggle }) {
 
                         {/* Progress Bar */}
                         <div className="mt-2">
-                            <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="w-full bg-gray-200 rounded-full h-2.5">
                                 <div
-                                    className={`h-2 rounded-full transition-all ${stats.completion_rate >= 80 ? 'bg-green-500' :
-                                        stats.completion_rate >= 50 ? 'bg-yellow-500' :
-                                            'bg-red-500'
-                                        }`}
+                                    className={`h-2.5 rounded-full transition-all duration-500 ${
+                                        stats.completion_rate >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
+                                        stats.completion_rate >= 50 ? 'bg-gradient-to-r from-yellow-500 to-amber-600' :
+                                        'bg-gradient-to-r from-red-500 to-rose-600'
+                                    }`}
                                     style={{ width: `${stats.completion_rate}%` }}
                                 />
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }

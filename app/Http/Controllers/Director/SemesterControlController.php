@@ -123,49 +123,29 @@ class SemesterControlController extends Controller
                 ]
             );
 
-            // Lock or unlock assessments and marks based on status
+            // Lock or unlock assessments based on status
             if ($request->status === 'closed') {
                 // Lock all assessments for this grade/semester
                 Assessment::where('academic_year_id', $currentYear->id)
                     ->where('grade_id', $request->grade_id)
                     ->bySemester($request->semester)
                     ->update([
-                        'is_editable' => false,
-                        'locked_at' => now(),
-                    ]);
-
-                // Lock all marks for this grade/semester
-                Mark::where('academic_year_id', $currentYear->id)
-                    ->where('grade_id', $request->grade_id)
-                    ->bySemester($request->semester)
-                    ->update([
-                        'is_locked' => true,
-                        'locked_at' => now(),
+                        'status' => 'locked',
                     ]);
             } else {
-                // Unlock all assessments for this grade/semester
+                // Unlock all assessments for this grade/semester (set to published)
                 Assessment::where('academic_year_id', $currentYear->id)
                     ->where('grade_id', $request->grade_id)
                     ->bySemester($request->semester)
                     ->update([
-                        'is_editable' => true,
-                        'locked_at' => null,
-                    ]);
-
-                // Unlock all marks for this grade/semester
-                Mark::where('academic_year_id', $currentYear->id)
-                    ->where('grade_id', $request->grade_id)
-                    ->bySemester($request->semester)
-                    ->update([
-                        'is_locked' => false,
-                        'locked_at' => null,
+                        'status' => 'published',
                     ]);
             }
         });
 
         $message = $request->status === 'closed'
-            ? 'Semester closed successfully. All assessments and marks are now locked.'
-            : 'Semester opened successfully. Teachers can now enter/edit marks.';
+            ? 'Semester closed successfully. All assessments are now locked.'
+            : 'Semester opened successfully. Teachers can now create and edit assessments.';
 
         return back()->with('success', $message);
     }
