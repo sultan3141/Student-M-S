@@ -22,8 +22,7 @@ import {
     ChevronRightIcon,
     AcademicCapIcon,
     ChatBubbleLeftRightIcon,
-    MegaphoneIcon,
-    DocumentTextIcon
+    MegaphoneIcon
 } from '@heroicons/react/24/outline';
 import Footer from '@/Components/Footer';
 import ErrorBoundary from '@/Components/ErrorBoundary';
@@ -90,12 +89,6 @@ export default function StudentLayout({ children }) {
             href: route('student.announcements.index'),
             icon: MegaphoneIcon,
             current: safeCurrent('student.announcements.index'),
-        },
-        {
-            name: 'Documents',
-            href: route('student.documents'),
-            icon: DocumentTextIcon,
-            current: safeCurrent('student.documents'),
         },
     ];
 
@@ -248,10 +241,13 @@ export default function StudentLayout({ children }) {
                         {/* Right Side Utilities (Enhanced Interactive Feel) */}
                         <div className="flex items-center space-x-1 sm:space-x-4 relative z-10">
                             {/* Notifications */}
-                            <button className="p-2 text-white/80 hover:text-white transition-all relative group rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95">
+                            <Link
+                                href={route('student.announcements.index')}
+                                className="p-2 text-white/80 hover:text-white transition-all relative group rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95"
+                            >
                                 <BellIcon className="h-5 w-5" />
                                 <span className="absolute top-2 right-2 w-2 h-2 bg-pink-500 rounded-full border-2 border-[#1E293B] shadow-[0_0_10px_rgba(236,72,153,0.8)] animate-pulse"></span>
-                            </button>
+                            </Link>
 
                             {/* Apps Grid */}
                             <button className="p-2 text-white/80 hover:text-white transition-all rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95">
