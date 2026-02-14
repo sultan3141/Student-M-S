@@ -1,1 +1,0 @@
-import{j as r}from"./app-BnMRzgve.js";function n(o){return r.jsx("img",{...o,src:"/images/logo.png",alt:"Darul-Ulum Logo",className:o.className||"h-16 w-16 object-contain",onError:a=>{a.target.onerror=null,a.target.src="https://ui-avatars.com/api/?name=Darul+Ulum&background=0F172A&color=fff"}})}export{n as A};
