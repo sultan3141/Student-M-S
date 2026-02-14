@@ -22,30 +22,30 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
             <Head title="Registrar Dashboard" />
 
             <div className="space-y-4">
-                {/* Guardian Stats Banner - Director Style */}
-                <div className="mb-4 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg p-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            <div className="p-3 bg-white/20 rounded-lg">
-                                <UserGroupIcon className="h-6 w-6 text-white" />
+                {/* Guardian Stats Banner - Responsive */}
+                <div className="mb-4 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+                        <div className="flex items-center space-x-3 sm:space-x-4">
+                            <div className="p-2 sm:p-3 bg-white/20 rounded-lg flex-shrink-0">
+                                <UserGroupIcon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-white font-semibold text-lg">
+                                <h3 className="text-white font-semibold text-sm sm:text-lg">
                                     Guardian Portal Management
                                 </h3>
-                                <p className="text-indigo-100 text-sm">
+                                <p className="text-indigo-100 text-xs sm:text-sm">
                                     Manage parent accounts and link students to guardians
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center space-x-4">
-                            <div className="text-center">
-                                <div className="text-3xl font-bold text-white">{stats.totalGuardians}</div>
-                                <div className="text-sm text-indigo-100 mt-1">Total Guardians</div>
+                        <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
+                            <div className="text-center flex-1 sm:flex-initial">
+                                <div className="text-2xl sm:text-3xl font-bold text-white">{stats.totalGuardians}</div>
+                                <div className="text-xs sm:text-sm text-indigo-100 mt-1">Total Guardians</div>
                             </div>
                             <Link
                                 href={route('registrar.guardians.index')}
-                                className="px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-medium text-sm"
+                                className="px-3 sm:px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-medium text-xs sm:text-sm whitespace-nowrap"
                             >
                                 Manage Guardians
                             </Link>
@@ -172,15 +172,17 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                         </div>
                     </div>
 
-                    {/* Recent Students Table */}
+                    {/* Recent Students Table - Responsive */}
                     <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg flex flex-col">
-                        <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                            <h3 className="text-sm font-semibold text-gray-700 flex items-center">
-                                <ClockIcon className="w-4 h-4 mr-2" /> Recent Registrations
+                        <div className="bg-gray-50 px-3 sm:px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                            <h3 className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center">
+                                <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Recent Registrations
                             </h3>
-                            <Link href={route('registrar.admission.index')} className="text-xs text-blue-600 font-semibold hover:text-blue-700 hover:underline">View All →</Link>
+                            <Link href={route('registrar.admission.index')} className="text-xs text-blue-600 font-semibold hover:text-blue-700 hover:underline whitespace-nowrap">View All →</Link>
                         </div>
-                        <div className="flex-1 overflow-x-auto">
+                        
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block flex-1 overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
@@ -228,7 +230,45 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
                                 </tbody>
                             </table>
                         </div>
-                        <div className="bg-gray-50 px-4 py-2 border-t border-gray-200 text-right">
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden flex-1 overflow-y-auto">
+                            {recentStudents.length === 0 ? (
+                                <div className="px-4 py-8 text-center text-gray-500">
+                                    <InboxIcon className="w-10 h-10 mb-2 mx-auto text-gray-300" />
+                                    <p className="text-sm">No registrations recorded today.</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-gray-200">
+                                    {recentStudents.map((student) => (
+                                        <div key={student.id} className="p-3 hover:bg-gray-50 transition-colors">
+                                            <div className="flex items-start justify-between mb-2">
+                                                <div className="flex-1">
+                                                    <div className="text-xs font-mono font-medium text-blue-600 mb-1">{student.student_id}</div>
+                                                    <div className="text-sm font-semibold text-gray-900">{student.user?.name}</div>
+                                                    <div className="text-xs text-gray-500">{student.gender}</div>
+                                                </div>
+                                                <span className="px-2 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 whitespace-nowrap ml-2">
+                                                    Active
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="text-xs text-gray-500">
+                                                    <span className="font-semibold text-gray-700">{student.grade?.name}</span>
+                                                    <span className="mx-1 text-gray-300">|</span>
+                                                    {student.section?.name}
+                                                </div>
+                                                <button className="text-gray-400 hover:text-blue-600 transition-colors p-1">
+                                                    <PencilSquareIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="bg-gray-50 px-3 sm:px-4 py-2 border-t border-gray-200 text-right">
                             <span className="text-xs text-gray-500">Showing last 5 entries</span>
                         </div>
                     </div>
