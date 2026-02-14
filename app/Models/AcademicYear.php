@@ -23,11 +23,20 @@ class AcademicYear extends Model
     ];
 
     /**
+     * Set the is_current attribute (PostgreSQL compatible)
+     */
+    public function setIsCurrentAttribute($value)
+    {
+        // Convert any value to proper boolean
+        $this->attributes['is_current'] = (bool) $value;
+    }
+
+    /**
      * Get the current active academic year
      */
     public static function current()
     {
-        return static::whereRaw('is_current = true')->first();
+        return static::whereRaw("is_current = true")->first();
     }
 
     /**
