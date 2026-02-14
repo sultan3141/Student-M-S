@@ -31,15 +31,20 @@ class DirectorTeacherController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%");
             });
         }
 
         $teachers = $query->paginate(12);
 
-        // Add performance metrics to each teacher
+        // Add performance metrics and username to each teacher
         $teachers->getCollection()->transform(function ($teacher) {
             $teacher->performance = $this->getPerformanceMetrics($teacher->id)->original;
+            // Include username for director to see
+            if ($teacher->user) {
+                $teacher->username = $teacher->user->username;
+            }
             return $teacher;
         });
 
@@ -69,8 +74,6 @@ class DirectorTeacherController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users',
-            'password' => 'required|string|min:8',
             'employee_id' => 'sometimes|nullable|string|unique:teachers',
             'qualification' => 'nullable|string',
             'specialization' => 'nullable|string',
@@ -91,12 +94,18 @@ class DirectorTeacherController extends Controller
         }
 
         try {
+            // Auto-generate username from name
+            $username = $this->generateUsername($validated['name']);
+            
+            // Auto-generate secure password
+            $password = $this->generateSecurePassword();
+
             // Create user
             $user = User::create([
                 'name' => $validated['name'],
-                'username' => $validated['username'],
-                'email' => $validated['username'] . '@school.local', // Generate email from username
-                'password' => Hash::make($validated['password']),
+                'username' => $username,
+                'email' => $username . '@school.local', // Generate email from username
+                'password' => Hash::make($password),
             ]);
             $user->assignRole('teacher');
 
@@ -136,13 +145,76 @@ class DirectorTeacherController extends Controller
             );
 
             // Fire Email Notification Event
-            event(new \App\Events\TeacherAccountCreated($teacher, $validated['password']));
+            event(new \App\Events\TeacherAccountCreated($teacher, $password));
 
+            // Redirect with credentials
             return redirect()->route('director.teachers.index')
-                ->with('success', 'Teacher created successfully');
+                ->with('success', 'Teacher created successfully')
+                ->with('credentials', [
+                    'name' => $validated['name'],
+                    'username' => $username,
+                    'password' => $password,
+                    'employee_id' => $employeeId,
+                ]);
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to create teacher: ' . $e->getMessage()])->withInput();
         }
+    }
+
+    /**
+     * Generate username from full name
+     */
+    private function generateUsername($fullName)
+    {
+        // Convert to lowercase and remove special characters
+        $name = strtolower(trim($fullName));
+        $name = preg_replace('/[^a-z0-9\s]/', '', $name);
+        
+        // Split into parts
+        $parts = explode(' ', $name);
+        
+        // Create base username: firstname.lastname or firstname
+        if (count($parts) >= 2) {
+            $base = $parts[0] . '.' . $parts[count($parts) - 1];
+        } else {
+            $base = $parts[0];
+        }
+        
+        // Check if username exists and add number if needed
+        $username = $base;
+        $counter = 1;
+        while (User::where('username', $username)->exists()) {
+            $username = $base . $counter;
+            $counter++;
+        }
+        
+        return $username;
+    }
+
+    /**
+     * Generate secure random password
+     */
+    private function generateSecurePassword()
+    {
+        // Generate 8-character password with mix of letters and numbers
+        $uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Removed I, O for clarity
+        $lowercase = 'abcdefghjkmnpqrstuvwxyz'; // Removed i, l, o for clarity
+        $numbers = '23456789'; // Removed 0, 1 for clarity
+        
+        $password = '';
+        $password .= $uppercase[rand(0, strlen($uppercase) - 1)]; // 1 uppercase
+        $password .= $uppercase[rand(0, strlen($uppercase) - 1)]; // 1 more uppercase
+        $password .= $lowercase[rand(0, strlen($lowercase) - 1)]; // 1 lowercase
+        $password .= $lowercase[rand(0, strlen($lowercase) - 1)]; // 1 more lowercase
+        $password .= $numbers[rand(0, strlen($numbers) - 1)]; // 1 number
+        $password .= $numbers[rand(0, strlen($numbers) - 1)]; // 1 more number
+        $password .= $numbers[rand(0, strlen($numbers) - 1)]; // 1 more number
+        $password .= $numbers[rand(0, strlen($numbers) - 1)]; // 1 more number
+        
+        // Shuffle the password
+        $password = str_shuffle($password);
+        
+        return $password;
     }
 
     /**
@@ -152,6 +224,11 @@ class DirectorTeacherController extends Controller
     {
         $teacher->load(['user', 'assignments.subject', 'assignments.grade']);
         $performance = $this->getPerformanceMetrics($teacher->id)->original;
+        
+        // Include username for director to see
+        if ($teacher->user) {
+            $teacher->username = $teacher->user->username;
+        }
 
         return Inertia::render('Director/Teachers/Show', [
             'teacher' => $teacher,
