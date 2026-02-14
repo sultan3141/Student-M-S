@@ -20,50 +20,65 @@ class TeacherDashboardController extends Controller
                 ['employee_id' => 'EMP' . Auth::id(), 'qualification' => 'PhD', 'specialization' => 'General']
             );
 
-            // Get current semester information
-            $currentSemester = $this->getCurrentSemesterInfo();
+            // Cache the entire dashboard for 5 minutes per teacher
+            $cacheKey = 'teacher_dashboard_' . $teacher->id;
+            $dashboardData = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($teacher) {
+                // Get current semester information
+                $currentSemester = $this->getCurrentSemesterInfo();
 
-            // Fetch statistics using the new cached method
-            $stats = $this->getStatistics($teacher);
+                // Fetch statistics using the new cached method
+                $stats = $this->getStatistics($teacher);
 
-            // Fetch recent activities using the new optimized method
-            $activities = $this->getRecentActivities($teacher);
+                // Fetch recent activities using the new optimized method
+                $activities = $this->getRecentActivities($teacher);
 
-            // Fetch upcoming deadlines using the new optimized method
-            $upcomingDeadlines = $this->getUpcomingDeadlines($teacher);
+                // Fetch upcoming deadlines using the new optimized method
+                $upcomingDeadlines = $this->getUpcomingDeadlines($teacher);
 
-            // Get today's schedule for all sections assigned to this teacher
-            $today = Carbon::now()->format('l'); // e.g., "Monday"
-            $todaySchedule = \App\Models\Schedule::whereIn('section_id', function ($query) use ($teacher) {
-                $query->select('section_id')
-                    ->from('teacher_assignments')
-                    ->where('teacher_id', $teacher->id);
-            })
-                ->where('day_of_week', $today)
-                ->whereRaw('is_active = true')
-                ->with(['section.grade'])
-                ->orderBy('start_time')
-                ->get()
-                ->map(function ($schedule) {
-                    return [
-                        'start_time' => Carbon::parse($schedule->start_time)->format('H:i'),
-                        'end_time' => Carbon::parse($schedule->end_time)->format('H:i'),
-                        'grade' => $schedule->section?->grade?->name ?? 'N/A',
-                        'section' => $schedule->section?->name ?? 'N/A',
-                        'activity' => $schedule->activity ?? 'Class',
-                        'location' => $schedule->location ?? 'Classroom',
-                    ];
-                });
+                // Get today's schedule - optimized with eager loading
+                $today = Carbon::now()->format('l');
+                $todaySchedule = \App\Models\Schedule::whereIn('section_id', function ($query) use ($teacher) {
+                    $query->select('section_id')
+                        ->from('teacher_assignments')
+                        ->where('teacher_id', $teacher->id);
+                })
+                    ->where('day_of_week', $today)
+                    ->whereRaw('is_active = true')
+                    ->with(['section.grade'])
+                    ->orderBy('start_time')
+                    ->get()
+                    ->map(function ($schedule) {
+                        return [
+                            'start_time' => Carbon::parse($schedule->start_time)->format('H:i'),
+                            'end_time' => Carbon::parse($schedule->end_time)->format('H:i'),
+                            'grade' => $schedule->section?->grade?->name ?? 'N/A',
+                            'section' => $schedule->section?->name ?? 'N/A',
+                            'activity' => $schedule->activity ?? 'Class',
+                            'location' => $schedule->location ?? 'Classroom',
+                        ];
+                    });
 
-            return Inertia::render('Teacher/Dashboard', [
-                'stats' => $stats,
-                'recentActivity' => $activities,
-                'deadlines' => $upcomingDeadlines,
+                // Get chart data
+                $gradeDistribution = $this->getGradeDistribution($teacher);
+                $performanceTrend = $this->getPerformanceTrend($teacher);
+                $assessmentDistribution = $this->getAssessmentDistribution($teacher);
+
+                return [
+                    'stats' => $stats,
+                    'recentActivity' => $activities,
+                    'deadlines' => $upcomingDeadlines,
+                    'currentSemester' => $currentSemester,
+                    'todaySchedule' => $todaySchedule,
+                    'gradeDistribution' => $gradeDistribution,
+                    'performanceTrend' => $performanceTrend,
+                    'assessmentDistribution' => $assessmentDistribution,
+                ];
+            });
+
+            return Inertia::render('Teacher/Dashboard', array_merge($dashboardData, [
                 'teacher' => $teacher->load('user'),
-                'currentSemester' => $currentSemester,
-                'todaySchedule' => $todaySchedule,
                 'today' => Carbon::now()->format('l, F j, Y'),
-            ]);
+            ]));
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Teacher Dashboard Error: ' . $e->getMessage());
             return Inertia::render('Teacher/Dashboard', [
@@ -74,6 +89,9 @@ class TeacherDashboardController extends Controller
                 'currentSemester' => null,
                 'todaySchedule' => [],
                 'today' => Carbon::now()->format('l, F j, Y'),
+                'gradeDistribution' => [],
+                'performanceTrend' => [],
+                'assessmentDistribution' => ['labels' => [], 'values' => [], 'percentages' => [], 'total' => 0],
                 'error' => 'Dashboard loaded with limited functionality due to an error.'
             ]);
         }
@@ -262,4 +280,108 @@ class TeacherDashboardController extends Controller
             'schedule' => $schedule,
         ]);
     }
+
+    /**
+     * Get grade distribution for teacher's students
+     */
+    private function getGradeDistribution($teacher)
+    {
+        $currentYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
+        if (!$currentYear) {
+            return [];
+        }
+
+        // Get all students in teacher's sections
+        $distribution = \App\Models\Registration::where('academic_year_id', $currentYear->id)
+            ->whereIn('section_id', function ($query) use ($teacher) {
+                $query->select('section_id')
+                    ->from('teacher_assignments')
+                    ->where('teacher_id', $teacher->id);
+            })
+            ->join('sections', 'registrations.section_id', '=', 'sections.id')
+            ->join('grades', 'sections.grade_id', '=', 'grades.id')
+            ->select('grades.name', \DB::raw('COUNT(DISTINCT registrations.student_id) as count'))
+            ->groupBy('grades.name', 'grades.level')
+            ->orderBy('grades.level')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->name,
+                    'count' => $item->count
+                ];
+            });
+
+        return $distribution;
+    }
+
+    /**
+     * Get performance trend over time
+     */
+    private function getPerformanceTrend($teacher)
+    {
+        $currentYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
+        if (!$currentYear) {
+            return [];
+        }
+
+        // Get average marks per month for current year
+        $trend = \App\Models\Mark::where('teacher_id', $teacher->id)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->select(
+                \DB::raw('MONTH(created_at) as month'),
+                \DB::raw('AVG(mark) as average')
+            )
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'year' => Carbon::create()->month($item->month)->format('M'),
+                    'average' => round($item->average, 1)
+                ];
+            });
+
+        return $trend;
+    }
+
+    /**
+     * Get assessment type distribution
+     */
+    private function getAssessmentDistribution($teacher)
+    {
+        $currentYear = \App\Models\AcademicYear::whereRaw('is_current = true')->first();
+        if (!$currentYear) {
+            return [
+                'labels' => [],
+                'values' => [],
+                'percentages' => [],
+                'total' => 0
+            ];
+        }
+
+        // Get count of marks by assessment type
+        $assessments = \App\Models\Mark::where('teacher_id', $teacher->id)
+            ->whereHas('registration', function ($query) use ($currentYear) {
+                $query->where('academic_year_id', $currentYear->id);
+            })
+            ->join('assessment_types', 'marks.assessment_type_id', '=', 'assessment_types.id')
+            ->select('assessment_types.name', \DB::raw('COUNT(*) as count'))
+            ->groupBy('assessment_types.name')
+            ->get();
+
+        $total = $assessments->sum('count');
+        $labels = $assessments->pluck('name')->toArray();
+        $values = $assessments->pluck('count')->toArray();
+        $percentages = $assessments->map(function ($item) use ($total) {
+            return $total > 0 ? round(($item->count / $total) * 100, 1) : 0;
+        })->toArray();
+
+        return [
+            'labels' => $labels,
+            'values' => $values,
+            'percentages' => $percentages,
+            'total' => $total
+        ];
+    }
+
 }
