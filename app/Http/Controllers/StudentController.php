@@ -438,7 +438,7 @@ class StudentController extends Controller
 
         // Get all marks with all needed relationships loaded at once
         $marks = \App\Models\Mark::where('student_id', $student->id)
-            ->with(['subject:id,name,code', 'academicYear:id,name', 'teacher.user:id,name'])
+            ->with(['subject:id,name,code', 'academicYear:id,name', 'teacher.user:id,name', 'assessmentType:id,name', 'assessment:id,name'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -469,8 +469,14 @@ class StudentController extends Controller
 
             // Get detailed assessment breakdown for this subject
             $assessmentBreakdown = $subjectMarks->map(function ($mark) {
+                // Safely get assessment type name
+                $assessmentTypeName = $mark->assessmentType->name ?? null;
+                if (!$assessmentTypeName && $mark->assessment) {
+                    $assessmentTypeName = $mark->assessment->name ?? 'Assessment';
+                }
+
                 return [
-                    'assessment_type' => $mark->assessmentType->name ?? 'Grade Entry',
+                    'assessment_type' => $assessmentTypeName ?? 'Grade Entry',
                     'semester' => $mark->semester,
                     'score' => $mark->score,
                     'max_score' => $mark->max_score ?? 100,
@@ -494,7 +500,8 @@ class StudentController extends Controller
 
         // Calculate trend data (average score per semester)
         $trendData = $marks->groupBy(function ($mark) {
-            return $mark->academicYear->name . ' - ' . $mark->semester;
+            $yearName = $mark->academicYear->name ?? 'Unknown Year';
+            return $yearName . ' - ' . $mark->semester;
         })->map(function ($periodMarks, $period) {
             return [
                 'period' => $period,
@@ -502,7 +509,7 @@ class StudentController extends Controller
             ];
         })->values();
 
-        return inertia('Student/AcademicRecords', [
+        return inertia('Student/Academic/Results', [
             'student' => $student,
             'marks' => $marks,
             'subjectPerformance' => $subjectPerformance,
