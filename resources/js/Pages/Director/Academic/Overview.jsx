@@ -119,10 +119,9 @@ export default function AcademicOverview({ overviewData = [], heatMapData = [] }
                                 <thead>
                                     <tr className="border-b-2 border-gray-200">
                                         <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">SUBJECT</th>
-                                        <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">G9</th>
-                                        <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">G10</th>
-                                        <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">G11</th>
-                                        <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">G12</th>
+                                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(g => (
+                                            <th key={g} className="text-center py-3 px-2 text-xs font-semibold text-gray-700">G{g}</th>
+                                        ))}
                                         <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">SCHOOL AVG</th>
                                     </tr>
                                 </thead>
@@ -130,7 +129,8 @@ export default function AcademicOverview({ overviewData = [], heatMapData = [] }
                                     {heatMapDataState.map((subject, index) => (
                                         <tr key={index} className="border-b border-gray-100">
                                             <td className="py-4 px-4 font-medium text-gray-900">{subject.subject}</td>
-                                            {[9, 10, 11, 12].map((grade) => {
+                                            <td className="py-4 px-4 font-medium text-gray-900">{subject.subject}</td>
+                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((grade) => {
                                                 const score = subject[`grade_${grade}`] || 0;
                                                 return (
                                                     <td key={grade} className="py-4 px-4 text-center">

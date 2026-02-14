@@ -11,7 +11,12 @@ import {
 
 export default function GradeDistributionChart({ data }) {
     // Colors for grades 9, 10, 11, 12
-    const COLORS = ['#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B'];
+    // Colors for grades 1-12
+    const COLORS = [
+        '#ef4444', '#f97316', '#f59e0b', '#84cc16', // 1-4 (Warm/Earth)
+        '#10b981', '#06b6d4', '#0ea5e9', '#3b82f6', // 5-8 (Cool/Blue)
+        '#6366f1', '#8b5cf6', '#d946ef', '#f43f5e'  // 9-12 (Purple/Pink/High School)
+    ];
 
     return (
         <div className="executive-card">
