@@ -164,7 +164,7 @@
                 </td>
                 <td align="right">
                     <span class="label">Current Grade / Section</span>
-                    <span class="value">{{ $student->grade->name }} / {{ $student->section->name }}</span>
+                    <span class="value">{{ $student->grade->name ?? 'N/A' }} / {{ $student->section->name ?? 'N/A' }}</span>
                 </td>
             </tr>
         </table>
