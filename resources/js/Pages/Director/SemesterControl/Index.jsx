@@ -30,7 +30,14 @@ export default function Index({ academicYear, matrix, error }) {
             status: newStatus
         }, {
             preserveScroll: true,
+            onSuccess: () => {
+                // Page will automatically reload with new data from back()
+            },
             onFinish: () => setUpdating(null),
+            onError: (errors) => {
+                console.error('Toggle error:', errors);
+                alert('Failed to toggle semester status. Please try again.');
+            }
         });
     };
 
