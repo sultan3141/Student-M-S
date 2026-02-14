@@ -7,11 +7,17 @@ import {
     PlusIcon,
     FunnelIcon,
     ArrowDownTrayIcon,
+    XMarkIcon,
+    ClipboardDocumentIcon,
+    CheckIcon,
 } from '@heroicons/react/24/outline';
 
-export default function Index({ teachers, filters }) {
+export default function Index({ teachers, filters, flash }) {
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
     const [statusFilter, setStatusFilter] = useState(filters?.status || 'all');
+    const [showCredentialsModal, setShowCredentialsModal] = useState(!!flash?.credentials);
+    const [credentials, setCredentials] = useState(flash?.credentials || null);
+    const [copied, setCopied] = useState(false);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -21,6 +27,27 @@ export default function Index({ teachers, filters }) {
     const handleFilterChange = (newStatus) => {
         setStatusFilter(newStatus);
         router.get('/director/teachers', { search: searchQuery, status: newStatus });
+    };
+
+    const copyToClipboard = () => {
+        if (credentials) {
+            const text = `Teacher Account Created
+Name: ${credentials.name}
+Employee ID: ${credentials.employee_id}
+Username: ${credentials.username}
+Password: ${credentials.password}
+
+Please keep these credentials secure and share them with the teacher.`;
+            
+            navigator.clipboard.writeText(text);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    const closeModal = () => {
+        setShowCredentialsModal(false);
+        setCredentials(null);
     };
 
     return (
