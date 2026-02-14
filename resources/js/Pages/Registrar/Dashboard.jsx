@@ -22,16 +22,6 @@ export default function Dashboard({ auth, stats, recentStudents, grades }) {
             <Head title="Registrar Dashboard" />
 
             <div className="space-y-4">
-                {/* Compact Page Header */}
-                <div className="mb-4">
-                    <h1 className="text-2xl font-bold text-navy-900" style={{ color: '#0F172A' }}>
-                        📋 Registrar Dashboard
-                    </h1>
-                    <p className="mt-1 text-xs text-gray-600">
-                        Student enrollment and registration management
-                    </p>
-                </div>
-
                 {/* Guardian Stats Banner - Director Style */}
                 <div className="mb-4 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg p-4">
                     <div className="flex items-center justify-between">
