@@ -268,6 +268,9 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
         return \Inertia\Inertia::render('Teacher/DashboardMinimal');
     })->name('dashboard-minimal');
     Route::get('/schedule', [\App\Http\Controllers\TeacherDashboardController::class, 'schedule'])->name('schedule');
+    
+    // Announcements
+    Route::get('/announcements', [\App\Http\Controllers\TeacherAnnouncementController::class, 'index'])->name('announcements.index');
 
     // Declare Result (NEW) - Protected by semester open check
     Route::prefix('declare-result')->name('declare-result.')->middleware('check.semester.open')->group(function () {

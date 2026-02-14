@@ -188,10 +188,13 @@ export default function DirectorLayout({ children }) {
 
                     {/* Right Side UI Utilities */}
                     <div className="flex items-center space-x-1 sm:space-x-4 relative z-10">
-                        <button className="p-2 text-white/80 hover:text-white transition-all relative group rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95">
+                        <Link
+                            href={route('director.announcements.index')}
+                            className="p-2 text-white/80 hover:text-white transition-all relative group rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95"
+                        >
                             <BellIcon className="h-5 w-5" />
                             <span className="absolute top-2 right-2 w-2 h-2 bg-pink-500 rounded-full border-2 border-[#1E293B] animate-pulse"></span>
-                        </button>
+                        </Link>
 
                         <button className="p-2 text-white/80 hover:text-white transition-all rounded-xl hover:bg-white/10 hover:scale-110 active:scale-95">
                             <Squares2X2Icon className="h-5 w-5" />
