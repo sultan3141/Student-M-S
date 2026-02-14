@@ -260,6 +260,7 @@ class DirectorReportController extends Controller
         ])->findOrFail($request->student_id);
 
         $schoolInfo = [
+            'name' => 'DARUL ULUM PUBLIC SCHOOL',
             'name_or' => 'MANA BARNOOTA DAARUL ULUM KAN UMMATAA',
             'name_en' => 'DARUL ULUM PUBLIC SCHOOL',
             'name_ar' => 'مدرسة دار العلوم الإسلامية',
@@ -331,6 +332,7 @@ class DirectorReportController extends Controller
         ])->findOrFail($request->student_id);
 
         $schoolInfo = [
+            'name' => 'DARUL ULUM PUBLIC SCHOOL',
             'name_or' => 'MANA BARNOOTA DAARUL ULUM KAN UMMATAA',
             'name_en' => 'DARUL ULUM PUBLIC SCHOOL',
             'name_ar' => 'مدرسة دار العلوم الإسلامية',
@@ -338,9 +340,6 @@ class DirectorReportController extends Controller
             'phone' => '+252 11 50 50',
             'email' => 'Duschool571@gmail.com'
         ];
-
-        $age = $student->dob ? \Carbon\Carbon::parse($student->dob)->age : 'N/A';
-        $sex = ucfirst($student->gender ?? 'N/A');
 
         $subjectMarks = [];
         $semesterResults = [];
@@ -419,6 +418,7 @@ class DirectorReportController extends Controller
             ])->get();
 
         $schoolInfo = [
+            'name' => 'DARUL ULUM PUBLIC SCHOOL',
             'name_or' => 'MANA BARNOOTA DAARUL ULUM KAN UMMATAA',
             'name_en' => 'DARUL ULUM PUBLIC SCHOOL',
             'name_ar' => 'مدرسة دار العلوم الإسلامية',
