@@ -69,12 +69,7 @@ require __DIR__ . '/teacher_test.php';
 require __DIR__ . '/debug_raw.php';
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return redirect()->route('login');
 });
 
 Route::get('/dashboard', function () {
@@ -320,6 +315,11 @@ Route::middleware(['auth', 'verified'])->prefix('teacher')->name('teacher.')->gr
     // Assessment Management - Specific routes BEFORE resource route
     Route::get('/assessments/unified', [\App\Http\Controllers\TeacherAssessmentController::class, 'unified'])->name('assessments.unified');
     Route::get('/assessments/unified/data', [\App\Http\Controllers\TeacherAssessmentController::class, 'unifiedData'])->name('assessments.unified-data');
+    
+    // Assessment CRUD
+    Route::post('/assessments', [\App\Http\Controllers\TeacherAssessmentController::class, 'store'])->name('assessments.store');
+    Route::put('/assessments/{assessment}', [\App\Http\Controllers\TeacherAssessmentController::class, 'update'])->name('assessments.update');
+    Route::delete('/assessments/{assessment}', [\App\Http\Controllers\TeacherAssessmentController::class, 'destroy'])->name('assessments.destroy');
 
     // Assessment Management (CRUD & Bulk Operations)
     Route::resource('assessments', \App\Http\Controllers\AssessmentController::class);

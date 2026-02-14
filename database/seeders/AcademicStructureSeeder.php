@@ -16,8 +16,8 @@ class AcademicStructureSeeder extends Seeder
         $natural = \App\Models\Stream::firstOrCreate(['name' => 'Natural Science']);
         $social = \App\Models\Stream::firstOrCreate(['name' => 'Social Science']);
 
-        // Grades 9-12
-        $grades = [9, 10, 11, 12];
+        // Grades 1-12
+        $grades = range(1, 12);
 
         foreach ($grades as $level) {
             $grade = \App\Models\Grade::updateOrCreate(
@@ -54,10 +54,10 @@ class AcademicStructureSeeder extends Seeder
                 ]
             );
         }
-        
+
         // Active Academic Year - Use raw SQL for PostgreSQL boolean compatibility
         $existingYear = \App\Models\AcademicYear::where('name', '2025-2026')->first();
-        
+
         if (!$existingYear) {
             \Illuminate\Support\Facades\DB::statement(
                 "INSERT INTO academic_years (name, start_date, end_date, status, is_current, created_at, updated_at) 
