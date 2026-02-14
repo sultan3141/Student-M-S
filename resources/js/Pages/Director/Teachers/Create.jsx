@@ -22,8 +22,6 @@ import PrimaryButton from '@/Components/PrimaryButton';
 export default function Create({ subjects, grades, sections }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
-        username: '',
-        password: '',
         qualification: '',
         specialization: '',
         phone: '',
@@ -210,34 +208,41 @@ export default function Create({ subjects, grades, sections }) {
                             <h2 className="text-lg font-semibold text-navy-900">Account Credentials</h2>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Username */}
-                            <div>
-                                <InputLabel htmlFor="username" value="Username" />
-                                <TextInput
-                                    id="username"
-                                    name="username"
-                                    value={data.username}
-                                    className="mt-1 block w-full bg-gray-50 border-gray-300 focus:border-gold-500 focus:ring-gold-500"
-                                    onChange={(e) => setData('username', e.target.value)}
-                                    required
-                                />
-                                <InputError message={errors.username} className="mt-2" />
-                            </div>
-
-                            {/* Password */}
-                            <div>
-                                <InputLabel htmlFor="password" value="Initial Password" />
-                                <TextInput
-                                    id="password"
-                                    type="password"
-                                    name="password"
-                                    value={data.password}
-                                    className="mt-1 block w-full bg-gray-50 border-gray-300 focus:border-gold-500 focus:ring-gold-500"
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    required
-                                />
-                                <InputError message={errors.password} className="mt-2" />
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                            <div className="flex items-start space-x-3">
+                                <div className="flex-shrink-0">
+                                    <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-sm font-semibold text-blue-900 mb-2">
+                                        🔐 Automatic Credential Generation
+                                    </h3>
+                                    <p className="text-sm text-blue-800 mb-3">
+                                        The system will automatically generate secure login credentials for this teacher:
+                                    </p>
+                                    <ul className="text-sm text-blue-700 space-y-1 ml-4">
+                                        <li className="flex items-center">
+                                            <span className="mr-2">✓</span>
+                                            <span><strong>Username:</strong> Generated from teacher's name (e.g., john.doe)</span>
+                                        </li>
+                                        <li className="flex items-center">
+                                            <span className="mr-2">✓</span>
+                                            <span><strong>Password:</strong> Secure 8-character random password</span>
+                                        </li>
+                                        <li className="flex items-center">
+                                            <span className="mr-2">✓</span>
+                                            <span><strong>Employee ID:</strong> Auto-assigned (e.g., TCH0001)</span>
+                                        </li>
+                                    </ul>
+                                    <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded">
+                                        <p className="text-xs text-amber-800">
+                                            <strong>📋 Important:</strong> After creating the teacher, you will see the generated credentials. 
+                                            Make sure to copy and share them with the teacher securely.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
