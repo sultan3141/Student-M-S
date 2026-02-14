@@ -25,11 +25,10 @@ export default function Index({ academicYear, matrix, error }) {
         setUpdating(`${gradeId}-${semester}`);
 
         post(route('director.semesters.update'), {
-            data: {
-                grade_id: gradeId,
-                semester: semester,
-                status: newStatus
-            },
+            grade_id: gradeId,
+            semester: semester,
+            status: newStatus
+        }, {
             preserveScroll: true,
             onFinish: () => setUpdating(null),
         });
