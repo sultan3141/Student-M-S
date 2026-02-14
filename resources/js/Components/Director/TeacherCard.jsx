@@ -4,11 +4,13 @@ import {
     AcademicCapIcon,
     ChartBarIcon,
     EllipsisVerticalIcon,
+    KeyIcon,
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 export default function TeacherCard({ teacher }) {
     const [showMenu, setShowMenu] = useState(false);
+    const [showCredentials, setShowCredentials] = useState(false);
 
     const performance = teacher.performance || {};
     const status = teacher.user ? 'active' : 'inactive';
@@ -50,6 +52,37 @@ export default function TeacherCard({ teacher }) {
                     {status === 'active' ? '✓ Active' : 'Inactive'}
                 </span>
             </div>
+
+            {/* Credentials Section */}
+            {teacher.username && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                            <KeyIcon className="h-4 w-4 text-blue-600" />
+                            <span className="text-xs font-semibold text-blue-900">LOGIN CREDENTIALS</span>
+                        </div>
+                        <button
+                            onClick={() => setShowCredentials(!showCredentials)}
+                            className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                            {showCredentials ? 'Hide' : 'Show'}
+                        </button>
+                    </div>
+                    {showCredentials && (
+                        <div className="space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-600">Username:</span>
+                                <span className="font-mono font-semibold text-gray-900 bg-white px-2 py-1 rounded">
+                                    {teacher.username}
+                                </span>
+                            </div>
+                            <div className="text-xs text-gray-500 italic mt-2">
+                                Password: Set during account creation (cannot be retrieved)
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Details */}
             <div className="space-y-2 mb-4">
