@@ -9,9 +9,13 @@ import {
     ArrowLeftIcon,
     PencilSquareIcon,
     EnvelopeIcon,
+    KeyIcon,
 } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 
 export default function Show({ teacher, performance }) {
+    const [showCredentials, setShowCredentials] = useState(false);
+
     return (
         <DirectorLayout>
             <Head title={`${teacher.user?.name || 'Teacher Profile'}`} />
@@ -66,6 +70,43 @@ export default function Show({ teacher, performance }) {
                             </div>
 
                             <div className="mt-8 border-t border-gray-100 pt-6 text-left space-y-4">
+                                {/* Login Credentials Section */}
+                                {teacher.username && (
+                                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center space-x-2">
+                                                <KeyIcon className="h-5 w-5 text-blue-600" />
+                                                <span className="text-sm font-bold text-blue-900">LOGIN CREDENTIALS</span>
+                                            </div>
+                                            <button
+                                                onClick={() => setShowCredentials(!showCredentials)}
+                                                className="text-xs text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 bg-white rounded-md border border-blue-300 hover:border-blue-400 transition-colors"
+                                            >
+                                                {showCredentials ? 'Hide' : 'Show'}
+                                            </button>
+                                        </div>
+                                        {showCredentials && (
+                                            <div className="space-y-2">
+                                                <div className="bg-white p-3 rounded border border-blue-100">
+                                                    <div className="text-xs text-gray-600 mb-1">Username</div>
+                                                    <div className="font-mono font-bold text-gray-900 text-sm">
+                                                        {teacher.username}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-white p-3 rounded border border-blue-100">
+                                                    <div className="text-xs text-gray-600 mb-1">Password</div>
+                                                    <div className="text-xs text-gray-500 italic">
+                                                        Set during account creation (cannot be retrieved)
+                                                    </div>
+                                                </div>
+                                                <div className="text-xs text-gray-500 mt-2 p-2 bg-amber-50 border border-amber-200 rounded">
+                                                    <span className="font-semibold">⚠️ Security Note:</span> Passwords are encrypted and cannot be viewed. Teacher must use password reset if forgotten.
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div className="flex items-start space-x-3">
                                     <BuildingOfficeIcon className="h-5 w-5 text-gray-400 mt-0.5" />
                                     <div>
