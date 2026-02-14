@@ -324,12 +324,12 @@ class TeacherDashboardController extends Controller
             return [];
         }
 
-        // Get average marks per month for current year
+        // Get average marks per month for current year - PostgreSQL compatible
         $trend = \App\Models\Mark::where('teacher_id', $teacher->id)
             ->whereYear('created_at', Carbon::now()->year)
             ->select(
-                \DB::raw('MONTH(created_at) as month'),
-                \DB::raw('AVG(mark) as average')
+                \DB::raw('EXTRACT(MONTH FROM created_at) as month'),
+                \DB::raw('AVG(score) as average')
             )
             ->groupBy('month')
             ->orderBy('month')
@@ -337,7 +337,7 @@ class TeacherDashboardController extends Controller
             ->map(function ($item) {
                 return [
                     'year' => Carbon::create()->month($item->month)->format('M'),
-                    'average' => round($item->average, 1)
+                    'average' => round($item->average ?? 0, 1)
                 ];
             });
 
@@ -359,14 +359,12 @@ class TeacherDashboardController extends Controller
             ];
         }
 
-        // Get count of marks by assessment type
-        $assessments = \App\Models\Mark::where('teacher_id', $teacher->id)
-            ->whereHas('registration', function ($query) use ($currentYear) {
-                $query->where('academic_year_id', $currentYear->id);
-            })
+        // Get count of marks by assessment type for current year
+        $assessments = \App\Models\Mark::where('marks.teacher_id', $teacher->id)
+            ->where('marks.academic_year_id', $currentYear->id)
             ->join('assessment_types', 'marks.assessment_type_id', '=', 'assessment_types.id')
             ->select('assessment_types.name', \DB::raw('COUNT(*) as count'))
-            ->groupBy('assessment_types.name')
+            ->groupBy('assessment_types.id', 'assessment_types.name')
             ->get();
 
         $total = $assessments->sum('count');
